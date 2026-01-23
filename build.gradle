@@ -27,8 +27,9 @@ dependencies {
     // Validation (@Valid, @NotNull 등)
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-//    // DB Driver
-//    runtimeOnly 'org.postgresql:postgresql'
+    // DB Driver
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    runtimeOnly 'org.postgresql:postgresql'
 
     // (선택) 헬스 체크 / 메트릭
     implementation 'org.springframework.boot:spring-boot-starter-actuator'

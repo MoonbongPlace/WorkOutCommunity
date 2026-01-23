@@ -20,39 +20,30 @@ public class Post {
     @Column(nullable = false)
     private String title;
 
-    @Lob
     @Column(nullable = false)
-    private String body;
+    private String content;
 
     @Column(nullable = false)
-    private String category;
+    @JoinColumn(name="category_id")
+    private Long categoryId;
 
     @Column(nullable = false)
-    private Long views = 0L;
+    private int views = 0;
 
     @Column(nullable = false)
-    private Long authorId; // User ID 참조 (객체 참조 X)
+    @JoinColumn(name="member_id")
+    private Long memberId; // User ID 참조 (객체 참조 X)
 
     private String image;
 
     @Column(nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-
-    public Post(String title, String body, String category, Long authorId, String image) {
-        this.title = title;
-        this.body = body;
-        this.category = category;
-        this.authorId = authorId;
-        this.image = image;
-        this.createdAt = OffsetDateTime.now();
-    }
-
     public static Post fromRequest(CreatePostRequest request) {
         Post post = new Post();
         post.setTitle(request.getTitle());
-        post.setBody(request.getBody());
-        post.setCategory(request.getCategory());
+        post.setContent(request.getContent());
+        post.setCategoryId(request.getCategoryId());
         post.setImage(request.getImage());
         return post;
     }

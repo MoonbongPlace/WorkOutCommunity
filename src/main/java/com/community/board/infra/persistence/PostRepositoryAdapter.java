@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
-import java.awt.print.Pageable;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +27,7 @@ public class PostRepositoryAdapter implements PostRepository {
 
         @Override
         public List<Post> findLatest(int size) {
-                return postJpaRepository.findAllByOrderByCreatedAtDesc((Pageable) PageRequest.of(0, size));
+                return postJpaRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, size));
         }
 
         @Override

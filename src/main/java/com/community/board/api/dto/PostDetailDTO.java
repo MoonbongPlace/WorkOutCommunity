@@ -9,13 +9,13 @@ import java.time.OffsetDateTime;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"id", "title", "body", "category", "views", "authorId", "image", "createdAt"})
+@JsonPropertyOrder({"id", "title", "body", "categoryId", "views", "authorId", "image", "createdAt"})
 public class PostDetailDTO {
     private Long id;
     private String title;
     private String body;
-    private String category;
-    private Long views;
+    private Long categoryId;
+    private int views;
     private Long authorId;
     private String image;
     private OffsetDateTime createdAt;
@@ -24,10 +24,10 @@ public class PostDetailDTO {
         return new PostDetailDTO(
                 post.getId(),
                 post.getTitle(),
-                post.getBody(),
-                post.getCategory(),
+                post.getContent(),
+                post.getCategoryId(),
                 post.getViews(),
-                post.getAuthorId(),
+                post.getMemberId(),
                 post.getImage(),
                 post.getCreatedAt()
         );
