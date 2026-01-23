@@ -16,7 +16,7 @@ public class CreatePostRequest {
     @NotNull
     @Size(max = 255)
     String title;
-    String body;
-    String category;
+    String content;
+    Long categoryId;
     String image;
 }
