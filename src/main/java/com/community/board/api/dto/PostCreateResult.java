@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 @Getter
 @AllArgsConstructor
 @JsonPropertyOrder({"id", "memberId", "title", "content", "categoryId", "views", "image", "createdAt"})
-public class PostDetailDTO {
+public class PostCreateResult {
     private Long id;
     private Long member_id;
     private String title;
@@ -20,8 +20,8 @@ public class PostDetailDTO {
     private String image;
     private OffsetDateTime createdAt;
 
-    public static PostDetailDTO from(Post post){
-        return new PostDetailDTO(
+    public static PostCreateResult from(Post post){
+        return new PostCreateResult(
                 post.getId(),
                 post.getMemberId(),
                 post.getTitle(),

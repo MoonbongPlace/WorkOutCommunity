@@ -1,8 +1,6 @@
 package com.community.board.api;
 
-import com.community.board.api.dto.CreatePostRequest;
-import com.community.board.api.dto.PostDetailDTO;
-import com.community.board.api.dto.PostResponse;
+import com.community.board.api.dto.*;
 import com.community.board.application.PostService;
 import com.community.board.domain.model.Post;
 import jakarta.validation.Valid;
@@ -19,30 +17,28 @@ public class PostController {
     private final PostService postService;
 
     // 특정 게시글 상세 조회
-    @PostMapping("/{postId}")
+    @GetMapping("/{postId}")
     public ResponseEntity<PostResponse> findPost(
             @PathVariable(name = "postId") final Long postId
     ){
-        PostDetailDTO postDetailDTO = postService.getPostDetail(postId);
+        PostDetailDTO detail = postService.getPostDetail(postId);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(PostResponse.get(postDetailDTO,"게시글 상세 조회 성공"));
+                .body(PostResponse.get(detail,"게시글 상세 조회 성공"));
     }
 
-    // 게시글 작성
-//    @PostMapping
-//    public ResponseEntity<PostResponse> createPost(
-//            @RequestBody @Valid final CreatePostRequest request
-//    ){
-//        Post createdPost = postService.create(request);
-//
-//        return ResponseEntity
-//                .status(HttpStatus.OK)
-//                .body(PostResponse.create(
-//                        createdPost,
-//                        "게시글 작성 완료"
-//                ));
-//    }
+    //게시글 작성
+    @PostMapping
+    public ResponseEntity<PostCreateResponse> createPost(
+            @RequestBody @Valid final CreatePostRequest request
+    ){
+        PostCreateResult createdPost = postService.create(request);
 
-
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(PostCreateResponse.create(
+                        createdPost,
+                        "게시글 작성 완료"
+                ));
+    }
 }

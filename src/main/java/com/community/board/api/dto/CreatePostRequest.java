@@ -1,6 +1,6 @@
 package com.community.board.api.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,9 +13,10 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CreatePostRequest {
 
-    @NotNull
+    @NotBlank
     @Size(max = 255)
     String title;
+    Long memberId;
     String content;
     Long categoryId;
     String image;

@@ -36,12 +36,14 @@ public class Post {
 
     private String image;
 
-    @Column(nullable = false, updatable = false)
+    @Column(updatable = false)
     private OffsetDateTime createdAt;
 
     public static Post fromRequest(CreatePostRequest request) {
         Post post = new Post();
         post.setTitle(request.getTitle());
+        // 삭제 예정
+        post.setMemberId(request.getMemberId());
         post.setContent(request.getContent());
         post.setCategoryId(request.getCategoryId());
         post.setImage(request.getImage());
