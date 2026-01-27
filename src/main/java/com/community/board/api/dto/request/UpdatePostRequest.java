@@ -1,4 +1,4 @@
-package com.community.board.api.dto;
+package com.community.board.api.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -11,8 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreatePostRequest {
-
+public class UpdatePostRequest {
     @NotNull
     @Size(max = 255)
     String title;

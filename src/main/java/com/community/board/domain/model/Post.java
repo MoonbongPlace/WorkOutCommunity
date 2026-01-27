@@ -1,6 +1,6 @@
 package com.community.board.domain.model;
 
-import com.community.board.api.dto.CreatePostRequest;
+import com.community.board.api.dto.request.CreatePostRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,12 +36,20 @@ public class Post {
 
     private String image;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name="created_at", updatable = false)
     private OffsetDateTime createdAt;
+
+    @Column(name="updated_at", updatable = false)
+    private OffsetDateTime updatedAt;
+
+    @Column(name="deleted_at", updatable = false)
+    private OffsetDateTime deletedAt;
 
     public static Post fromRequest(CreatePostRequest request) {
         Post post = new Post();
         post.setTitle(request.getTitle());
+        // 삭제 예정
+        post.setMemberId(request.getMemberId());
         post.setContent(request.getContent());
         post.setCategoryId(request.getCategoryId());
         post.setImage(request.getImage());

@@ -1,4 +1,4 @@
-package com.community.board.api.dto;
+package com.community.board.application.dto;
 
 import com.community.board.domain.model.Post;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -9,25 +9,25 @@ import java.time.OffsetDateTime;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"id", "title", "body", "categoryId", "views", "authorId", "image", "createdAt"})
-public class PostDetailDTO {
+@JsonPropertyOrder({"id", "memberId", "title", "content", "categoryId", "views", "image", "createdAt"})
+public class DetailPostResult {
     private Long id;
+    private Long member_id;
     private String title;
-    private String body;
+    private String content;
     private Long categoryId;
     private int views;
-    private Long authorId;
     private String image;
     private OffsetDateTime createdAt;
 
-    public static PostDetailDTO from(Post post){
-        return new PostDetailDTO(
+    public static DetailPostResult from(Post post){
+        return new DetailPostResult(
                 post.getId(),
+                post.getMemberId(),
                 post.getTitle(),
                 post.getContent(),
                 post.getCategoryId(),
                 post.getViews(),
-                post.getMemberId(),
                 post.getImage(),
                 post.getCreatedAt()
         );

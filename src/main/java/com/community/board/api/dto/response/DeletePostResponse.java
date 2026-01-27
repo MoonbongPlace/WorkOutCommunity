@@ -1,6 +1,7 @@
-package com.community.board.api.dto;
+package com.community.board.api.dto.response;
 
-import com.community.board.domain.model.Post;
+import com.community.board.application.dto.DeletePostResult;
+import com.community.board.application.dto.UpdatePostResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,23 +12,20 @@ import java.time.OffsetDateTime;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class PostResponse {
+@AllArgsConstructor
+public class DeletePostResponse {
     private String code;
     private String message;
     private OffsetDateTime timestamp;
-    private PostDetailDTO post;
+    private DeletePostResult post;
 
-    public static PostResponse get(PostDetailDTO postDetailDTO, String message){
-        return new PostResponse(
+    public static DeletePostResponse delete(DeletePostResult deletedPost, String message) {
+        return new UpdatePostResponse(
                 String.valueOf(HttpStatus.OK.value()),
                 message,
                 OffsetDateTime.now(),
-                postDetailDTO
+                deletedPost
         );
     }
-
-//    public static PostResponse create(Post createdPost, String message) {
-//    }
 }

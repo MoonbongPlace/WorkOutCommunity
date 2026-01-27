@@ -1,6 +1,6 @@
-package com.community.board.api.dto;
+package com.community.board.api.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,11 +11,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdatePostRequest {
-    @NotNull
+public class CreatePostRequest {
+
+    @NotBlank
     @Size(max = 255)
     String title;
-    String body;
-    String category;
+    //삭제 예정
+    Long memberId;
+    String content;
+    Long categoryId;
     String image;
 }
