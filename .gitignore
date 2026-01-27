@@ -48,7 +48,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Spring Boot config (secrets)
-application.yml
-application-*.yml
-application-*.yaml
+# Spring Boot secrets
+src/main/resources/application.yml
+src/main/resources/application-*.yml
+src/main/resources/application-*.yaml
+
