@@ -1,5 +1,6 @@
-package com.community.board.api.dto;
+package com.community.board.api.dto.response;
 
+import com.community.board.application.dto.UpdatePostResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,20 +11,20 @@ import java.time.OffsetDateTime;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class PostCreateResponse {
+@AllArgsConstructor
+public class UpdatePostResponse {
     private String code;
     private String message;
     private OffsetDateTime timestamp;
-    private PostCreateResult post;
+    private UpdatePostResult post;
 
-    public static PostCreateResponse create(PostCreateResult createdPost, String message) {
-        return new PostCreateResponse(
+    public static UpdatePostResponse update(UpdatePostResult updatedPost, String message) {
+        return new UpdatePostResponse(
                 String.valueOf(HttpStatus.OK.value()),
                 message,
                 OffsetDateTime.now(),
-                createdPost
+                updatedPost
         );
     }
 }

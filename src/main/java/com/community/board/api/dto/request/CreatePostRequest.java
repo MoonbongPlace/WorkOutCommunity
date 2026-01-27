@@ -1,4 +1,4 @@
-package com.community.board.api.dto;
+package com.community.board.api.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -16,6 +16,7 @@ public class CreatePostRequest {
     @NotBlank
     @Size(max = 255)
     String title;
+    //삭제 예정
     Long memberId;
     String content;
     Long categoryId;

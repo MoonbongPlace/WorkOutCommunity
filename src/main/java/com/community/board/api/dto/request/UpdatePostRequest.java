@@ -1,4 +1,4 @@
-package com.community.board.api.dto;
+package com.community.board.api.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -15,7 +15,7 @@ public class UpdatePostRequest {
     @NotNull
     @Size(max = 255)
     String title;
-    String body;
-    String category;
+    String content;
+    Long categoryId;
     String image;
 }
