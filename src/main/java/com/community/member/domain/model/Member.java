@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 @Entity(name = "Member")
@@ -15,13 +14,13 @@ import java.time.OffsetDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class member {
+public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String member_name;
+    private String memberName;
 
     @Column(nullable = false)
     private String password;
@@ -39,11 +38,11 @@ public class member {
     private String role = "user";
 
     @Column(nullable = false, updatable = false)
-    private OffsetDateTime created_at;
+    private OffsetDateTime createdAt;
 
     @Column
-    private OffsetDateTime updated_at;
+    private OffsetDateTime updatedAt;
 
     @Column
-    private OffsetDateTime deleted_at;
+    private OffsetDateTime deletedAt;
 }
