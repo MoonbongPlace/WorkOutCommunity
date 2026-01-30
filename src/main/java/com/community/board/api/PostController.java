@@ -1,6 +1,5 @@
 package com.community.board.api;
 
-import com.community.board.api.dto.request.DeletePostRequest;
 import com.community.board.api.dto.request.UpdatePostRequest;
 import com.community.board.api.dto.response.DeletePostResponse;
 import com.community.board.api.dto.response.UpdatePostResponse;
