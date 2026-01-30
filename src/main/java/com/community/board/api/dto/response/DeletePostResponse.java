@@ -21,7 +21,7 @@ public class DeletePostResponse {
     private DeletePostResult post;
 
     public static DeletePostResponse delete(DeletePostResult deletedPost, String message) {
-        return new UpdatePostResponse(
+        return new DeletePostResponse(
                 String.valueOf(HttpStatus.OK.value()),
                 message,
                 OffsetDateTime.now(),

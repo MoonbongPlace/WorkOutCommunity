@@ -1,6 +1,6 @@
 package com.community.member.api.dto.response;
 
-import com.community.member.application.dto.UpdatedMemberResult;
+import com.community.member.application.dto.DeletedMemberResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,19 +13,18 @@ import java.time.OffsetDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateMemberResponse {
-
+public class DeleteMemberResponse {
     private String code;
     private String message;
     private OffsetDateTime timestamp;
-    private UpdatedMemberResult updatedMemberResult;
+    private DeletedMemberResult deletedMemberResult;
 
-    public static UpdateMemberResponse from(UpdatedMemberResult updatedMember, String message) {
-        return new UpdateMemberResponse(
+    public static DeleteMemberResponse from(DeletedMemberResult deletedMember, String message) {
+        return new DeleteMemberResponse(
                 String.valueOf(HttpStatus.OK.value()),
                 message,
                 OffsetDateTime.now(),
-                updatedMember
+                deletedMember
         );
     }
 }
