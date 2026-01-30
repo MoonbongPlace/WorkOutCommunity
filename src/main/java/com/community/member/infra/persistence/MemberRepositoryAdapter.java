@@ -1,6 +1,5 @@
 package com.community.member.infra.persistence;
 
-import com.community.board.infra.persistence.PostJpaRepository;
 import com.community.member.domain.model.Member;
 import com.community.member.domain.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,15 +11,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MemberRepositoryAdapter implements MemberRepository {
 
-    private final PostJpaRepository postJpaRepository;
+    private final MemberJpaRepository memberJpaRepository;
 
     @Override
     public Member save(Member member) {
-        return postJpaRepository.save(member);
+        return memberJpaRepository.save(member);
     }
 
     @Override
     public Optional<Member> findById(Long id) {
-        return postJpaRepository.findById(id);
+        return memberJpaRepository.findById(id);
     }
 }
