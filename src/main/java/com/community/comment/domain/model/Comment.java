@@ -20,20 +20,28 @@ public class Comment {
     private Long id;
 
     @Column(nullable = false)
-    private Long member_id;
+    private Long memberId;
 
     @Column(nullable = false)
-    private Long post_id;
+    private Long postId;
 
     @Column
     private String content;
 
     @Column(nullable = false, updatable = false)
-    private OffsetDateTime created_at;
+    private OffsetDateTime createdAt;
 
     @Column
-    private OffsetDateTime updated_at;
+    private OffsetDateTime updatedAt;
 
     @Column
-    private OffsetDateTime deleted_at;
+    private OffsetDateTime deletedAt;
+
+    public Comment (Long memberId, Long postId, String content, OffsetDateTime createdAt)
+    {
+        this.memberId = getMemberId();
+        this.postId = getPostId();
+        this.content = getContent();
+        this.createdAt = getCreatedAt();
+    }
 }
