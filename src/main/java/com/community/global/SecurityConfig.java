@@ -20,8 +20,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // JWT + REST API면 보통 disable
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/signin").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/posts").permitAll()
                         .anyRequest().authenticated()
                 );

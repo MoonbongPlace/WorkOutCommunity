@@ -31,4 +31,6 @@ public class AuthController {
                 .body(SignupResponse.from(memberSignupResult, "회원가입 성공"));
     }
 
+    // 로그인
+
 }
