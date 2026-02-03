@@ -23,6 +23,7 @@ public class AuthService {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         Member member = Member.signup(
+                request.getEmail(),
                 request.getMemberName(),
                 encodedPassword,
                 request.getName(),

@@ -12,6 +12,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SignupRequest {
     @NotNull
+    private String email;
+    @NotNull
     private String memberName;
     @NotNull
     private String password;

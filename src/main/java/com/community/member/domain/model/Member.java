@@ -20,6 +20,9 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
     @Column(nullable = false)
     private String memberName;
 
@@ -49,6 +52,8 @@ public class Member {
 
     public static Member signup(
             @NotNull
+            String email,
+            @NotNull
             String memberName,
             String encodedPassword,
             @NotNull
@@ -58,6 +63,7 @@ public class Member {
             String role,
             OffsetDateTime createdAt) {
         Member member = new Member();
+        member.email = email;
         member.memberName = memberName;
         member.password = encodedPassword;
         member.name = name;
