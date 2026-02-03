@@ -1,6 +1,7 @@
 package com.community.member.domain.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,9 @@ public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Column(nullable = false)
     private String memberName;
@@ -45,4 +49,29 @@ public class Member {
 
     @Column
     private OffsetDateTime deletedAt;
+
+    public static Member signup(
+            @NotNull
+            String email,
+            @NotNull
+            String memberName,
+            String encodedPassword,
+            @NotNull
+            String name,
+            int age,
+            String sex,
+            String role,
+            OffsetDateTime createdAt) {
+        Member member = new Member();
+        member.email = email;
+        member.memberName = memberName;
+        member.password = encodedPassword;
+        member.name = name;
+        member.age = age;
+        member.sex = sex;
+        member.role = role;
+        member.createdAt = createdAt;
+
+        return member;
+    }
 }
