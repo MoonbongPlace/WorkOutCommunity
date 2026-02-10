@@ -22,4 +22,8 @@ public class MemberRepositoryAdapter implements MemberRepository {
     public Optional<Member> findById(Long id) {
         return memberJpaRepository.findById(id);
     }
+
+    public Member findByEmail(String email) {
+        return memberJpaRepository.findByEmail(email);
+    }
 }
