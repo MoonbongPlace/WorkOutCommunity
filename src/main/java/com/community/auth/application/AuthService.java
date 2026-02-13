@@ -76,8 +76,8 @@ public class AuthService {
         return ReissueResponse.from("Bearer", newAccessToken, newRefreshToken, jwtProvider.getAtExpSeconds(), jwtProvider.getRtExpSeconds());
     }
 
-    public void logout(@Valid ReissueRequest request) {
-        Long memberId = jwtProvider.extractMemberId(request.getRefreshToken());
+    public void logout(String refreshTokenRaw) {
+        Long memberId = jwtProvider.extractMemberId(refreshTokenRaw);
         refreshTokenService.revokeAll(memberId);
     }
 }

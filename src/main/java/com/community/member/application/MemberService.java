@@ -29,6 +29,7 @@ public class MemberService {
     public UpdatedMemberResult updateProfile(UpdateMemberRequest request, Long id) {
         Member member = memberRepositoryAdapter.findById(id).orElseThrow();
 
+        // entity 로 로직 이동 예정
         member.setMemberName(request.getMemberName());
         member.setPassword(request.getPassword());
         member.setName(request.getName());
@@ -44,6 +45,7 @@ public class MemberService {
     public DeletedMemberResult withDrawProfile(Long memberId) {
         Member member = memberRepositoryAdapter.findById(memberId).orElseThrow();
 
+        // entity 로 로직 이동 예정
         member.setDeletedAt(OffsetDateTime.now());
 
         Member saved = memberRepositoryAdapter.save(member);

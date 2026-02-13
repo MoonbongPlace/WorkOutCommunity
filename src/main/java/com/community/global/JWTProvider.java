@@ -97,4 +97,8 @@ public class JWTProvider {
     }
 
     public long getAtExpSeconds() { return jwtProperties.accessExpSeconds(); }
+
+    public boolean getCookieSecure() { return jwtProperties.cookieSecure(); }
+
+    public String getCookieSameSite() { return jwtProperties.cookieSameSite(); }
 }

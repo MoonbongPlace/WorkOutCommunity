@@ -6,5 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record JWTProperties (
         String secret,
         long accessExpSeconds,
-        long refreshExpSeconds
+        long refreshExpSeconds,
+        boolean cookieSecure,
+        String cookieSameSite
 ){}
