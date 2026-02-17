@@ -1,6 +1,7 @@
 package com.community.notification.application;
 
 import com.community.notification.domain.model.Notification;
+import com.community.notification.domain.model.NotificationType;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +19,7 @@ public record MyNotificationsResult(List<NotificationItem> notifications,
     public static class NotificationItem {
         private final Long id;
         private final Long postId;
-        private final String type;
+        private final NotificationType type;
         private final String message;
         private final String linkUrl;
         private final boolean isRead;

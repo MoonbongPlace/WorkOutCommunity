@@ -25,7 +25,7 @@ public class CommentController {
         @RequestBody @Valid final CreateCommentRequest request
     ){
         // memberId Principal 에서 꺼내기
-        CreateCommentResult createdComment = commentService.create(request, 0L, postId);
+        CreateCommentResult createdComment = commentService.create(request, 7L, postId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

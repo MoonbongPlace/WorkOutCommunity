@@ -26,7 +26,7 @@ public class NotificationController {
     public ResponseEntity<NotificationResponse> myNotifications(
             @AuthenticationPrincipal CustomUserPrincipal principal,
             Pageable pageable
-            ){
+    ) {
         Long memberId = principal.memberId();
         MyNotificationsResult myNotificationsResult = notificationService.getMyNotifications(memberId, pageable);
 
@@ -41,7 +41,7 @@ public class NotificationController {
     @GetMapping("/unread-count")
     public ResponseEntity<NotificationUnreadCountResponse> unreadCount(
             @AuthenticationPrincipal CustomUserPrincipal principal
-    ){
+    ) {
         Long memberId = principal.memberId();
 
         UnReadCountResult unReadCountResult = notificationService.getUnreadCount(memberId);
@@ -56,7 +56,7 @@ public class NotificationController {
     public ResponseEntity<NotificationReadOneResponse> readOne(
             @AuthenticationPrincipal CustomUserPrincipal principal,
             @PathVariable("notificationId") Long notificationId
-    ){
+    ) {
         Long memberId = principal.memberId();
 
         ReadOneResult readOneResult = notificationService.readNotification(memberId, notificationId);
@@ -71,7 +71,7 @@ public class NotificationController {
     @PatchMapping("/read-all")
     public ResponseEntity<NotificationReadAllResponse> readAll(
             @AuthenticationPrincipal CustomUserPrincipal principal
-    ){
+    ) {
         Long memberId = principal.memberId();
 
         int updated = notificationService.readAllNotification(memberId);
@@ -87,7 +87,7 @@ public class NotificationController {
     public ResponseEntity<NotificationCreateResponse> create(
             @AuthenticationPrincipal CustomUserPrincipal principal,
             @RequestBody @Valid NotificationCreateRequest request
-    ){
+    ) {
         Long senderId = principal.memberId();
         if (senderId == null) {
             throw new CommonException(ResponseCode.MEMBER_NOT_FOUND);

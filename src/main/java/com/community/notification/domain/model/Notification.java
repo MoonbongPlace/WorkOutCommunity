@@ -28,7 +28,7 @@ public class Notification {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String type;
+    private NotificationType type;
 
     @Column(nullable = false)
     private String message;
@@ -57,7 +57,7 @@ public class Notification {
         Notification notification = new Notification();
         notification.setMemberId(receiverId);
         notification.setPostId(request.getPostId());
-        notification.setType(String.valueOf(request.getType()));
+        notification.setType(request.getType());
         notification.setMessage(request.getMessage());
         notification.setLinkUrl(linkUrl);
         notification.setRead(false);
@@ -78,7 +78,7 @@ public class Notification {
         notification.memberId = receiverId;
         notification.senderId = senderId;
         notification.postId = postId;
-        notification.type = String.valueOf(type);
+        notification.type = type;
         notification.message = message;
         notification.linkUrl = linkUrl;
         notification.isRead = false;
