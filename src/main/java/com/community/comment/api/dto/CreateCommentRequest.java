@@ -15,5 +15,4 @@ public class CreateCommentRequest {
     @NotBlank
     @Size(max = 255)
     private String content;
-    private OffsetDateTime createdAt;
 }
