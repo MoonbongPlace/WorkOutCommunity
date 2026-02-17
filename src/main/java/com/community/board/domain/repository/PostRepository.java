@@ -10,4 +10,6 @@ public interface PostRepository {
     Optional<Post> findById(Long id);
     List<Post> findLatest(int size);
     void deleteById(Long id);
+
+    Optional<Long> findAuthorIdByPostId(Long postId);
 }

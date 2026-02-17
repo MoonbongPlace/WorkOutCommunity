@@ -34,4 +34,9 @@ public class PostRepositoryAdapter implements PostRepository {
         public void deleteById(Long id) {
                 postJpaRepository.deleteById(id);
         }
+
+        @Override
+        public Optional<Long> findAuthorIdByPostId(Long postId) {
+                return postJpaRepository.findMemberIdByPostId(postId);
+        }
 }
