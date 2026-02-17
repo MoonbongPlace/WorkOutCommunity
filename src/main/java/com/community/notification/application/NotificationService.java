@@ -1,9 +1,12 @@
 package com.community.notification.application;
 
+import com.community.board.infra.persistence.PostRepositoryAdapter;
+import com.community.global.CommonException;
+import com.community.global.ResponseCode;
 import com.community.notification.api.dto.request.NotificationCreateRequest;
 import com.community.notification.domain.model.Notification;
+import com.community.notification.domain.model.NotificationType;
 import com.community.notification.infra.persistence.NotificationRepositoryAdapter;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +21,7 @@ import java.util.List;
 public class NotificationService {
 
     private final NotificationRepositoryAdapter notificationRepositoryAdapter;
+    private final PostRepositoryAdapter postRepositoryAdapter;
 
     @Transactional(readOnly = true)
     public MyNotificationsResult getMyNotifications(Long memberId, Pageable pageable) {
@@ -70,8 +74,32 @@ public class NotificationService {
         return notificationRepositoryAdapter.markAllRead(memberId, OffsetDateTime.now());
     }
 
-    public NotificationCreateResult createNotification(@Valid NotificationCreateRequest request) {
-        Notification notification = Notification.fromRequest(request);
-        return NotificationCreateResult.of(request);
+    @Transactional
+    public NotificationCreateResult createNotificationFromApi(
+            Long senderId, NotificationCreateRequest request) {
+
+        Long receiverId = postRepositoryAdapter.findAuthorIdByPostId(request.getPostId())
+                .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
+
+        // 자기 자신에게 알림 방지
+        if (receiverId.equals(senderId)) {
+            return NotificationCreateResult.skipped();
+        }
+
+        String linkUrl = "/posts/" + request.getPostId();
+
+        Notification notification = Notification.create(receiverId, senderId, request, linkUrl);
+
+        Notification saved = notificationRepositoryAdapter.save(notification);
+
+        return NotificationCreateResult.of(saved);
+    }
+
+    @Transactional
+    public Long saveNotification(Long receiverId, Long senderId, Long postId,
+                                 NotificationType type, String message, String linkUrl) {
+
+        Notification notification = Notification.of(receiverId, senderId, postId, type, message, linkUrl);
+        return notificationRepositoryAdapter.save(notification).getId();
     }
 }

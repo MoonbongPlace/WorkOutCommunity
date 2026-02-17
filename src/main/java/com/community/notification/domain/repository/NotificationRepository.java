@@ -16,4 +16,6 @@ public interface NotificationRepository {
     Optional<Notification> findById(Long id);
 
     int markAllRead(Long memberId, OffsetDateTime readAt);
+
+    Notification save(Notification notification);
 }

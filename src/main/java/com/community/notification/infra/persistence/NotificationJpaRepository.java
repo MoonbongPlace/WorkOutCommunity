@@ -26,4 +26,5 @@ public interface NotificationJpaRepository extends JpaRepository<Notification, L
     """)
     int markAllRead(@Param("memberId") Long memberId,
                     @Param("readAt") OffsetDateTime readAt);
+
 }

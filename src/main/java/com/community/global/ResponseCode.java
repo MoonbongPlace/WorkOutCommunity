@@ -14,7 +14,8 @@ public enum ResponseCode {
     INVALID_REFRESH_TOKEN("4016",HttpStatus.UNAUTHORIZED , "Refresh 토큰이 유효하지 않습니다." ),
     INVALID_PASSWORD("4015",HttpStatus.UNAUTHORIZED ,"비밀번호가 일치하지 않습니다." ),
     // 수정 예정
-    MEMBER_NOT_FOUND("4014", HttpStatus.UNAUTHORIZED, "회원이 아닙니다." );
+    MEMBER_NOT_FOUND("4014", HttpStatus.UNAUTHORIZED, "회원이 아닙니다." ),
+    POST_NOT_FOUND("4013",HttpStatus.UNAUTHORIZED , "게시글을 찾을 수 없습니다."    );
 
     private final String code;
     private final HttpStatus status;

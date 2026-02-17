@@ -35,4 +35,9 @@ public class NotificationRepositoryAdapter implements NotificationRepository {
     public int markAllRead(Long memberId, OffsetDateTime readAt) {
         return notificationJpaRepository.markAllRead(memberId, readAt);
     }
+
+    @Override
+    public Notification save(Notification notification) {
+        return notificationJpaRepository.save(notification);
+    }
 }

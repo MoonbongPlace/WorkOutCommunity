@@ -6,10 +6,8 @@ import com.community.global.ResponseCode;
 import com.community.notification.api.dto.request.NotificationCreateRequest;
 import com.community.notification.api.dto.response.*;
 import com.community.notification.application.*;
-import com.community.notification.domain.model.Notification;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -90,11 +88,12 @@ public class NotificationController {
             @AuthenticationPrincipal CustomUserPrincipal principal,
             @RequestBody @Valid NotificationCreateRequest request
     ){
-        if (principal.memberId() == null) {
+        Long senderId = principal.memberId();
+        if (senderId == null) {
             throw new CommonException(ResponseCode.MEMBER_NOT_FOUND);
         }
 
-        NotificationCreateResult notificationCreateResult = notificationService.createNotification(request);
+        NotificationCreateResult notificationCreateResult = notificationService.createNotificationFromApi(senderId, request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

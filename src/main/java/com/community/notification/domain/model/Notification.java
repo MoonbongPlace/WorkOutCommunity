@@ -45,11 +45,47 @@ public class Notification {
     @Column(name = "read_at")
     private OffsetDateTime readAt;
 
-    public static Notification fromRequest(NotificationCreateRequest request) {
+    @Column(name = "sender_id", nullable = false)
+    private Long senderId;
+
+    public static Notification create(
+            Long receiverId,
+            Long senderId,
+            NotificationCreateRequest request,
+            String linkUrl
+    ) {
         Notification notification = new Notification();
-        notification
-        return null;
+        notification.setMemberId(receiverId);
+        notification.setPostId(request.getPostId());
+        notification.setType(String.valueOf(request.getType()));
+        notification.setMessage(request.getMessage());
+        notification.setLinkUrl(linkUrl);
+        notification.setRead(false);
+        notification.setCreatedAt(OffsetDateTime.now());
+        notification.setSenderId(senderId);
+        return notification;
     }
+
+    public static Notification of(
+            Long receiverId,
+            Long senderId,
+            Long postId,
+            NotificationType type,
+            String message,
+            String linkUrl
+    ) {
+        Notification notification = new Notification();
+        notification.memberId = receiverId;
+        notification.senderId = senderId;
+        notification.postId = postId;
+        notification.type = String.valueOf(type);
+        notification.message = message;
+        notification.linkUrl = linkUrl;
+        notification.isRead = false;
+        notification.createdAt = OffsetDateTime.now();
+        return notification;
+    }
+
 
     public void markRead() {
         if (!this.isRead) {
