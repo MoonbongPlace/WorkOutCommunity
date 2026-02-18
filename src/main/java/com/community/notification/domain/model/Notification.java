@@ -48,24 +48,6 @@ public class Notification {
     @Column(name = "sender_id", nullable = false)
     private Long senderId;
 
-    public static Notification create(
-            Long receiverId,
-            Long senderId,
-            NotificationCreateRequest request,
-            String linkUrl
-    ) {
-        Notification notification = new Notification();
-        notification.setMemberId(receiverId);
-        notification.setPostId(request.getPostId());
-        notification.setType(request.getType());
-        notification.setMessage(request.getMessage());
-        notification.setLinkUrl(linkUrl);
-        notification.setRead(false);
-        notification.setCreatedAt(OffsetDateTime.now());
-        notification.setSenderId(senderId);
-        return notification;
-    }
-
     public static Notification of(
             Long receiverId,
             Long senderId,
