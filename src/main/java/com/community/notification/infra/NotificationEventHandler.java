@@ -24,7 +24,7 @@ public class NotificationEventHandler {
 
         Long senderId = event.commenterId();
 
-        // 자기 글에 자기 댓글이면 알림 생성 안하는 정책(선택)
+        // 자기 글에 자기 댓글이면 알림 생성 X
         if (receiverId.equals(senderId)) return;
 
         notificationService.saveNotification(

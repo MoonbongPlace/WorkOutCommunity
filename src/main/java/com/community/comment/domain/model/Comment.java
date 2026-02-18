@@ -1,5 +1,6 @@
 package com.community.comment.domain.model;
 
+import com.community.comment.api.dto.CreateCommentRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -37,11 +38,14 @@ public class Comment {
     @Column
     private OffsetDateTime deletedAt;
 
-    public Comment (Long memberId, Long postId, String content, OffsetDateTime createdAt)
-    {
-        this.memberId = getMemberId();
-        this.postId = getPostId();
-        this.content = getContent();
-        this.createdAt = getCreatedAt();
+    // 댓글 생성
+    public static Comment fromRequest(CreateCommentRequest request, Long memberId, Long postId) {
+        Comment comment = new Comment();
+        comment.setMemberId(memberId);
+        comment.setPostId(postId);
+        comment.setContent(request.getContent());
+        comment.setCreatedAt(OffsetDateTime.now());
+
+        return comment;
     }
 }

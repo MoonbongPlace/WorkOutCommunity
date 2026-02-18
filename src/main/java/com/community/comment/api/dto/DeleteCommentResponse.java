@@ -2,11 +2,13 @@ package com.community.comment.api.dto;
 
 import com.community.comment.application.DeleteCommentResult;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 import java.time.OffsetDateTime;
 
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class DeleteCommentResponse {

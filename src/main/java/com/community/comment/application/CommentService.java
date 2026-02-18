@@ -5,13 +5,17 @@ import com.community.board.infra.persistence.PostRepositoryAdapter;
 import com.community.comment.api.dto.CreateCommentRequest;
 import com.community.comment.domain.model.Comment;
 import com.community.comment.infra.persistance.CommentRepositoryAdapter;
+import com.community.global.CommonException;
+import com.community.global.ResponseCode;
 import com.community.member.domain.model.Member;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
 import lombok.RequiredArgsConstructor;
+import org.antlr.v4.runtime.CommonToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.ConcurrentModificationException;
 
 @Service
 @RequiredArgsConstructor
@@ -22,14 +26,15 @@ public class CommentService {
 
     @Transactional
     public CreateCommentResult create(CreateCommentRequest request, Long memberId, Long postId) {
-        Post post = postRepositoryAdapter.findById(postId).orElseThrow();
+        Post post = postRepositoryAdapter.findById(postId)
+                .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
+        // post 관련 refactor 및 fix 사항
+//        if(!postRepositoryAdapter.existsById(postId)){
+//            throw new CommonException(ResponseCode.POST_NOT_FOUND);
+//        }
 
-        Comment comment = new Comment(
-                memberId,
-                postId,
-                request.getContent(),
-                OffsetDateTime.now()
-        );
+        Comment comment = Comment.fromRequest(request, memberId, postId);
+
         Comment saved = commentRepositoryAdapter.save(comment);
 
         return CreateCommentResult.from(saved);
@@ -39,17 +44,19 @@ public class CommentService {
     public DeleteCommentResult delete(Long memberId, Long postId, Long commentId) {
 
         // 댓글 삭제 시 해당 게시글이 존재하는지, 댓글 작성자 본인인지 확인 절차 추가
-        Post post = postRepositoryAdapter.findById(postId).orElseThrow();
-        Member member = memberRepositoryAdapter.findById(memberId).orElseThrow();
+        Post post = postRepositoryAdapter.findById(postId)
+                .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
+        Member member = memberRepositoryAdapter.findById(memberId)
+                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
-        Comment comment = commentRepositoryAdapter.findById(commentId).orElseThrow();
+        Comment comment = commentRepositoryAdapter.findById(commentId)
+                .orElseThrow(() -> new CommonException(ResponseCode.COMMENT_NOT_FOUND));
 
-        // 임시방편
-        if (comment.getDeletedAt()!=null) {
-            throw new RuntimeException();
+        if (comment.getDeletedAt() != null) {
+            return DeleteCommentResult.from(comment);
         }
-        comment.setDeletedAt(OffsetDateTime.now());
 
+        comment.setDeletedAt(OffsetDateTime.now());
         Comment saved = commentRepositoryAdapter.save(comment);
 
         return DeleteCommentResult.from(saved);

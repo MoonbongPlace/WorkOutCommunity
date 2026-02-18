@@ -53,10 +53,10 @@ public class NotificationService {
     public ReadOneResult readNotification(Long memberId, Long id) {
 
         Notification notification = notificationRepositoryAdapter.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + id));
+                .orElseThrow(() -> new CommonException(ResponseCode.NOTIFICATION_NOT_FOUND));
 
         if (!notification.getMemberId().equals(memberId)) {
-            throw new SecurityException("Forbidden");
+            throw new CommonException(ResponseCode.NOTIFICATION_FORBIDDEN);
         }
 
         notification.markRead();
@@ -88,7 +88,9 @@ public class NotificationService {
 
         String linkUrl = "/posts/" + request.getPostId();
 
-        Notification notification = Notification.create(receiverId, senderId, request, linkUrl);
+        Notification notification = Notification.of(
+                receiverId, senderId, request.getPostId(), request.getType(), request.getMessage(), linkUrl
+        );
 
         Notification saved = notificationRepositoryAdapter.save(notification);
 
@@ -96,10 +98,34 @@ public class NotificationService {
     }
 
     @Transactional
-    public Long saveNotification(Long receiverId, Long senderId, Long postId,
+    public void saveNotification(Long receiverId, Long senderId, Long postId,
                                  NotificationType type, String message, String linkUrl) {
 
-        Notification notification = Notification.of(receiverId, senderId, postId, type, message, linkUrl);
-        return notificationRepositoryAdapter.save(notification).getId();
+        if (receiverId == null || senderId == null || postId == null || type == null) {
+            throw new IllegalArgumentException("receiverId/senderId/postId/type must not be null");
+        }
+        if (message == null || message.isBlank()) {
+            throw new IllegalArgumentException("message must not be blank");
+        }
+        // 자기 자신 알람 방지
+        if (receiverId.equals(senderId)) {
+            return;
+        }
+
+        // 링크 url 기본값 설정
+        String finalLinkUrl = (linkUrl == null || linkUrl.isBlank())
+                ? "/posts/" + postId
+                : linkUrl;
+
+        Notification notification = Notification.of(
+                receiverId,
+                senderId,
+                postId,
+                type,
+                message,
+                finalLinkUrl
+        );
+
+        notificationRepositoryAdapter.save(notification);
     }
 }
