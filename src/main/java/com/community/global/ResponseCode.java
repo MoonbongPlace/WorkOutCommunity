@@ -19,7 +19,8 @@ public enum ResponseCode {
     COMMENT_NOT_FOUND("4043", HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
     NOTIFICATION_NOT_FOUND("4044", HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
 
-    NOTIFICATION_FORBIDDEN("4031", HttpStatus.FORBIDDEN, "해당 알림에 접근할 수 없습니다.");
+    NOTIFICATION_FORBIDDEN("4031", HttpStatus.FORBIDDEN, "해당 알림에 접근할 수 없습니다."),
+    MEMBER_ALREADY_DELETED("4032",HttpStatus.FORBIDDEN ,"DELETED 회원 입니다." );
 
     private final String code;
     private final HttpStatus status;

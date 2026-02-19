@@ -1,38 +1,35 @@
-package com.community.member.application.dto;
+package com.community.admin.application;
 
 import com.community.member.domain.model.Member;
-import com.community.member.domain.model.MemberStatus;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.time.OffsetDateTime;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"id", "email", "memberName", "name", "age", "sex", "role", "createdAt", "status"})
-public class DetailMemberResult {
+@JsonPropertyOrder({"id","email","memberName","name","age","sex","role","createdAt"})
+public class AdminMemberListItem {
     private Long id;
     private String email;
     private String memberName;
     private String name;
-    private int age;
+    private Integer age;
     private String sex;
     private String role;
     private OffsetDateTime createdAt;
-    private MemberStatus status;
 
-
-    public static DetailMemberResult from(Member member) {
-        return new DetailMemberResult(
+    public static AdminMemberListItem from(Member member) {
+        return new AdminMemberListItem(
                 member.getId(),
                 member.getEmail(),
-                member.getMemberName(),
+                member.getMemberName(),   // 네 엔티티 필드명에 맞춰
                 member.getName(),
                 member.getAge(),
                 member.getSex(),
                 member.getRole(),
-                member.getCreatedAt(),
-                member.getStatus()
+                member.getCreatedAt()
         );
     }
 }

@@ -10,6 +10,7 @@ import com.community.global.CommonException;
 import com.community.global.JWTProvider;
 import com.community.global.ResponseCode;
 import com.community.member.domain.model.Member;
+import com.community.member.domain.model.MemberStatus;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,8 @@ public class AuthService {
                 request.getAge(),
                 request.getSex(),
                 "user",
-                OffsetDateTime.now()
+                OffsetDateTime.now(),
+                MemberStatus.ACTIVE
         );
 
         Member saved = memberRepositoryAdapter.save(member);

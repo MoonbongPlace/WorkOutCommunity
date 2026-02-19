@@ -3,6 +3,8 @@ package com.community.member.infra.persistence;
 import com.community.member.domain.model.Member;
 import com.community.member.domain.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -25,5 +27,10 @@ public class MemberRepositoryAdapter implements MemberRepository {
 
     public Member findByEmail(String email) {
         return memberJpaRepository.findByEmail(email);
+    }
+
+    @Override
+    public Page<Member> findAll(Pageable pageable) {
+        return memberJpaRepository.findAll(pageable);
     }
 }

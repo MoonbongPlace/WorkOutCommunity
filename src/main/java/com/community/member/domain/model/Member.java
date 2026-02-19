@@ -50,6 +50,9 @@ public class Member {
     @Column
     private OffsetDateTime deletedAt;
 
+    @Column
+    private MemberStatus status;
+
     public static Member signup(
             @NotNull
             String email,
@@ -61,7 +64,8 @@ public class Member {
             int age,
             String sex,
             String role,
-            OffsetDateTime createdAt) {
+            OffsetDateTime createdAt,
+            MemberStatus status) {
         Member member = new Member();
         member.email = email;
         member.memberName = memberName;
@@ -71,7 +75,13 @@ public class Member {
         member.sex = sex;
         member.role = role;
         member.createdAt = createdAt;
+        member.status = status;
 
         return member;
+    }
+
+    public void changeStatus(MemberStatus status) {
+        this.status = status;
+        this.updatedAt = OffsetDateTime.now();
     }
 }
