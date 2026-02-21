@@ -2,6 +2,7 @@ package com.community.admin.api;
 
 import com.community.admin.application.AdminMemberListResult;
 import com.community.admin.application.AdminMemberStatusUpdateResult;
+import com.community.admin.application.AdminPostVisibilityUpdateResult;
 import com.community.admin.application.AdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,5 +40,17 @@ public class AdminController {
     ) {
         AdminMemberStatusUpdateResult result = adminService.updateStatus(memberId, request);
         return ResponseEntity.ok(AdminMemberStatusUpdateResponse.from(result, "회원 상태 변경 성공"));
+    }
+
+    // 관리자 : 게시글 상태 변경
+    @PatchMapping("/posts/{postId}/visibility")
+    public ResponseEntity<AdminPostVisibilityUpdateResponse> updatePostVisibility(
+            @RequestBody @Valid AdminPostVisibilityUpdateRequest request,
+            @PathVariable Long postId
+    ) {
+        AdminPostVisibilityUpdateResult adminPostVisibilityUpdateResult = adminService.hiddenPost(request.getPostVisibility(), postId);
+
+        return ResponseEntity.ok(
+                AdminPostVisibilityUpdateResponse.from(adminPostVisibilityUpdateResult, "게시글 상태 변경 성공"));
     }
 }

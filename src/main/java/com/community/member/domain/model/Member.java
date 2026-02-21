@@ -33,7 +33,7 @@ public class Member {
     private String name;
 
     @Column
-    private int age;
+    private Integer age;
 
     @Column
     private String sex;
@@ -50,7 +50,8 @@ public class Member {
     @Column
     private OffsetDateTime deletedAt;
 
-    @Column
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private MemberStatus status;
 
     public static Member signup(
@@ -61,7 +62,7 @@ public class Member {
             String encodedPassword,
             @NotNull
             String name,
-            int age,
+            Integer age,
             String sex,
             String role,
             OffsetDateTime createdAt,

@@ -11,7 +11,7 @@ public class UpdateMemberRequest {
     private String memberName;
     private String password;
     private String name;
-    private int age;
+    private Integer age;
     private String sex;
 
 }

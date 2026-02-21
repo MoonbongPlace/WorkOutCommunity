@@ -15,7 +15,7 @@ public class DetailMemberResult {
     private String email;
     private String memberName;
     private String name;
-    private int age;
+    private Integer age;
     private String sex;
     private String role;
     private OffsetDateTime createdAt;

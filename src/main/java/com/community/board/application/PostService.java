@@ -9,6 +9,8 @@ import com.community.board.application.dto.UpdatePostResult;
 import com.community.board.domain.model.Post;
 import com.community.board.domain.repository.PostRepository;
 import com.community.board.infra.persistence.PostRepositoryAdapter;
+import com.community.global.CommonException;
+import com.community.global.ResponseCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +36,8 @@ public class PostService {
 
     // 게시글 생성
     @Transactional
-    public CreatePostResult create(final CreatePostRequest request) {
-        Post post = Post.fromRequest(request);
+    public CreatePostResult create(Long memberId, final CreatePostRequest request) {
+        Post post = Post.fromRequest(memberId, request);
 
         Post saved = postRepositoryAdapter.save(post);
 
@@ -45,7 +47,8 @@ public class PostService {
     // 게시글 수정
     @Transactional
     public UpdatePostResult update(final UpdatePostRequest request, Long postId) {
-        Post post = postRepositoryAdapter.findById(postId).orElseThrow();
+        Post post = postRepositoryAdapter.findById(postId)
+                .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
 
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());

@@ -11,10 +11,16 @@ import com.community.board.application.dto.CreatePostResult;
 import com.community.board.application.dto.DeletePostResult;
 import com.community.board.application.dto.DetailPostResult;
 import com.community.board.application.dto.UpdatePostResult;
+import com.community.board.domain.model.Post;
+import com.community.board.infra.persistence.PostRepositoryAdapter;
+import com.community.global.CommonException;
+import com.community.global.CustomUserPrincipal;
+import com.community.global.ResponseCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
 
     private final PostService postService;
+    private final PostRepositoryAdapter postRepositoryAdapter;
 
     // 특정 게시글 상세 조회
     @GetMapping("/{postId}")
@@ -38,9 +45,11 @@ public class PostController {
     //게시글 작성
     @PostMapping
     public ResponseEntity<CreatePostResponse> createPost(
-            @RequestBody @Valid final CreatePostRequest request
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @RequestBody@Valid final CreatePostRequest request
     ){
-        CreatePostResult createdPost = postService.create(request);
+        Long memberId = principal.memberId();
+        CreatePostResult createdPost = postService.create(memberId, request);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -53,9 +62,17 @@ public class PostController {
     // 게시글 수정
     @PutMapping("/{postId}")
     public ResponseEntity<UpdatePostResponse> updatePost(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
             @PathVariable(name = "postId") final Long postId,
             @RequestBody @Valid final UpdatePostRequest request
     ){
+        Long memberId = principal.memberId();
+        Post post = postRepositoryAdapter.findById(postId)
+                .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
+
+        if (!post.getMemberId().equals(memberId)){
+            throw new CommonException(ResponseCode.INVALID_MEMBER);
+        }
         UpdatePostResult updatedPost = postService.update(request, postId);
 
         return ResponseEntity
@@ -69,8 +86,17 @@ public class PostController {
     // 게시글 삭제
     @DeleteMapping("/{postId}")
     public ResponseEntity<DeletePostResponse> deletePost(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
             @PathVariable(name = "postId") final Long postId
     ){
+        Long memberId = principal.memberId();
+        Post post = postRepositoryAdapter.findById(postId)
+                .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
+
+        if (!post.getMemberId().equals(memberId)){
+            throw new CommonException(ResponseCode.INVALID_MEMBER);
+        }
+
         DeletePostResult deletedPost = postService.delete(postId);
 
         return ResponseEntity
