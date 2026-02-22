@@ -1,8 +1,8 @@
 package com.community.notification.infra;
 
 import com.community.board.infra.persistence.PostRepositoryAdapter;
-import com.community.global.CommonException;
-import com.community.global.ResponseCode;
+import com.community.global.exception.CommonException;
+import com.community.global.exception.ResponseCode;
 import com.community.notification.application.NotificationService;
 import com.community.notification.domain.model.NotificationType;
 import lombok.RequiredArgsConstructor;

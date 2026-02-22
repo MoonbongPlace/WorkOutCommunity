@@ -1,4 +1,4 @@
-package com.community.global;
+package com.community.global.jwt;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

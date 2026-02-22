@@ -1,4 +1,4 @@
-package com.community.global;
+package com.community.global.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

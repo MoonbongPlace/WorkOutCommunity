@@ -1,5 +1,8 @@
-package com.community.global;
+package com.community.global.jwt;
 
+import com.community.global.CustomUserPrincipal;
+import com.community.global.exception.CommonException;
+import com.community.global.exception.ResponseCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

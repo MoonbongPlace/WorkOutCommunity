@@ -1,5 +1,7 @@
-package com.community.global;
+package com.community.global.config;
 
+import com.community.global.jwt.JWTProvider;
+import com.community.global.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

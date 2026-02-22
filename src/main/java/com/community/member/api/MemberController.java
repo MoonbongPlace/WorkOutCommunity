@@ -1,5 +1,6 @@
 package com.community.member.api;
 
+import com.community.global.CustomUserPrincipal;
 import com.community.member.api.dto.request.UpdateMemberRequest;
 import com.community.member.api.dto.response.DeleteMemberResponse;
 import com.community.member.api.dto.response.MemberInfoResponse;
@@ -12,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,13 +23,14 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    // Principal 추가 예정
     // 마이페이지 내 정보 조회
     @GetMapping("/me")
-    public ResponseEntity<MemberInfoResponse> showMypage(){
+    public ResponseEntity<MemberInfoResponse> showMypage(
+            @AuthenticationPrincipal CustomUserPrincipal principal
+            ){
 
-        // 임시
-        DetailMemberResult detailMember = memberService.getMemberProfile(0L);
+        Long memberId = principal.memberId();
+        DetailMemberResult detailMember = memberService.getMemberProfile(memberId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(MemberInfoResponse.get(detailMember, "내 정보 조회 성공"));
@@ -36,11 +39,11 @@ public class MemberController {
     // 마이페이지 내 정보 수정
     @PutMapping("/me")
     public ResponseEntity<UpdateMemberResponse> updateMember(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
             @RequestBody @Valid final UpdateMemberRequest request
     ){
-
-        // id 인자 값 삭제 예정
-        UpdatedMemberResult updatedMember = memberService.updateProfile(request, 0L);
+        Long memberId = principal.memberId();
+        UpdatedMemberResult updatedMember = memberService.updateProfile(request, memberId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -48,10 +51,11 @@ public class MemberController {
     }
 
     // 계정 탈퇴
-    @DeleteMapping("/{memberId}")
+    @DeleteMapping("/me")
     public ResponseEntity<DeleteMemberResponse> deleteMember(
-            @PathVariable(name="memberId") final Long memberId
+            @AuthenticationPrincipal CustomUserPrincipal principal
     ){
+        Long memberId = principal.memberId();
         DeletedMemberResult deletedMember = memberService.withDrawProfile(memberId);
 
         return ResponseEntity

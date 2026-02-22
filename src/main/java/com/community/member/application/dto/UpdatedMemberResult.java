@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"id", "memberName", "password", "name", "age", "sex", "role", "createdAt"})
+@JsonPropertyOrder({"id", "memberName", "password", "name", "age", "sex", "role", "updatedAt"})
 public class UpdatedMemberResult {
     private Long id;
     private String memberName;
@@ -18,7 +18,7 @@ public class UpdatedMemberResult {
     private Integer age;
     private String sex;
     private String role;
-    private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
 
     public static UpdatedMemberResult from(Member saved) {
         return new UpdatedMemberResult(
@@ -29,7 +29,7 @@ public class UpdatedMemberResult {
                 saved.getAge(),
                 saved.getSex(),
                 saved.getRole(),
-                saved.getCreatedAt()
+                saved.getUpdatedAt()
         );
     }
 }

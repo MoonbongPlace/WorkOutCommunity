@@ -1,4 +1,4 @@
-package com.community.global;
+package com.community.global.exception;
 
 public class CommonException extends RuntimeException {
     private final ResponseCode code;

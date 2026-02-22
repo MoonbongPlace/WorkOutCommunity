@@ -1,4 +1,4 @@
-package com.community.global;
+package com.community.global.jwt;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
