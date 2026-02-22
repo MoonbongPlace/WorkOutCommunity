@@ -1,8 +1,8 @@
 package com.community.notification.api;
 
-import com.community.global.CommonException;
+import com.community.global.exception.CommonException;
 import com.community.global.CustomUserPrincipal;
-import com.community.global.ResponseCode;
+import com.community.global.exception.ResponseCode;
 import com.community.notification.api.dto.request.NotificationCreateRequest;
 import com.community.notification.api.dto.response.*;
 import com.community.notification.application.*;

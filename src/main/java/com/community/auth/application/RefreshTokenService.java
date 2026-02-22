@@ -1,12 +1,11 @@
 package com.community.auth.application;
 
 import com.community.auth.domain.RefreshToken;
-import com.community.auth.domain.RefreshTokenRepository;
 import com.community.auth.infra.RefreshTokenRepositoryAdapter;
-import com.community.global.CommonException;
-import com.community.global.JWTProvider;
-import com.community.global.ResponseCode;
-import com.community.global.TokenHashUtil;
+import com.community.global.exception.CommonException;
+import com.community.global.jwt.JWTProvider;
+import com.community.global.exception.ResponseCode;
+import com.community.global.jwt.TokenHashUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

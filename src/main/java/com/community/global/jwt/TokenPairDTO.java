@@ -1,4 +1,4 @@
-package com.community.global;
+package com.community.global.jwt;
 
 public record TokenPairDTO (
         String accessToken,

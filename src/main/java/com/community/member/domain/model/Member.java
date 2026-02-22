@@ -1,5 +1,6 @@
 package com.community.member.domain.model;
 
+import com.community.member.api.dto.request.UpdateMemberRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -81,8 +82,22 @@ public class Member {
         return member;
     }
 
+    public void updateMember(UpdateMemberRequest request, String encodedPassword) {
+        this.memberName = request.getMemberName();
+        this.password = encodedPassword;
+        this.name = request.getName();
+        this.age = request.getAge();
+        this.sex = request.getSex();
+        this.updatedAt = OffsetDateTime.now();
+    }
+
     public void changeStatus(MemberStatus status) {
         this.status = status;
         this.updatedAt = OffsetDateTime.now();
+    }
+
+    public void deleteMember() {
+        this.deletedAt = OffsetDateTime.now();
+        this.status = MemberStatus.DELETED;
     }
 }

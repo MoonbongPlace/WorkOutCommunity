@@ -1,5 +1,7 @@
-package com.community.global;
+package com.community.global.jwt;
 
+import com.community.global.exception.CommonException;
+import com.community.global.exception.ResponseCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;

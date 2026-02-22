@@ -1,5 +1,6 @@
-package com.community.global;
+package com.community.global.config;
 
+import com.community.global.jwt.JWTProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 

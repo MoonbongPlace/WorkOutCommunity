@@ -1,7 +1,7 @@
 package com.community.member.application;
 
-import com.community.global.CommonException;
-import com.community.global.ResponseCode;
+import com.community.global.exception.CommonException;
+import com.community.global.exception.ResponseCode;
 import com.community.member.api.dto.request.UpdateMemberRequest;
 import com.community.member.application.dto.DeletedMemberResult;
 import com.community.member.application.dto.DetailMemberResult;
@@ -10,6 +10,7 @@ import com.community.member.domain.model.Member;
 import com.community.member.domain.model.MemberStatus;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,28 +21,25 @@ import java.time.OffsetDateTime;
 public class MemberService {
 
     private final MemberRepositoryAdapter memberRepositoryAdapter;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public DetailMemberResult getMemberProfile(Long id) {
+        Member member = memberRepositoryAdapter.findById(id)
+                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
-        Member member = memberRepositoryAdapter.findById(id).orElseThrow();
         return DetailMemberResult.from(member);
     }
 
     @Transactional
     public UpdatedMemberResult updateProfile(UpdateMemberRequest request, Long id) {
-        Member member = memberRepositoryAdapter.findById(id).orElseThrow();
+        Member member = memberRepositoryAdapter.findById(id)
+                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
-        // entity 로 로직 이동 예정
-        member.setMemberName(request.getMemberName());
-        member.setPassword(request.getPassword());
-        member.setName(request.getName());
-        member.setAge(request.getAge());
-        member.setSex(request.getSex());
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        member.updateMember(request, encodedPassword);
 
-        Member saved = memberRepositoryAdapter.save(member);
-
-        return UpdatedMemberResult.from(saved);
+        return UpdatedMemberResult.from(member);
     }
 
     @Transactional
@@ -49,12 +47,8 @@ public class MemberService {
         Member member = memberRepositoryAdapter.findById(memberId)
                 .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
-        // entity 로 로직 이동 예정
-        member.setDeletedAt(OffsetDateTime.now());
-        member.setStatus(MemberStatus.DELETED);
+        member.deleteMember();
 
-        Member saved = memberRepositoryAdapter.save(member);
-
-        return DeletedMemberResult.from(saved);
+        return DeletedMemberResult.from(member);
     }
 }
