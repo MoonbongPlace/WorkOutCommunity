@@ -1,6 +1,6 @@
-package com.community.comment.api.dto;
+package com.community.comment.api.dto.response;
 
-import com.community.comment.application.CreateCommentResult;
+import com.community.comment.application.dto.CreateCommentResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

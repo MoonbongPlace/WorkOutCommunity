@@ -1,4 +1,4 @@
-package com.community.notification.application;
+package com.community.notification.application.dto;
 
 import com.community.notification.domain.model.Notification;
 import com.community.notification.domain.model.NotificationType;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @JsonPropertyOrder({"notifications", "pageInfo", "unreadCount"})
 public record MyNotificationsResult(List<NotificationItem> notifications,
-                                    com.community.notification.application.MyNotificationsResult.PageInfo pageInfo,
+                                    MyNotificationsResult.PageInfo pageInfo,
                                     long unreadCount) {
     @Getter
     @AllArgsConstructor

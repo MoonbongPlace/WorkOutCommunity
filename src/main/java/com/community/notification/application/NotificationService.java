@@ -4,6 +4,10 @@ import com.community.board.infra.persistence.PostRepositoryAdapter;
 import com.community.global.CommonException;
 import com.community.global.ResponseCode;
 import com.community.notification.api.dto.request.NotificationCreateRequest;
+import com.community.notification.application.dto.MyNotificationsResult;
+import com.community.notification.application.dto.NotificationCreateResult;
+import com.community.notification.application.dto.ReadOneResult;
+import com.community.notification.application.dto.UnReadCountResult;
 import com.community.notification.domain.model.Notification;
 import com.community.notification.domain.model.NotificationType;
 import com.community.notification.infra.persistence.NotificationRepositoryAdapter;
@@ -88,8 +92,12 @@ public class NotificationService {
 
         String linkUrl = "/posts/" + request.getPostId();
 
-        Notification notification = Notification.of(
-                receiverId, senderId, request.getPostId(), request.getType(), request.getMessage(), linkUrl
+        Notification notification = Notification.createComment(
+                receiverId,
+                senderId,
+                request.getPostId(),
+                request.getMessage(),
+                linkUrl
         );
 
         Notification saved = notificationRepositoryAdapter.save(notification);
@@ -117,11 +125,10 @@ public class NotificationService {
                 ? "/posts/" + postId
                 : linkUrl;
 
-        Notification notification = Notification.of(
+        Notification notification = Notification.createComment(
                 receiverId,
                 senderId,
                 postId,
-                type,
                 message,
                 finalLinkUrl
         );

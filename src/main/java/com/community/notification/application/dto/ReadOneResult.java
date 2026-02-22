@@ -1,4 +1,4 @@
-package com.community.notification.application;
+package com.community.notification.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;

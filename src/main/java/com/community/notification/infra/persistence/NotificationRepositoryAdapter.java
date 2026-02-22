@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -39,5 +40,10 @@ public class NotificationRepositoryAdapter implements NotificationRepository {
     @Override
     public Notification save(Notification notification) {
         return notificationJpaRepository.save(notification);
+    }
+
+    @Override
+    public void saveAll(List<Notification> notifications) {
+        notificationJpaRepository.saveAll(notifications);
     }
 }

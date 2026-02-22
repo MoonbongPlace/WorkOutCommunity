@@ -39,24 +39,40 @@ public class Post {
     @Column(name="created_at", updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name="updated_at", updatable = false)
+    @Column(name="updated_at")
     private OffsetDateTime updatedAt;
 
     @Column(name="deleted_at", updatable = false)
     private OffsetDateTime deletedAt;
 
-    public static Post fromRequest(CreatePostRequest request) {
+    @Enumerated(EnumType.STRING)
+    @Column(name="visibility", nullable = false)
+    private PostVisibility postVisibility;
+
+    public static Post fromRequest(Long memberId, CreatePostRequest request) {
         Post post = new Post();
         post.setTitle(request.getTitle());
         // 삭제 예정
-        post.setMemberId(request.getMemberId());
+        post.setMemberId(memberId);
         post.setContent(request.getContent());
         post.setCategoryId(request.getCategoryId());
         post.setImage(request.getImage());
+        post.setPostVisibility(PostVisibility.VISIBLE);
+        post.setCreatedAt(OffsetDateTime.now());
         return post;
     }
 
     public void increaseViews() {
         this.views++;
+    }
+
+    public void hide() {
+        this.postVisibility = PostVisibility.HIDDEN;
+        this.setUpdatedAt(OffsetDateTime.now());
+    }
+
+    public void show() {
+        this.postVisibility = PostVisibility.VISIBLE;
+        this.setUpdatedAt(OffsetDateTime.now());
     }
 }

@@ -1,10 +1,9 @@
-package com.community.comment.application;
+package com.community.comment.application.dto;
 
 import com.community.comment.domain.model.Comment;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
 

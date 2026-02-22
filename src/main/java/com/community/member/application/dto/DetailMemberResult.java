@@ -1,6 +1,7 @@
 package com.community.member.application.dto;
 
 import com.community.member.domain.model.Member;
+import com.community.member.domain.model.MemberStatus;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
 
@@ -8,16 +9,17 @@ import java.time.OffsetDateTime;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"id", "email", "memberName", "name", "age", "sex", "role", "createdAt"})
+@JsonPropertyOrder({"id", "email", "memberName", "name", "age", "sex", "role", "createdAt", "status"})
 public class DetailMemberResult {
     private Long id;
     private String email;
     private String memberName;
     private String name;
-    private int age;
+    private Integer age;
     private String sex;
     private String role;
     private OffsetDateTime createdAt;
+    private MemberStatus status;
 
 
     public static DetailMemberResult from(Member member) {
@@ -29,7 +31,8 @@ public class DetailMemberResult {
                 member.getAge(),
                 member.getSex(),
                 member.getRole(),
-                member.getCreatedAt()
+                member.getCreatedAt(),
+                member.getStatus()
         );
     }
 }

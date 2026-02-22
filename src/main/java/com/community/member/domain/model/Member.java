@@ -33,7 +33,7 @@ public class Member {
     private String name;
 
     @Column
-    private int age;
+    private Integer age;
 
     @Column
     private String sex;
@@ -50,6 +50,10 @@ public class Member {
     @Column
     private OffsetDateTime deletedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MemberStatus status;
+
     public static Member signup(
             @NotNull
             String email,
@@ -58,10 +62,11 @@ public class Member {
             String encodedPassword,
             @NotNull
             String name,
-            int age,
+            Integer age,
             String sex,
             String role,
-            OffsetDateTime createdAt) {
+            OffsetDateTime createdAt,
+            MemberStatus status) {
         Member member = new Member();
         member.email = email;
         member.memberName = memberName;
@@ -71,7 +76,13 @@ public class Member {
         member.sex = sex;
         member.role = role;
         member.createdAt = createdAt;
+        member.status = status;
 
         return member;
+    }
+
+    public void changeStatus(MemberStatus status) {
+        this.status = status;
+        this.updatedAt = OffsetDateTime.now();
     }
 }

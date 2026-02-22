@@ -1,8 +1,6 @@
 package com.community.notification.domain.model;
 
-import com.community.notification.api.dto.request.NotificationCreateRequest;
 import jakarta.persistence.*;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +21,7 @@ public class Notification {
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
-    @Column(name = "post_id", nullable = false)
+    @Column(name = "post_id")
     private Long postId;
 
     @Enumerated(EnumType.STRING)
@@ -48,8 +46,43 @@ public class Notification {
     @Column(name = "sender_id", nullable = false)
     private Long senderId;
 
-    public static Notification of(
+    // 댓글 알림
+    public static Notification createComment(
             Long receiverId,
+            Long senderId,
+            Long postId,
+            String message,
+            String linkUrl
+    ) {
+        return create(
+                receiverId,
+                senderId,
+                postId,
+                NotificationType.COMMENT,
+                message,
+                linkUrl
+        );
+    }
+
+    // 브로드캐스트 알림
+    public static Notification createBroadcast(
+            Long receiverId,
+            Long adminId,
+            String message,
+            String linkUrl
+    ) {
+        return create(
+                receiverId,
+                adminId,
+                null,
+                NotificationType.BROADCAST,
+                message,
+                linkUrl
+        );
+    }
+
+    public static Notification create(
+            Long memberId,
             Long senderId,
             Long postId,
             NotificationType type,
@@ -57,13 +90,14 @@ public class Notification {
             String linkUrl
     ) {
         Notification notification = new Notification();
-        notification.memberId = receiverId;
+        notification.memberId = memberId;
         notification.senderId = senderId;
         notification.postId = postId;
         notification.type = type;
         notification.message = message;
         notification.linkUrl = linkUrl;
         notification.isRead = false;
+        notification.readAt = null;
         notification.createdAt = OffsetDateTime.now();
         return notification;
     }

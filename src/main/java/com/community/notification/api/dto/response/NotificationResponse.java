@@ -1,6 +1,6 @@
 package com.community.notification.api.dto.response;
 
-import com.community.notification.application.MyNotificationsResult;
+import com.community.notification.application.dto.MyNotificationsResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

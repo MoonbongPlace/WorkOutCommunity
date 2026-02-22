@@ -16,8 +16,6 @@ public class CreatePostRequest {
     @NotBlank
     @Size(max = 255)
     String title;
-    //삭제 예정
-    Long memberId;
     String content;
     Long categoryId;
     String image;

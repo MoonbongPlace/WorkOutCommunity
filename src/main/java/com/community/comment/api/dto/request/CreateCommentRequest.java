@@ -1,10 +1,8 @@
-package com.community.comment.api.dto;
+package com.community.comment.api.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-
-import java.time.OffsetDateTime;
 
 @Getter
 @Setter

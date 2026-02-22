@@ -1,9 +1,12 @@
 package com.community.board.infra.persistence;
 
 import com.community.board.domain.model.Post;
+import com.community.board.domain.model.PostVisibility;
 import com.community.board.domain.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -38,5 +41,21 @@ public class PostRepositoryAdapter implements PostRepository {
         @Override
         public Optional<Long> findAuthorIdByPostId(Long postId) {
                 return postJpaRepository.findMemberIdByPostId(postId);
+        }
+
+
+        @Override
+        public Optional<Post> findActiveVisibleById(Long postId) {
+                return postJpaRepository.findActiveVisibleById(postId);
+        }
+
+        @Override
+        public Page<Post> findAllActiveByVisibility( Pageable pageable) {
+                return postJpaRepository.findAllActiveByVisibility(PostVisibility.VISIBLE,pageable);
+        }
+
+        @Override
+        public Page<Post> findAll(Pageable pageable) {
+                return postJpaRepository.findAll(pageable);
         }
 }
