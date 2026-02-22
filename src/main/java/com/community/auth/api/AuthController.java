@@ -10,7 +10,6 @@ import com.community.auth.api.dto.response.SignupResponse;
 import com.community.auth.application.AuthService;
 import com.community.auth.application.dto.MemberSigninResult;
 import com.community.auth.application.dto.MemberSignupResult;
-import com.community.global.jwt.JWTProvider;
 import com.community.global.jwt.RefreshTokenCookieManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,8 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -30,7 +27,6 @@ import java.util.Optional;
 public class AuthController {
 
     private final AuthService authService;
-    private final JWTProvider jwtProvider;
     private final RefreshTokenCookieManager refreshTokenCookieManager;
 
     // 회원가입
@@ -60,6 +56,7 @@ public class AuthController {
                 .body(SigninResponse.from(memberSigninResult, "로그인 성공"));
     }
 
+    // 토큰 재발행
     @PostMapping("/reissue")
     public ResponseEntity<ReissueResponse> reissue(
             @RequestBody @Valid ReissueRequest request,
@@ -80,12 +77,8 @@ public class AuthController {
 
         refreshTokenCookieManager.deleteRefreshTokenCookie(response);
 
-        Optional<String> rtOpt = refreshTokenCookieManager.getRefreshTokenFromCookie(request);
-        log.info("[LOGOUT] refreshToken cookie present? {}", rtOpt.isPresent());
-        rtOpt.ifPresent(rt -> log.info("[LOGOUT] rt length={}", rt.length()));
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(LogoutResponse.from("로그아웃 성공"));
     }
-
 }

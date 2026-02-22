@@ -2,6 +2,7 @@ package com.community.global.config;
 
 import com.community.global.jwt.JWTProvider;
 import com.community.global.jwt.JwtAuthenticationFilter;
+import com.community.member.infra.persistence.MemberRepositoryAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JWTProvider jwtProvider;
+    private final MemberRepositoryAdapter memberRepositoryAdapter;
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtProvider, memberRepositoryAdapter);
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -34,7 +41,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 // JWT 로 인증 Authentication 세팅
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider),
+                .addFilterBefore(jwtAuthenticationFilter(),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

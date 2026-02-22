@@ -13,6 +13,7 @@ public enum ResponseCode {
     TOKEN_INVALID("4017", HttpStatus.UNAUTHORIZED, "토큰이 유효하지 않습니다."),
     INVALID_REFRESH_TOKEN("4016", HttpStatus.UNAUTHORIZED, "Refresh 토큰이 유효하지 않습니다."),
     INVALID_PASSWORD("4015", HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."), // 유지 or 400으로 변경
+    UNAUTHORIZED("4010", HttpStatus.UNAUTHORIZED, "권한이 없습니다."),
 
     MEMBER_NOT_FOUND("4041", HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
     POST_NOT_FOUND("4042", HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
