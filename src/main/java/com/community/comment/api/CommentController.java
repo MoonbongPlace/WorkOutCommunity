@@ -1,11 +1,11 @@
 package com.community.comment.api;
 
-import com.community.comment.api.dto.CreateCommentRequest;
-import com.community.comment.api.dto.CreateCommentResponse;
-import com.community.comment.api.dto.DeleteCommentResponse;
+import com.community.comment.api.dto.request.CreateCommentRequest;
+import com.community.comment.api.dto.response.CreateCommentResponse;
+import com.community.comment.api.dto.response.DeleteCommentResponse;
 import com.community.comment.application.CommentService;
-import com.community.comment.application.CreateCommentResult;
-import com.community.comment.application.DeleteCommentResult;
+import com.community.comment.application.dto.CreateCommentResult;
+import com.community.comment.application.dto.DeleteCommentResult;
 import com.community.global.CustomUserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

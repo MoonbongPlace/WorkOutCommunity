@@ -1,4 +1,4 @@
-package com.community.admin.application;
+package com.community.admin.application.dto;
 
 import com.community.member.domain.model.Member;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -24,7 +24,7 @@ public class AdminMemberListItem {
         return new AdminMemberListItem(
                 member.getId(),
                 member.getEmail(),
-                member.getMemberName(),   // 네 엔티티 필드명에 맞춰
+                member.getMemberName(),
                 member.getName(),
                 member.getAge(),
                 member.getSex(),

@@ -1,4 +1,4 @@
-package com.community.admin.application;
+package com.community.admin.application.dto;
 
 import com.community.member.domain.model.Member;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

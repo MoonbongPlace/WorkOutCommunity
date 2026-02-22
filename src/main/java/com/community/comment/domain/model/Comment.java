@@ -1,6 +1,6 @@
 package com.community.comment.domain.model;
 
-import com.community.comment.api.dto.CreateCommentRequest;
+import com.community.comment.api.dto.request.CreateCommentRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

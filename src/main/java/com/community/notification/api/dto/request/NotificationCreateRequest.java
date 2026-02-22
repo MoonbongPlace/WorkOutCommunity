@@ -15,8 +15,6 @@ import lombok.Setter;
 public class NotificationCreateRequest {
     @NotNull
     private Long postId;
-    @NotNull
-    private NotificationType type;
     @NotBlank
     private String message;
 }

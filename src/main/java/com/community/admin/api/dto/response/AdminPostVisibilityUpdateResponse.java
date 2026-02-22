@@ -1,6 +1,6 @@
-package com.community.admin.api;
+package com.community.admin.api.dto.response;
 
-import com.community.admin.application.AdminPostVisibilityUpdateResult;
+import com.community.admin.application.dto.AdminPostVisibilityUpdateResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

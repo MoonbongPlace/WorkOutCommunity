@@ -2,7 +2,9 @@ package com.community.comment.application;
 
 import com.community.board.domain.model.Post;
 import com.community.board.infra.persistence.PostRepositoryAdapter;
-import com.community.comment.api.dto.CreateCommentRequest;
+import com.community.comment.api.dto.request.CreateCommentRequest;
+import com.community.comment.application.dto.CreateCommentResult;
+import com.community.comment.application.dto.DeleteCommentResult;
 import com.community.comment.domain.model.Comment;
 import com.community.comment.infra.persistance.CommentRepositoryAdapter;
 import com.community.global.CommonException;
@@ -10,12 +12,10 @@ import com.community.global.ResponseCode;
 import com.community.member.domain.model.Member;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
 import lombok.RequiredArgsConstructor;
-import org.antlr.v4.runtime.CommonToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.ConcurrentModificationException;
 
 @Service
 @RequiredArgsConstructor

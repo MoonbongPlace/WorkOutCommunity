@@ -1,9 +1,7 @@
-package com.community.notification.application;
+package com.community.notification.application.dto;
 
-import com.community.notification.api.dto.request.NotificationCreateRequest;
 import com.community.notification.domain.model.Notification;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

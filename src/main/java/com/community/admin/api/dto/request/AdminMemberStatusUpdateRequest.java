@@ -1,4 +1,4 @@
-package com.community.admin.api;
+package com.community.admin.api.dto.request;
 
 import com.community.member.domain.model.MemberStatus;
 import jakarta.validation.constraints.NotNull;

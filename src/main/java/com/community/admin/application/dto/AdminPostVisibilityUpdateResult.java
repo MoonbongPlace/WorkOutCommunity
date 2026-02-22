@@ -1,4 +1,4 @@
-package com.community.admin.application;
+package com.community.admin.application.dto;
 
 import com.community.board.domain.model.Post;
 import com.community.board.domain.model.PostVisibility;

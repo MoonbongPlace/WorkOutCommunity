@@ -1,6 +1,6 @@
-package com.community.comment.api.dto;
+package com.community.comment.api.dto.response;
 
-import com.community.comment.application.DeleteCommentResult;
+import com.community.comment.application.dto.DeleteCommentResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

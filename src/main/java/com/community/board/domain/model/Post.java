@@ -58,6 +58,7 @@ public class Post {
         post.setCategoryId(request.getCategoryId());
         post.setImage(request.getImage());
         post.setPostVisibility(PostVisibility.VISIBLE);
+        post.setCreatedAt(OffsetDateTime.now());
         return post;
     }
 
