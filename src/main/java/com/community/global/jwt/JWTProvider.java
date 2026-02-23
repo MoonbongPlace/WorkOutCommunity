@@ -21,10 +21,10 @@ public class JWTProvider {
     private final SecretKey key;
 
     public JWTProvider(JWTProperties jwtProperties) {
-
         this.jwtProperties = jwtProperties;
         this.key = Keys.hmacShaKeyFor(jwtProperties.secret().getBytes(StandardCharsets.UTF_8));
     }
+
     public TokenPairDTO issueTokenPair(Long memberId, String role){
         String at = issueAccessToken(memberId, role);
         String rt = issueRefreshToken(memberId);
@@ -70,7 +70,7 @@ public class JWTProvider {
             // exp 만료 시 예외 발생
         } catch (ExpiredJwtException e) {
             throw new CommonException(ResponseCode.TOKEN_EXPIRED);
-        } catch(SecurityException | UnsupportedJwtException | IllegalArgumentException e){
+        } catch (JwtException | IllegalArgumentException e){
             throw new CommonException(ResponseCode.TOKEN_INVALID);
         }
     }
@@ -103,4 +103,7 @@ public class JWTProvider {
     public boolean getCookieSecure() { return jwtProperties.cookieSecure(); }
 
     public String getCookieSameSite() { return jwtProperties.cookieSameSite(); }
+
+    public void validateAccessToken(String token) {
+    }
 }

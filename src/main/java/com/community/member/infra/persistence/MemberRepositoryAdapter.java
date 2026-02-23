@@ -40,4 +40,14 @@ public class MemberRepositoryAdapter implements MemberRepository {
     public List<Long> findAllActiveMemberIds() {
         return memberJpaRepository.findAllActiveMemberIds(MemberStatus.ACTIVE);
     }
+
+    @Override
+    public Optional<Member> findActiveByEmail(String email) {
+        return memberJpaRepository.findActiveByEmail(email, MemberStatus.DELETED);
+    }
+
+    @Override
+    public Optional<Member> findActiveById(Long memberId) {
+        return memberJpaRepository.findByIdAndStatusNotAndDeletedAtIsNull(memberId, MemberStatus.DELETED);
+    }
 }

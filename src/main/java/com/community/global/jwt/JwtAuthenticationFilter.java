@@ -3,6 +3,8 @@ package com.community.global.jwt;
 import com.community.global.CustomUserPrincipal;
 import com.community.global.exception.CommonException;
 import com.community.global.exception.ResponseCode;
+import com.community.member.domain.model.Member;
+import com.community.member.infra.persistence.MemberRepositoryAdapter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +24,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JWTProvider jwtProvider;
+    private final MemberRepositoryAdapter memberRepositoryAdapter;
 
     @Override
     protected void doFilterInternal(
@@ -36,15 +39,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = resolveBearerToken(request);
 
         // permitAll 엔드포인트는 토큰 없이도 통과
-        if (token==null){
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        try{
-            Long memberId = jwtProvider.extractMemberId(token);
-            String role = jwtProvider.extractRole(token);
+        try {
+            // 토큰 검증
+            jwtProvider.validateAccessToken(token);
 
+            Long memberId = jwtProvider.extractMemberId(token);
+
+            // 활성 회원 검증(요청 인증 단계)
+            memberRepositoryAdapter.findActiveById(memberId)
+                    .orElseThrow(() -> new CommonException(ResponseCode.UNAUTHORIZED));
+
+            // 권한 검증
+            String role = jwtProvider.extractRole(token);
             String authority = "ROLE_" + role.toUpperCase(); // ROLE_USER / ROLE_ADMIN
             List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(authority));
 
@@ -56,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // SecurityContextHolder 에 세팅. 현재 요청 스레드에서의 로그인 사용자 결정.
             // Controller 에서 Authentication, @AuthenticationPrincipal 로 꺼낼 수 있음.
             SecurityContextHolder.getContext().setAuthentication(auth);
-        } catch(CommonException e) {
+        } catch (CommonException e) {
             SecurityContextHolder.clearContext();
             writeUnauthorized(response, e.code());
             return;
@@ -74,9 +85,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String resolveBearerToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
-        if(header == null) return null;
+        if (header == null) return null;
 
-        if (header.startsWith("Bearer ")){
+        if (header.startsWith("Bearer ")) {
             return header.substring(7);
         }
         return null;

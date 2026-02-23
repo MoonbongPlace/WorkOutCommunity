@@ -52,7 +52,8 @@ public class AuthService {
 
     @Transactional
     public MemberSigninResult signin(@Valid SigninRequest request)  {
-        Member member = memberRepositoryAdapter.findByEmail(request.getEmail());
+        Member member = memberRepositoryAdapter.findActiveByEmail(request.getEmail())
+                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
         if(!passwordEncoder.matches(request.getPassword(), member.getPassword())){
             throw new CommonException(ResponseCode.INVALID_PASSWORD);
