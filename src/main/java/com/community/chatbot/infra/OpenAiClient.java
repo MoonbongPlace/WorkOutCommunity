@@ -53,7 +53,6 @@ public class OpenAiClient {
             for (var c : item.content()) {
                 if (c == null) continue;
 
-                // Responses API 텍스트는 보통 output_text로 내려옴
                 if ("output_text".equals(c.type()) && c.text() != null) {
                     sb.append(c.text());
                 }

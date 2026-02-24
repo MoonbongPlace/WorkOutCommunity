@@ -1,5 +1,8 @@
 package com.community.chatbot.api;
 
+import com.community.chatbot.api.dto.request.ChatMessageRequest;
+import com.community.chatbot.api.dto.response.ChatHistoryResponse;
+import com.community.chatbot.api.dto.response.ChatMessageResponse;
 import com.community.chatbot.application.AiChatService;
 import com.community.global.CustomUserPrincipal;
 import jakarta.validation.Valid;

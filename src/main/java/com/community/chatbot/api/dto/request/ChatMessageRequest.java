@@ -1,4 +1,4 @@
-package com.community.chatbot.api;
+package com.community.chatbot.api.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 

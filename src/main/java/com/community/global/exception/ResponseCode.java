@@ -19,6 +19,8 @@ public enum ResponseCode {
     POST_NOT_FOUND("4042", HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
     COMMENT_NOT_FOUND("4043", HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
     NOTIFICATION_NOT_FOUND("4044", HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
+    EXERCISE_NOT_FOUND("4045",HttpStatus.NOT_FOUND ,"운동이 존재하지 않습니다." ),
+    WORKOUT_LOG_NOT_FOUND("4046", HttpStatus.NOT_FOUND, "운동 기록을 찾을 수 없습니다."),
 
     NOTIFICATION_FORBIDDEN("4031", HttpStatus.FORBIDDEN, "해당 알림에 접근할 수 없습니다."),
     MEMBER_ALREADY_DELETED("4032",HttpStatus.FORBIDDEN ,"DELETED 회원 입니다." ),

@@ -1,4 +1,4 @@
-package com.community.chatbot.api;
+package com.community.chatbot.api.dto.response;
 
 import com.community.chatbot.domain.model.ChatRole;
 
