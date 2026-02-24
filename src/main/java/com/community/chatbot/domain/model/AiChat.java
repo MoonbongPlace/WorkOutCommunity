@@ -27,16 +27,16 @@ public class AiChat {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-//    @Column(name = "updated_at", nullable = false)
-//    private OffsetDateTime updatedAt;
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 
     public AiChat(Long memberId) {
         this.memberId = memberId;
         this.createdAt = OffsetDateTime.now();
-//        this.updatedAt = OffsetDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 
-//    public void touch() {
-//        this.updatedAt = OffsetDateTime.now();
-//    }
+    public void touch() {
+        this.updatedAt = OffsetDateTime.now();
+    }
 }

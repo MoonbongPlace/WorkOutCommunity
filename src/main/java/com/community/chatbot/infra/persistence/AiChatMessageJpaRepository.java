@@ -1,5 +1,6 @@
 package com.community.chatbot.infra.persistence;
 
+import com.community.chatbot.domain.model.AiChat;
 import com.community.chatbot.domain.model.AiChatMessage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,5 +15,7 @@ public interface AiChatMessageJpaRepository extends JpaRepository<AiChatMessage,
         where m.chat.id = :chatId
         order by m.createdAt desc
         """)
-    List<AiChatMessage> findRecentMessages(@Param("chatId") Long chatId, Pageable pageable);
+    List<AiChatMessage> findRecentByChatId(@Param("chatId") Long chatId, Pageable pageable);
+
+    Long chat(AiChat chat);
 }
