@@ -12,5 +12,5 @@ public interface ExerciseRepository {
 
     List<Exercise> findAllById(Collection<Long> ids);
 
-    List<Exercise> findTop5ByNameContainingIgnoreCase(String name);
+    List<Exercise> findTop5ByNameContainingIgnoreCase(String keyword);
 }

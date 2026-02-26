@@ -31,8 +31,8 @@ public class ExerciseRepositoryAdapter implements ExerciseRepository {
     }
 
     @Override
-    public List<Exercise> findTop5ByNameContainingIgnoreCase(String name) {
-        return exerciseJpaRepository.findTop5ByNameContainingIgnoreCase(name);
+    public List<Exercise> findTop5ByNameContainingIgnoreCase(String keyword) {
+        return exerciseJpaRepository.findTop5ByNameContainingIgnoreCase(keyword);
     }
 
 }

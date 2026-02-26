@@ -31,4 +31,16 @@ public class LlmResponseParser {
         }
         throw new IllegalArgumentException("JSON not found");
     }
+
+    public String stripCodeFence(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+
+        // ```json ... ``` 또는 ``` ... ```
+        if (t.startsWith("```")) {
+            t = t.replaceFirst("^```[a-zA-Z]*\\s*", ""); // 시작 ```json 제거
+            t = t.replaceFirst("\\s*```\\s*$", "");      // 끝 ``` 제거
+        }
+        return t.trim();
+    }
 }

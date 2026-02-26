@@ -11,5 +11,5 @@ public interface ExerciseJpaRepository extends JpaRepository<Exercise, Long> {
 
     List<Exercise> findTop5ByNameContainingIgnoreCaseOrderByNameAsc(String name);
 
-    List<Exercise> findTop5ByNameContainingIgnoreCase(String name);
+    List<Exercise> findTop5ByNameContainingIgnoreCase(String keyword);
 }

@@ -2,14 +2,14 @@
 -- Generated from 운동데이터.txt
 
 -- Upsert seed
-INSERT INTO exercise (name, body_parts, equipment_tags, difficulty, description)
+INSERT INTO exercises (name, body_parts, equipment_tags, difficulty, description)
 VALUES
-('랫풀다운', '["등"]'::jsonb, '["머신"]'::jsonb, 'medium', '광배근을 키우는 머신 운동.'),
+('랫풀 다운', '["등"]'::jsonb, '["머신"]'::jsonb, 'medium', '광배근을 키우는 머신 운동.'),
 ('시티드 케이블 로우', '["등"]'::jsonb, '["머신"]'::jsonb, 'medium', '머신 등운동.'),
 ('케이블 암 풀다운', '["등"]'::jsonb, '["머신"]'::jsonb, 'hard', '등운동.'),
 ('맥그립 랫풀다운', '["등"]'::jsonb, '["머신"]'::jsonb, 'easy', '등운동.'),
 ('바벨 로우', '["등"]'::jsonb, '["바벨"]'::jsonb, 'hard', '운동.'),
-('T-bar 로우', '["등"]'::jsonb, '["바벨", "머신"]'::jsonb, 'hard', '등운동'),
+('T바 로우', '["등"]'::jsonb, '["바벨", "머신"]'::jsonb, 'hard', '등운동'),
 ('시티드 로우 머신', '["등"]'::jsonb, '["머신"]'::jsonb, 'easy', '등운동'),
 ('루마니안 데드리프트', '["등"]'::jsonb, '["바벨"]'::jsonb, 'hard', '등운동'),
 ('하이 로우 머신', '["등"]'::jsonb, '["머신"]'::jsonb, 'easy', '등운동.'),

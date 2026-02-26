@@ -42,10 +42,6 @@ public class WorkOutLog {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    // 기존 exercises varchar는 v1 이후 사용 금지(추후 drop).
-    @Column(name = "exercises")
-    private String legacyExercises;
-
     @OneToMany(mappedBy = "log", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("orderSeq ASC")
     private final List<WorkOutLogItem> items = new ArrayList<>();
