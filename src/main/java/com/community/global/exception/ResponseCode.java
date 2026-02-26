@@ -25,7 +25,9 @@ public enum ResponseCode {
     NOTIFICATION_FORBIDDEN("4031", HttpStatus.FORBIDDEN, "해당 알림에 접근할 수 없습니다."),
     MEMBER_ALREADY_DELETED("4032",HttpStatus.FORBIDDEN ,"DELETED 회원 입니다." ),
     POST_ALREADY_DELETED("4033",HttpStatus.FORBIDDEN ,"DELETED 게시글 입니다." ),
-    INVALID_MEMBER("4033",HttpStatus.FORBIDDEN ,"작성자과 ID가 일치하지 않습니다. " );
+    INVALID_MEMBER("4033",HttpStatus.FORBIDDEN ,"작성자과 ID가 일치하지 않습니다. " ),
+
+    WORK_OUT_LOG_ALREADY_EXIST("4091",HttpStatus.CONFLICT ,"이미 운동 일지가 존재합니다." );
 
     private final String code;
     private final HttpStatus status;

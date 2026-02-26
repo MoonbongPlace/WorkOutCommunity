@@ -35,4 +35,9 @@ public class ExerciseRepositoryAdapter implements ExerciseRepository {
         return exerciseJpaRepository.findTop5ByNameContainingIgnoreCase(keyword);
     }
 
+    @Override
+    public Optional<Exercise> findById(Long exerciseId) {
+        return exerciseJpaRepository.findById(exerciseId);
+    }
+
 }

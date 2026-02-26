@@ -14,7 +14,6 @@ import java.time.OffsetDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
 public class WorkOutLogItem {
 
     @Id
@@ -50,8 +49,35 @@ public class WorkOutLogItem {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+
+    public static WorkOutLogItem create(
+            Exercise exercise,
+            int orderSeq,
+            int sets,
+            String reps,
+            Integer rpe,
+            Integer restSec,
+            String notes,
+            OffsetDateTime createdAt
+    ) {
+        if (exercise == null) throw new IllegalArgumentException("exercise is required");
+        if (orderSeq <= 0) throw new IllegalArgumentException("orderSeq must be positive");
+        if (sets <= 0) throw new IllegalArgumentException("sets must be positive");
+        if (reps == null || reps.isBlank()) throw new IllegalArgumentException("reps is required");
+
+        WorkOutLogItem item = new WorkOutLogItem();
+        item.exercise = exercise;
+        item.orderSeq = orderSeq;
+        item.plannedSets = sets;
+        item.plannedReps = reps;
+        item.plannedRpe = rpe;
+        item.plannedRestSec = restSec;
+        item.notes = notes;
+        item.createdAt = createdAt;
+        return item;
+    }
 
     void attach(WorkOutLog log) {
         this.log = log;

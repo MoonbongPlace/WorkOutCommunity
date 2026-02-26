@@ -15,28 +15,29 @@ import java.util.List;
         }
 )
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 public class WorkOutLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Member 엔티티 ManyToOne으로
-    @Column(name = "member_id", nullable = false)
+    @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
 
-    @Column(name = "log_date", nullable = false)
+    @Column(name = "log_date", nullable = false, updatable = false)
     private LocalDate logDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Status status;
 
-    @Column(name = "created_at")
+//    @Column(columnDefinition = "text")
+//    private String memo;
+
+    @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
     @Column(name = "updated_at")
@@ -48,8 +49,26 @@ public class WorkOutLog {
 
     public enum Status { PLANNED, DONE }
 
+    public static WorkOutLog create(Long memberId, LocalDate logDate) {
+        WorkOutLog log = new WorkOutLog();
+        log.memberId = memberId;
+        log.logDate = logDate;
+        log.status = Status.PLANNED;
+        log.createdAt = OffsetDateTime.now();
+//        log.memo = memo;
+        return log;
+    }
+
     public void addItem(WorkOutLogItem item) {
         items.add(item);
         item.attach(this);
+    }
+
+//    public void updateMemo(String memo) {
+//        this.memo = memo;
+//    }
+
+    public void markDone() {
+        this.status = Status.DONE;
     }
 }

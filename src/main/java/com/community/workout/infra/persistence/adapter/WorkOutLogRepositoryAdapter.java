@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,6 +18,11 @@ public class WorkOutLogRepositoryAdapter implements WorkOutLogRepository {
     @Override
     public Optional<WorkOutLog> findByMemberIdAndLogDate(Long memberId, LocalDate logDate) {
         return workOutLogJpaRepository.findWithItemsAndExercise(memberId, logDate);
+    }
+
+    @Override
+    public List<WorkOutLog> findAllByMemberIdOrderByLogDateDesc(Long memberId) {
+            return workOutLogJpaRepository.findAllByMemberIdOrderByLogDateDesc(memberId);
     }
 
     @Override
