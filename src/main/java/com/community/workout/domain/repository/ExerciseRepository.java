@@ -1,6 +1,7 @@
 package com.community.workout.domain.repository;
 
 import com.community.workout.domain.model.Exercise;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,4 +14,6 @@ public interface ExerciseRepository {
     List<Exercise> findAllById(Collection<Long> ids);
 
     List<Exercise> findTop5ByNameContainingIgnoreCase(String keyword);
+
+    Optional<Exercise> findById(@NotNull Long exerciseId);
 }
