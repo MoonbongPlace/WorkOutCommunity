@@ -17,4 +17,19 @@ public class WorkOutLogItemRepositoryAdapter implements WorkOutLogItemRepository
     public Optional<WorkOutLogItem> findByIdAndLogId(Long itemId, Long id) {
             return workOutLogItemJpaRepository.findByIdAndLogId(itemId, id);
     }
+
+    @Override
+    public int findMaxOrderSeqActive(Long id) {
+        return workOutLogItemJpaRepository.findMaxOrderSeqActive(id);
+    }
+
+    @Override
+    public Optional<WorkOutLogItem> findByIdAndLogIdAndDeletedAtIsNull(Long itemId, Long logId) {
+        return workOutLogItemJpaRepository.findByIdAndLogIdAndDeletedAtIsNull(itemId, logId);
+    }
+
+    @Override
+    public int shiftLeftAfterDelete(Long logId, int deletedSeq) {
+        return workOutLogItemJpaRepository.shiftLeftAfterDelete(logId, deletedSeq);
+    }
 }

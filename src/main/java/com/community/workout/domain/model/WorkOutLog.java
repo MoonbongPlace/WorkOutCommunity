@@ -10,10 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(
-        name = "work_out_log",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uq_work_out_log_member_date", columnNames = {"member_id", "log_date"})
-        }
+        name = "work_out_log"
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

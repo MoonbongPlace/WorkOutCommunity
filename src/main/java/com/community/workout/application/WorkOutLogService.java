@@ -43,13 +43,13 @@ public class WorkOutLogService {
 
         WorkOutLog log = WorkOutLog.create(memberId, logDate);
 
-        int seq = 1;
+        int nextSeq = workOutLogItemRepositoryAdapter.findMaxOrderSeqActive(log.getId()) + 1;
 
         for (var itemReq: request.getItems()){
             Exercise ex = exerciseRepositoryAdapter.findById(itemReq.getExerciseId())
                     .orElseThrow(()-> new CommonException(ResponseCode.EXERCISE_NOT_FOUND));
 
-            int orderSeq = itemReq.getOrderSeq() != null ? itemReq.getOrderSeq() : seq++;
+            int orderSeq = nextSeq++;
 
             WorkOutLogItem item = WorkOutLogItem.create(
                     ex,
@@ -135,13 +135,15 @@ public class WorkOutLogService {
                 .findByIdAndMemberIdAndDeletedAtIsNull(logId, memberId)
                 .orElseThrow(() -> new CommonException(ResponseCode.WORKOUT_LOG_NOT_FOUND));
 
-        WorkOutLogItem item = log.getItems().stream()
-                .filter(i -> i.getDeletedAt() == null)
-                .filter(i -> i.getId().equals(itemId))
-                .findFirst()
+        WorkOutLogItem item = workOutLogItemRepositoryAdapter
+                .findByIdAndLogIdAndDeletedAtIsNull(itemId, logId)
                 .orElseThrow(() -> new CommonException(ResponseCode.WORKOUT_LOG_ITEM_NOT_FOUND));
 
+        int deletedSeq = item.getOrderSeq();
+
         item.softDelete();
+
+        workOutLogItemRepositoryAdapter.shiftLeftAfterDelete(logId, deletedSeq);
 
         return DeleteWorkOutLogItemResult.of(item);
     }

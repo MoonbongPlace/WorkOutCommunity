@@ -6,10 +6,10 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(
-        name = "work_out_log_item",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uq_work_out_log_item_log_order", columnNames = {"log_id", "order_seq"})
-        }
+        name = "work_out_log_item"
+//        uniqueConstraints = {
+//                @UniqueConstraint(name = "uq_work_out_log_item_log_order", columnNames = {"log_id", "order_seq"})
+//        }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
