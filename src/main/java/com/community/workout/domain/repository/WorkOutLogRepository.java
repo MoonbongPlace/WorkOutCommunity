@@ -18,4 +18,9 @@ public interface WorkOutLogRepository {
     void delete(WorkOutLog log);
 
     Optional<WorkOutLog> findByIdAndMemberIdAndDeletedAtIsNull(Long workOutLogId, Long memberId);
+
+    Optional<WorkOutLog> findDetailActive(Long Id, Long memberId);
+
+    boolean existsByMemberIdAndLogDateAndDeletedAtIsNull(Long memberId,LocalDate logDate);
+
 }

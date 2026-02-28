@@ -38,18 +38,22 @@ public class WorkOutLogService {
     public CreateWorkOutLogResult createWorkOutLog(Long memberId, @Valid CreateWorkOutLogRequest request) {
         LocalDate logDate = request.getLogDate();
 
-        workOutLogRepositoryAdapter.findByMemberIdAndLogDate(memberId, logDate)
-                .ifPresent(x-> { throw new CommonException(ResponseCode.WORK_OUT_LOG_ALREADY_EXIST); });
+        boolean exists = workOutLogRepositoryAdapter
+                .existsByMemberIdAndLogDateAndDeletedAtIsNull(memberId, logDate);
+
+        if (exists) {
+            throw new CommonException(ResponseCode.WORK_OUT_LOG_ALREADY_EXIST);
+        }
 
         WorkOutLog log = WorkOutLog.create(memberId, logDate);
 
-        int nextSeq = workOutLogItemRepositoryAdapter.findMaxOrderSeqActive(log.getId()) + 1;
+        int seq = 1;
 
         for (var itemReq: request.getItems()){
             Exercise ex = exerciseRepositoryAdapter.findById(itemReq.getExerciseId())
                     .orElseThrow(()-> new CommonException(ResponseCode.EXERCISE_NOT_FOUND));
 
-            int orderSeq = nextSeq++;
+            int orderSeq = seq++;
 
             WorkOutLogItem item = WorkOutLogItem.create(
                     ex,
@@ -72,7 +76,7 @@ public class WorkOutLogService {
 
     @Transactional(readOnly = true)
     public WorkOutLogDetailResult getDetailWorkOutLog(Long memberId, Long workOutLogId) {
-            WorkOutLog workOutLog = workOutLogRepositoryAdapter.findByIdAndMemberId(memberId, workOutLogId)
+            WorkOutLog workOutLog = workOutLogRepositoryAdapter.findDetailActive(workOutLogId, memberId)
                     .orElseThrow(()-> new CommonException(ResponseCode.WORKOUT_LOG_NOT_FOUND));
 
             return WorkOutLogDetailResult.of(workOutLog);
@@ -105,10 +109,10 @@ public class WorkOutLogService {
     @Transactional
     public ReplaceExerciseResult replaceExercise(Long memberId, Long logId, Long itemId, @Valid ReplaceExerciseRequest request) {
 
-        WorkOutLog log = workOutLogRepositoryAdapter.findByIdAndMemberId(logId, memberId)
+        WorkOutLog log = workOutLogRepositoryAdapter.findByIdAndMemberIdAndDeletedAtIsNull(logId, memberId)
                 .orElseThrow(() -> new CommonException(ResponseCode.WORKOUT_LOG_NOT_FOUND));
 
-        WorkOutLogItem item = workOutLogItemRepositoryAdapter.findByIdAndLogId(itemId, log.getId())
+        WorkOutLogItem item = workOutLogItemRepositoryAdapter.findByIdAndLogIdAndDeletedAtIsNull(itemId, log.getId())
                 .orElseThrow(() -> new CommonException(ResponseCode.WORKOUT_LOG_ITEM_NOT_FOUND));
 
         Exercise ex = exerciseRepositoryAdapter.findById(request.getNewExerciseId())

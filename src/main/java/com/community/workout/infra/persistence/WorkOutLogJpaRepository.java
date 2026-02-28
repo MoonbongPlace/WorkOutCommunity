@@ -17,9 +17,21 @@ public interface WorkOutLogJpaRepository extends JpaRepository<WorkOutLog, Long>
             """)
     Optional<WorkOutLog> findWithItemsAndExercise(Long memberId, LocalDate date);
 
-    List<WorkOutLog> findAllByMemberIdOrderByLogDateDesc(Long memberId);
+    List<WorkOutLog> findAllByMemberIdAndDeletedAtIsNullOrderByLogDateDesc(Long memberId);
 
-    Optional<WorkOutLog> findByMemberIdAndId(Long workOutLogId, Long memberId);
+    Optional<WorkOutLog> findByIdAndMemberId(Long memberId, Long workOutLogId);
 
     Optional<WorkOutLog> findByIdAndMemberIdAndDeletedAtIsNull(Long workOutLogId, Long memberId);
+
+    @Query("""
+            select distinct l from WorkOutLog l
+            left join fetch l.items i
+            where l.id = :logId
+              and l.memberId = :memberId
+              and l.deletedAt is null
+              and (i is null or i.deletedAt is null)
+            """)
+    Optional<WorkOutLog> findDetailActive(Long logId, Long memberId);
+
+    boolean existsByMemberIdAndLogDateAndDeletedAtIsNull(Long memberId, LocalDate logDate);
 }

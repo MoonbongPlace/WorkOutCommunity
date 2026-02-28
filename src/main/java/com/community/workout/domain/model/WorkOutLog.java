@@ -49,7 +49,11 @@ public class WorkOutLog {
     private final List<WorkOutLogItem> items = new ArrayList<>();
 
     public void softDelete() {
-          this.deletedAt = OffsetDateTime.now();
+        if (this.deletedAt != null) return;
+        this.deletedAt = OffsetDateTime.now();
+        for (WorkOutLogItem item : this.items) {
+            item.softDelete();
+        }
     }
 
     public enum Status { PLANNED, DONE }

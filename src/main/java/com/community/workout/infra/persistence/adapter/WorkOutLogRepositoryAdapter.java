@@ -22,7 +22,7 @@ public class WorkOutLogRepositoryAdapter implements WorkOutLogRepository {
 
     @Override
     public List<WorkOutLog> findAllByMemberIdOrderByLogDateDesc(Long memberId) {
-            return workOutLogJpaRepository.findAllByMemberIdOrderByLogDateDesc(memberId);
+            return workOutLogJpaRepository.findAllByMemberIdAndDeletedAtIsNullOrderByLogDateDesc(memberId);
     }
 
     @Override
@@ -36,8 +36,8 @@ public class WorkOutLogRepositoryAdapter implements WorkOutLogRepository {
     }
 
     @Override
-    public Optional<WorkOutLog> findByIdAndMemberId(Long memberId,Long workOutLogId) {
-        return workOutLogJpaRepository.findByMemberIdAndId(workOutLogId, memberId);
+    public Optional<WorkOutLog> findByIdAndMemberId(Long workOutLogId,Long memberId) {
+        return workOutLogJpaRepository.findByIdAndMemberId(workOutLogId, memberId);
     }
 
     @Override
@@ -48,5 +48,15 @@ public class WorkOutLogRepositoryAdapter implements WorkOutLogRepository {
     @Override
     public Optional<WorkOutLog> findByIdAndMemberIdAndDeletedAtIsNull(Long workOutLogId, Long memberId) {
         return workOutLogJpaRepository.findByIdAndMemberIdAndDeletedAtIsNull(workOutLogId, memberId);
+    }
+
+    @Override
+    public Optional<WorkOutLog> findDetailActive(Long Id, Long memberId) {
+        return workOutLogJpaRepository.findDetailActive(Id, memberId);
+    }
+
+    @Override
+    public boolean existsByMemberIdAndLogDateAndDeletedAtIsNull(Long memberId, LocalDate logDate) {
+        return workOutLogJpaRepository.existsByMemberIdAndLogDateAndDeletedAtIsNull(memberId, logDate);
     }
 }
