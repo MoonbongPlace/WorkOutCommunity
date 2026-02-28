@@ -1,6 +1,6 @@
 package com.community.workout.api.dto.response;
 
-import com.community.workout.application.CreateWorkOutLogResult;
+import com.community.workout.application.dto.CreateWorkOutLogResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

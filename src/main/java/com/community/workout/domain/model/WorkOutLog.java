@@ -1,5 +1,6 @@
 package com.community.workout.domain.model;
 
+import com.community.workout.api.dto.request.UpdateWorkOutLogRequest;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -27,7 +28,7 @@ public class WorkOutLog {
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
 
-    @Column(name = "log_date", nullable = false, updatable = false)
+    @Column(name = "log_date", nullable = false)
     private LocalDate logDate;
 
     @Enumerated(EnumType.STRING)
@@ -43,9 +44,16 @@ public class WorkOutLog {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
     @OneToMany(mappedBy = "log", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("orderSeq ASC")
     private final List<WorkOutLogItem> items = new ArrayList<>();
+
+    public void softDelete() {
+          this.deletedAt = OffsetDateTime.now();
+    }
 
     public enum Status { PLANNED, DONE }
 
@@ -57,6 +65,15 @@ public class WorkOutLog {
         log.createdAt = OffsetDateTime.now();
 //        log.memo = memo;
         return log;
+    }
+
+    public void update(UpdateWorkOutLogRequest request) {
+        if (request.getLogDate() != null) {
+            this.logDate = request.getLogDate();
+        }
+        if (request.getStatus() != null) {
+            this.status = request.getStatus();
+        }
     }
 
     public void addItem(WorkOutLogItem item) {

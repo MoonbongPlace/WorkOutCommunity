@@ -1,7 +1,6 @@
-package com.community.workout.application;
+package com.community.workout.application.dto;
 
 import com.community.workout.domain.model.WorkOutLog;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

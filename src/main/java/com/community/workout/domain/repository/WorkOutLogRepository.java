@@ -10,4 +10,12 @@ public interface WorkOutLogRepository {
     Optional<WorkOutLog> findByMemberIdAndLogDate(Long memberId, LocalDate logDate);
     List<WorkOutLog> findAllByMemberIdOrderByLogDateDesc(Long memberId);
     WorkOutLog save(WorkOutLog log);
+
+    Optional<WorkOutLog> findById(Long workOutLogId);
+
+    Optional<WorkOutLog> findByIdAndMemberId(Long memberId, Long workOutLogId);
+
+    void delete(WorkOutLog log);
+
+    Optional<WorkOutLog> findByIdAndMemberIdAndDeletedAtIsNull(Long workOutLogId, Long memberId);
 }
