@@ -20,7 +20,6 @@ public class CreateWorkOutLogRequest {
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate logDate;
-//    private String memo;
 
     @NotEmpty
     List<ExerciseList> items;

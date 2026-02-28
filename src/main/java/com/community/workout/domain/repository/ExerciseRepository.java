@@ -16,4 +16,6 @@ public interface ExerciseRepository {
     List<Exercise> findTop5ByNameContainingIgnoreCase(String keyword);
 
     Optional<Exercise> findById(@NotNull Long exerciseId);
+
+    Exercise save(Exercise squat);
 }

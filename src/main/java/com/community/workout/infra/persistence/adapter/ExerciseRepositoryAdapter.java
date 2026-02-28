@@ -40,4 +40,9 @@ public class ExerciseRepositoryAdapter implements ExerciseRepository {
         return exerciseJpaRepository.findById(exerciseId);
     }
 
+    @Override
+    public Exercise save(Exercise exercise) {
+        return exerciseJpaRepository.save(exercise);
+    }
+
 }
