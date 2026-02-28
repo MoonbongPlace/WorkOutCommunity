@@ -31,7 +31,6 @@ public class CreateWorkOutLogRequest {
 
         @NotNull
         private Long exerciseId;
-        private Integer orderSeq;
 
         @Min(1)
         private int plannedSets;
