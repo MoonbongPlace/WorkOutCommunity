@@ -4,8 +4,8 @@
 -- Upsert seed
 INSERT INTO exercises (name, body_parts, equipment_tags, difficulty, description)
 VALUES
-('랫풀 다운', '["등"]'::jsonb, '["머신"]'::jsonb, 'medium', '광배근을 키우는 머신 운동.'),
-('시티드 케이블 로우', '["등"]'::jsonb, '["머신"]'::jsonb, 'medium', '머신 등운동.'),
+('랫풀 다운', '["등"]'::jsonb, '["머신"]'::jsonb, 'medium', '등운동.'),
+('시티드 케이블 로우', '["등"]'::jsonb, '["머신"]'::jsonb, 'medium', '등운동.'),
 ('케이블 암 풀다운', '["등"]'::jsonb, '["머신"]'::jsonb, 'hard', '등운동.'),
 ('맥그립 랫풀다운', '["등"]'::jsonb, '["머신"]'::jsonb, 'easy', '등운동.'),
 ('바벨 로우', '["등"]'::jsonb, '["바벨"]'::jsonb, 'hard', '운동.'),
@@ -16,7 +16,7 @@ VALUES
 ('풀업', '["등"]'::jsonb, '["맨몸"]'::jsonb, 'hard', '등운동.'),
 ('어시스트 풀업', '["등"]'::jsonb, '["머신"]'::jsonb, 'easy', '등운동.'),
 ('스미스 머신 로우', '["등"]'::jsonb, '["머신"]'::jsonb, 'medium', '등운동.'),
-('백 익스텐션', '["등"]'::jsonb, '["맨몸"]'::jsonb, 'easy', '등, 허리운동.'),
+('백 익스텐션', '["등"]'::jsonb, '["맨몸"]'::jsonb, 'easy', '등운동.'),
 ('레터럴 와이드 풀다운', '["등"]'::jsonb, '["머신"]'::jsonb, 'medium', '등운동.'),
 ('원 암 시티드 케이블 로우', '["등"]'::jsonb, '["케이블"]'::jsonb, 'easy', '등운동.'),
 ('원 암 덤벨 로우', '["등"]'::jsonb, '["덤벨"]'::jsonb, 'medium', '등운동.'),
@@ -109,3 +109,22 @@ ON CONFLICT (name) DO UPDATE SET
   updated_at = now();
 
 COMMIT;
+
+INSERT INTO categories (name) VALUES
+                                ('베스트'),
+                                ('운동일지'),
+                                ('식단과 영양'),
+                                ('상체운동'),
+                                ('칼럼'),
+                                ('보충제'),
+                                ('체중감량'),
+                                ('하체운동'),
+                                ('의류용품'),
+                                ('체중증가'),
+                                ('건강'),
+                                ('바디프로필'),
+                                ('대회준비'),
+                                ('재활'),
+                                ('유산소'),
+                                ('단백질')
+    ON CONFLICT (name) DO NOTHING;

@@ -1,6 +1,5 @@
 package com.community.auth.api;
 
-import com.community.auth.api.dto.request.ReissueRequest;
 import com.community.auth.api.dto.response.LogoutResponse;
 import com.community.auth.api.dto.response.ReissueResponse;
 import com.community.auth.api.dto.response.SigninResponse;
@@ -10,16 +9,20 @@ import com.community.auth.api.dto.response.SignupResponse;
 import com.community.auth.application.AuthService;
 import com.community.auth.application.dto.MemberSigninResult;
 import com.community.auth.application.dto.MemberSignupResult;
+import com.community.global.exception.CommonException;
+import com.community.global.exception.ResponseCode;
 import com.community.global.jwt.RefreshTokenCookieManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Auth", description = "회원가입 / 로그인 / 토큰 재발행 / 로그아웃")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -59,10 +62,13 @@ public class AuthController {
     // 토큰 재발행
     @PostMapping("/reissue")
     public ResponseEntity<ReissueResponse> reissue(
-            @RequestBody @Valid ReissueRequest request,
+            HttpServletRequest request,
             HttpServletResponse response
     ) {
-        ReissueResponse reissueResponse = authService.reissue(request);
+        String refreshToken = refreshTokenCookieManager.getRefreshTokenFromCookie(request)
+                .orElseThrow(() -> new CommonException(ResponseCode.INVALID_REFRESH_TOKEN));
+
+        ReissueResponse reissueResponse = authService.reissue(refreshToken);
 
         refreshTokenCookieManager.addRefreshTokenCookie(response, reissueResponse.getRefreshToken());
 

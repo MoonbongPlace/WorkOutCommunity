@@ -6,11 +6,15 @@ import com.community.chatbot.api.dto.response.ChatMessageResponse;
 import com.community.chatbot.application.AiChatService;
 import com.community.global.CustomUserPrincipal;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "AI Chat", description = "운동 도메인 Q&A 챗봇 API")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor

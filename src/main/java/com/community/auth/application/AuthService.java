@@ -1,6 +1,5 @@
 package com.community.auth.application;
 
-import com.community.auth.api.dto.request.ReissueRequest;
 import com.community.auth.api.dto.request.SigninRequest;
 import com.community.auth.api.dto.request.SignupRequest;
 import com.community.auth.api.dto.response.ReissueResponse;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -60,19 +60,24 @@ public class AuthService {
         }
         Long memberId = member.getId();
 
+        UUID sessionId = UUID.randomUUID();
+
         String accessToken = jwtProvider.issueAccessToken(memberId, member.getRole());
-        String refreshToken = refreshTokenService.issueAndStore(memberId);
+        String refreshToken = refreshTokenService.issueAndStore(memberId, sessionId);
 
         return MemberSigninResult.from(accessToken, refreshToken, member);
 
     }
 
-    public ReissueResponse reissue(@Valid ReissueRequest request) {
-        String newRefreshToken = refreshTokenService.rotate(request.getRefreshToken());
+    public ReissueResponse reissue(String refreshTokenRaw) {
+        Long memberId = jwtProvider.extractMemberId(refreshTokenRaw);
 
-        Long memberId = jwtProvider.extractMemberId(newRefreshToken);
+        String newRefreshToken = refreshTokenService.rotate(refreshTokenRaw);
 
-        String role = jwtProvider.extractRole(newRefreshToken);
+        Member member = memberRepositoryAdapter.findActiveById(memberId)
+                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+
+        String role = member.getRole();
 
         String newAccessToken = jwtProvider.issueAccessToken(memberId, role);
 

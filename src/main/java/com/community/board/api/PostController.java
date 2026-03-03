@@ -15,6 +15,8 @@ import com.community.global.exception.CommonException;
 import com.community.global.CustomUserPrincipal;
 import com.community.global.exception.ResponseCode;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -24,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Post", description = "게시글 CRUD API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")
@@ -57,6 +60,7 @@ public class PostController {
     }
 
     //게시글 작성
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public ResponseEntity<CreatePostResponse> createPost(
             @AuthenticationPrincipal CustomUserPrincipal principal,
@@ -74,6 +78,7 @@ public class PostController {
     }
 
     // 게시글 수정
+    @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{postId}")
     public ResponseEntity<UpdatePostResponse> updatePost(
             @AuthenticationPrincipal CustomUserPrincipal principal,
@@ -98,6 +103,7 @@ public class PostController {
     }
 
     // 게시글 삭제
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{postId}")
     public ResponseEntity<DeletePostResponse> deletePost(
             @AuthenticationPrincipal CustomUserPrincipal principal,

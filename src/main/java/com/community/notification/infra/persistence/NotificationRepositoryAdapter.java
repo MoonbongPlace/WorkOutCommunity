@@ -19,7 +19,7 @@ public class NotificationRepositoryAdapter implements NotificationRepository {
 
     @Override
     public Page<Notification> findByMemberIdOrderByCreatedAtDesc(Long memberId, Pageable pageable) {
-        return notificationJpaRepository.findByMemberIdOrderByCreatedAtDesc(memberId, pageable);
+        return notificationJpaRepository.findByMemberIdAndIsReadFalseOrderByCreatedAtDesc(memberId, pageable);
     }
 
     @Override

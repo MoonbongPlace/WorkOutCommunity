@@ -4,13 +4,15 @@ import com.community.admin.api.dto.request.AdminMemberStatusUpdateRequest;
 import com.community.admin.api.dto.request.AdminNotificationBroadcastRequest;
 import com.community.admin.api.dto.request.AdminPostVisibilityUpdateRequest;
 import com.community.admin.api.dto.response.*;
-import com.community.admin.application.AdminPostDetailResult;
+import com.community.admin.application.dto.AdminPostDetailResult;
 import com.community.admin.application.dto.AdminMemberListResult;
 import com.community.admin.application.dto.AdminMemberStatusUpdateResult;
 import com.community.admin.application.dto.AdminPostListResult;
 import com.community.admin.application.dto.AdminPostVisibilityUpdateResult;
 import com.community.admin.application.AdminService;
 import com.community.global.CustomUserPrincipal;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +20,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Admin", description = "관리자 전용 API")
+@SecurityRequirement(name = "bearerAuth")
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/admin")

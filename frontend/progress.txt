@@ -1,0 +1,155 @@
+================================================================
+  FRONTEND 진행상황 정리
+  기준일: 2026-03-03 (3차 업데이트 — 전체 완료)
+================================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. 기술 스택
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  - React 18.3.1
+  - TypeScript 5.7.2
+  - Vite 6.0.7
+  - Tailwind CSS 3.4.17  (UI 라이브러리 없음 — 순수 Tailwind만 사용)
+  - axios 1.7.9
+  - react-router-dom 6.28.1
+
+  디자인 팔레트:
+    #7A7F3A  (khaki-dark  — primary 버튼·강조 텍스트)
+    #A6A66A  (khaki-mid   — border·ring)
+    #E8E7D1  (khaki-light — 배경·태그·비활성 상태)
+    #FFFFFF  (흰 배경)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2. 파일 현황 (42개 — 전부 완료)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [설정 파일 — 7개]
+  ✅ package.json
+  ✅ vite.config.ts          /api → http://localhost:8080 (proxy, rewrite 없음)
+  ✅ tsconfig.json / tsconfig.node.json
+  ✅ tailwind.config.ts / postcss.config.js / index.html
+
+  [진입점 — 3개]
+  ✅ src/vite-env.d.ts
+  ✅ src/main.tsx             StrictMode + AuthProvider + RouterProvider
+  ✅ src/router.tsx           공개 2개 + ProtectedRoute 보호 9개 라우트
+
+  [스타일 — 1개]
+  ✅ src/styles/index.css
+
+  [API — 7개]
+  ✅ src/api/axiosInstance.ts     401 인터셉터 + reissue 큐 처리
+  ✅ src/api/endpoints/auth.ts    signin, signup(필드 완성), logout
+  ✅ src/api/endpoints/post.ts    list, detail, create, update, remove
+  ✅ src/api/endpoints/member.ts  me, update, withdraw
+  ✅ src/api/endpoints/notification.ts  list, readOne, readAll
+  ✅ src/api/endpoints/workoutLog.ts    list, detail, remove
+  ✅ src/api/endpoints/chat.ts    sendMessage, history
+
+  [타입 정의 — 7개]
+  ✅ src/types/auth.ts / post.ts / member.ts / notification.ts
+  ✅ src/types/workoutLog.ts / chat.ts / index.ts
+
+  [인증 — 2개]
+  ✅ src/context/AuthContext.tsx
+       - initializing 상태 추가
+       - 마운트 시 reissue → /members/me 자동 시도 (새로고침 로그인 유지)
+  ✅ src/components/ProtectedRoute.tsx
+       - initializing 중 전체화면 스피너 표시
+       - 미인증 시 /login 리다이렉트
+
+  [레이아웃 — 1개]
+  ✅ src/layouts/RootLayout.tsx
+
+  [공통 컴포넌트 — 4개]
+  ✅ src/components/nav/Navbar.tsx
+       - md 이상: 가로 링크 목록
+       - md 미만: 햄버거 아이콘 + 드롭다운 메뉴 (외부 클릭 닫기)
+  ✅ src/components/ui/Card.tsx / PageHeader.tsx / StateBlock.tsx
+
+  [페이지 — 10개]
+  ✅ src/pages/LoginPage.tsx
+       - 회원가입 링크 추가
+       - 회원가입 성공 메시지 표시 (signupSuccess state)
+  ✅ src/pages/SignupPage.tsx
+       - email / memberName / password / name / age / sex 폼
+       - 성공 시 /login 으로 이동 (signupSuccess: true)
+  ✅ src/pages/PostsPage.tsx
+       - 카드 클릭 → /posts/:postId 이동
+  ✅ src/pages/PostDetailPage.tsx    [신규]
+       - GET /v1/posts/:postId
+       - 제목 / 내용 / 조회수 / 날짜 표시
+       - "← 목록으로" 뒤로가기 버튼
+  ✅ src/pages/MePage.tsx            - 로그아웃 버튼 포함
+  ✅ src/pages/WorkoutLogsPage.tsx
+       - 카드 클릭 → /workout-logs/:id 이동
+       - "+ 새 일지" 버튼 → /workout-logs/new 이동
+  ✅ src/pages/WorkoutLogDetailPage.tsx  [신규]
+       - GET /v1/workout-logs/:id
+       - logDate / 운동 항목 목록 (이름, 세트, 반복, RPE, 휴식, 메모)
+       - 삭제 버튼 + confirm 다이얼로그
+  ✅ src/pages/WorkoutLogNewPage.tsx     [신규]
+       - POST /v1/workout-logs
+       - 날짜 선택 + 운동 항목 동적 추가/삭제 폼
+       - exerciseId / plannedSets / plannedReps / RPE / 휴식 / 메모
+  ✅ src/pages/NotificationsPage.tsx - 단건/전체 읽음 처리
+  ✅ src/pages/ChatPage.tsx          - 히스토리 + 메시지 전송
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3. 라우트 구조
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  공개 (비인증 접근 가능)
+    /login   → LoginPage
+    /signup  → SignupPage
+
+  보호 (미인증 시 /login 리다이렉트)
+    /                     → PostsPage
+    /posts                → PostsPage
+    /posts/:postId        → PostDetailPage
+    /me                   → MePage
+    /workout-logs         → WorkoutLogsPage
+    /workout-logs/new     → WorkoutLogNewPage
+    /workout-logs/:logId  → WorkoutLogDetailPage
+    /notifications        → NotificationsPage
+    /chat                 → ChatPage
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  4. 인증 흐름
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  앱 최초 로드 / 새로고침
+    AuthProvider 마운트 → POST /v1/auth/reissue (RT Cookie 자동 전송)
+    → 성공: GET /v1/members/me → user 복원 → 보호 경로 접근 허용
+    → 실패: user = null → /login 리다이렉트
+
+  로그인
+    POST /v1/auth/signin → AT + user 정보 → AuthContext.login()
+
+  자동 토큰 갱신 (401 인터셉터)
+    401 수신 → POST /v1/auth/reissue → 대기 큐 일괄 재시도
+
+  로그아웃
+    POST /v1/auth/logout → AuthContext.logout() → /login
+
+  Axios baseURL = '/api'
+    axiosInstance.get('/v1/posts') → /api/v1/posts
+    Vite proxy: /api → http://localhost:8080/api/v1/posts
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  5. 실행 방법
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  cd frontend
+  npm install
+  npm run dev
+
+  브라우저: http://localhost:5173
+  백엔드:   http://localhost:8080
+
+================================================================

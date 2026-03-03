@@ -9,10 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.OffsetDateTime;
-import java.util.Optional;
 
 public interface NotificationJpaRepository extends JpaRepository<Notification, Long> {
-    Page<Notification> findByMemberIdOrderByCreatedAtDesc(Long memberId, Pageable pageable);
+    Page<Notification> findByMemberIdAndIsReadFalseOrderByCreatedAtDesc(Long memberId, Pageable pageable);
 
     long countByMemberIdAndIsReadFalse(Long memberId);
 

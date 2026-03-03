@@ -4,9 +4,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "refresh_token")
@@ -24,37 +24,42 @@ public class RefreshToken {
     private String tokenHash;
 
     @Column(name = "expires_at", nullable = false)
-    private LocalDateTime expiresAt;
+    private OffsetDateTime expiresAt;
 
     @Column(nullable = false)
     private boolean revoked = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @Column(name = "revoked_at")
-    private LocalDateTime revokedAt;
+    private OffsetDateTime revokedAt;
+
+    @Column(name = "session_id", nullable = false, updatable = false)
+    private UUID sessionId;
 
     public static RefreshToken create(
             Long memberId,
+            UUID sessionId,
             String tokenHash,
-            LocalDateTime expiresAt
+            OffsetDateTime expiresAt
     ) {
         RefreshToken token = new RefreshToken();
         token.memberId = memberId;
+        token.sessionId = sessionId;
         token.tokenHash = tokenHash;
         token.expiresAt = expiresAt;
-        token.createdAt = LocalDateTime.now();
+        token.createdAt = OffsetDateTime.now();
         return token;
     }
 
     public void revoke() {
         this.revoked = true;
-        this.revokedAt = LocalDateTime.now();
+        this.revokedAt = OffsetDateTime.now();
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(this.expiresAt);
+        return OffsetDateTime.now().isAfter(this.expiresAt);
     }
 
     public boolean isActive() {

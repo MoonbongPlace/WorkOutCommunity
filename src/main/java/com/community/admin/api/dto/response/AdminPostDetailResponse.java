@@ -1,6 +1,6 @@
 package com.community.admin.api.dto.response;
 
-import com.community.admin.application.AdminPostDetailResult;
+import com.community.admin.application.dto.AdminPostDetailResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

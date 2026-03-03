@@ -1,0 +1,128 @@
+========================================
+ 랜딩 페이지 구현 작업 정리
+ 날짜: 2026-03-03
+========================================
+
+1. 목표
+----------------------------------------
+- / 진입 시 랜딩 페이지 노출 (기존 페이지 유지)
+- 카드 중심 + SNS Activity Feed 느낌, 미니멀 SaaS 톤
+- Community 7 : AI Chat 3 비중
+- mock 데이터 기반 (API 연동 없음)
+- Tailwind only, White + Khaki 팔레트 준수
+
+
+2. 변경 파일 (수정)
+----------------------------------------
+[1] src/router.tsx
+  - / 라우트를 ProtectedRoute 밖 공개 라우트로 분리
+  - LandingPage import 추가
+  - 기존 / → PostsPage 제거 (PostsPage는 /posts로 유지)
+
+  변경 전:
+    { path: '/', element: <PostsPage /> }  // ProtectedRoute 내부
+
+  변경 후:
+    { path: '/', element: <LandingPage /> }  // 공개 라우트 최상단
+
+[2] src/components/nav/Navbar.tsx
+  - 로고 NavLink 경로 /posts → /
+  - 로그인한 사용자도 로고 클릭 시 랜딩(홈)으로 이동
+
+
+3. 신규 파일 (생성)
+----------------------------------------
+[UI 공용 컴포넌트]
+
+  src/components/ui/Button.tsx
+    - variant: 'primary' | 'secondary'
+    - primary: bg-[#7A7F3A] text-white hover:opacity-90
+    - secondary: bg-white border border-neutral-200 hover:bg-neutral-50
+    - ButtonHTMLAttributes 상속, disabled:opacity-50
+
+  src/components/ui/Badge.tsx
+    - 카키 pale 태그 칩
+    - bg-[#E8E7D1] text-neutral-800 text-xs rounded
+
+  src/components/ui/Container.tsx
+    - max-w-5xl mx-auto px-4 래퍼
+    - className prop으로 확장 가능 (h-14 flex 등 추가)
+
+[랜딩 섹션 컴포넌트]
+
+  src/components/landing/Hero.tsx
+    - 섹션 1: 헤드라인 + 서브텍스트 + CTA 2개
+    - CTA: "시작하기" → /login (primary), "데모 보기" → #demo (secondary)
+    - 우측: 대시보드 프리뷰 카드 3개 (운동, 피드, 알림)
+    - PreviewCard 내부 컴포넌트 (label + tag + content)
+
+  src/components/landing/ActivityFeedPreview.tsx
+    - 섹션 2: SNS 카드 피드 (핵심 섹션)
+    - mock 4개: 김철수, 이지은, 박준호, 최민서
+    - FeedCard 구성:
+        · Avatar(원형, 카키 배경) + 닉네임 + 시간
+        · 운동 내용 텍스트
+        · Badge 태그 1~2개 (#하체, #PR달성 등)
+        · 액션 row: ♥(좋아요, liked 시 카키색) / 💬 / 🔖 + counts
+    - HeartIcon / CommentIcon / BookmarkIcon 내부 SVG 컴포넌트
+    - id="demo" 앵커 (Hero CTA "데모 보기" 스크롤 대상)
+
+  src/components/landing/FeatureGrid.tsx
+    - 섹션 3: 기능 카드 3개 그리드 (md:grid-cols-3)
+    - 커뮤니티 피드 / 운동 로그 / 실시간 알림
+    - 카드 구성: 라인 아이콘 + 제목 + 설명 + 미리보기 텍스트 박스
+
+  src/components/landing/AiCoachPreview.tsx
+    - 섹션 4: AI 코치 보조 기능 (의도적으로 소형)
+    - max-w-2xl 제한, 섹션 py-12 (다른 섹션 py-16보다 작게)
+    - Q&A 1세트: 질문(우정렬, bg-neutral-100) + 답변(좌정렬, AI 아바타)
+    - 루틴 추천/JSON/버튼 없음
+
+  src/components/landing/StatsStrip.tsx
+    - 섹션 5: 기술 스택 카드 3개 (포트폴리오 신뢰)
+    - JWT 인증 / PostgreSQL 마이그레이션 / REST API 도메인 분리
+    - 카드 구성: value(large) + label(카키) + desc(neutral-500)
+
+  src/components/landing/FinalCta.tsx
+    - 섹션 6: 최종 CTA + Footer
+    - "로그인 / 회원가입" → /login (primary 버튼)
+    - Footer: 프로젝트명 + GitHub / Docs 링크
+
+[랜딩 페이지]
+
+  src/pages/LandingPage.tsx
+    - ProtectedRoute 밖 공개 페이지 (인증 불필요)
+    - 랜딩 전용 헤더 (sticky top-0):
+        · 로고 → /
+        · 로그인 (텍스트 링크) + 회원가입 (카키 버튼)
+    - Container 안에 6개 섹션 순서대로 조합:
+        Hero → ActivityFeedPreview → FeatureGrid
+        → AiCoachPreview → StatsStrip → FinalCta
+
+
+4. 변경 없는 파일
+----------------------------------------
+  tailwind.config.ts   — content 경로 src/**/*.{ts,tsx} 이미 포함
+  src/styles/index.css — @tailwind 3줄 + 카키 CSS 변수 이미 존재
+  기타 기존 페이지     — /posts, /chat, /me 등 전부 유지
+
+
+5. 스타일 가이드 준수 사항
+----------------------------------------
+  - Tailwind CSS만 사용 (외부 라이브러리 없음)
+  - 배경: bg-white / 카드: border border-neutral-200 shadow-sm rounded-2xl
+  - 포인트 컬러(카키): 좋아요 liked 상태, CTA 버튼, 로고, AI 아이콘 — 1~2개 제한
+  - 애니메이션: hover transition-colors / transition-opacity 150ms 수준만
+  - 그라데이션/과한 효과 없음
+  - 타이포: 헤드라인 text-3xl~4xl font-semibold / 섹션 text-lg font-semibold / body text-sm
+
+
+6. 실행 명령 (참고)
+----------------------------------------
+  cd frontend
+  npm run dev
+
+  접속: http://localhost:5173/
+  랜딩: / (공개)
+  피드: /posts (로그인 필요)
+  채팅: /chat  (로그인 필요)

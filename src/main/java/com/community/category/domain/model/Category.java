@@ -1,4 +1,4 @@
-package com.community.board.domain.model;
+package com.community.category.domain.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

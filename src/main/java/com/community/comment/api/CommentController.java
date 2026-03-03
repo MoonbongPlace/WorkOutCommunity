@@ -8,12 +8,16 @@ import com.community.comment.application.dto.CreateCommentResult;
 import com.community.comment.application.dto.DeleteCommentResult;
 import com.community.global.CustomUserPrincipal;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Comment", description = "댓글 API")
+@SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/api/v1/posts/{postId}/comments")
 @RestController
 @RequiredArgsConstructor

@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -29,9 +30,8 @@ public class JWTProvider {
         String at = issueAccessToken(memberId, role);
         String rt = issueRefreshToken(memberId);
 
-        return new TokenPairDTO(at, rt, jwtProperties.accessExpSeconds(), jwtProperties.refreshExpSeconds() );
+        return new TokenPairDTO(at, rt, jwtProperties.accessExpSeconds(), jwtProperties.refreshExpSeconds());
     }
-
 
     public String issueAccessToken(Long memberId, String role) {
         Map<String, Object> claims = Map.of("role", role);
@@ -39,71 +39,78 @@ public class JWTProvider {
     }
 
     public String issueRefreshToken(Long memberId) {
-        return issueToken(String.valueOf(memberId), jwtProperties.refreshExpSeconds(), Map.of());
-    }
-
-    private String issueToken(String subject, long expSeconds, Map<String, Object> claims) {
         Instant now = Instant.now();
-        Instant exp = now.plusSeconds(expSeconds);
-
         return Jwts.builder()
-                .subject(subject)
+                .id(UUID.randomUUID().toString())           // 동시 발급 시 해시 충돌 방지
+                .subject(String.valueOf(memberId))
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(exp))
-                .claims(claims)
+                .expiration(Date.from(now.plusSeconds(jwtProperties.refreshExpSeconds())))
                 .signWith(key)
                 .compact();
     }
 
-    public Claims verifyAndGetClaims(String token){
+    /**
+     * AccessToken 전용 파싱.
+     * 서명 검증 + 만료 검증 + AT 필수 클레임(role) 존재 여부까지 한 번에 수행.
+     * 필터에서 이 메서드 하나만 호출해 Claims를 재사용하면 중복 파싱이 없다.
+     */
+    public Claims parseAccessToken(String token) {
+        Claims claims = verifyAndGetClaims(token);
+        if (claims.get("role") == null) {
+            throw new CommonException(ResponseCode.TOKEN_INVALID);
+        }
+        return claims;
+    }
 
-        if (token==null || token.isBlank()) {
+    /**
+     * 서명/만료 검증 후 Claims 반환. RefreshToken 처리(AuthService) 등 서비스 레이어에서 재사용.
+     */
+    public Claims verifyAndGetClaims(String token) {
+        if (token == null || token.isBlank()) {
             throw new CommonException(ResponseCode.TOKEN_MISSING);
         }
-
         try {
             return Jwts.parser()
                     .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            // exp 만료 시 예외 발생
         } catch (ExpiredJwtException e) {
             throw new CommonException(ResponseCode.TOKEN_EXPIRED);
-        } catch (JwtException | IllegalArgumentException e){
+        } catch (JwtException | IllegalArgumentException e) {
             throw new CommonException(ResponseCode.TOKEN_INVALID);
         }
     }
 
-    public Long extractMemberId(String token){
+    public Long extractMemberId(String token) {
         String sub = verifyAndGetClaims(token).getSubject();
         try {
             return Long.parseLong(sub);
-        }catch (Exception e){
+        } catch (NumberFormatException e) {
             throw new CommonException(ResponseCode.TOKEN_INVALID);
         }
     }
 
-    public String extractRole(String token){
-        Claims claims = verifyAndGetClaims(token);
+    /** 이미 파싱된 Claims에서 role 추출 — 이중 파싱 없이 재사용 가능 */
+    public String extractRole(Claims claims) {
         String role = (String) claims.get("role");
-
         if (role == null) throw new CommonException(ResponseCode.TOKEN_INVALID);
-
         return role;
     }
 
+    public long getRtExpSeconds() { return jwtProperties.refreshExpSeconds(); }
+    public long getAtExpSeconds()  { return jwtProperties.accessExpSeconds(); }
+    public boolean getCookieSecure()   { return jwtProperties.cookieSecure(); }
+    public String  getCookieSameSite() { return jwtProperties.cookieSameSite(); }
 
-    public long getRtExpSeconds() {
-        return jwtProperties.refreshExpSeconds();
-    }
-
-    public long getAtExpSeconds() { return jwtProperties.accessExpSeconds(); }
-
-    public boolean getCookieSecure() { return jwtProperties.cookieSecure(); }
-
-    public String getCookieSameSite() { return jwtProperties.cookieSameSite(); }
-
-    public void validateAccessToken(String token) {
+    private String issueToken(String subject, long expSeconds, Map<String, Object> claims) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .subject(subject)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusSeconds(expSeconds)))
+                .claims(claims)
+                .signWith(key)
+                .compact();
     }
 }
