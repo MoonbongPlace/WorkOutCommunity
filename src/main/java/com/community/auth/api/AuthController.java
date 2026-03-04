@@ -12,15 +12,22 @@ import com.community.auth.application.dto.MemberSignupResult;
 import com.community.global.exception.CommonException;
 import com.community.global.exception.ResponseCode;
 import com.community.global.jwt.RefreshTokenCookieManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.ConstraintViolation;
+import java.util.Set;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Auth", description = "회원가입 / 로그인 / 토큰 재발행 / 로그아웃")
 @RestController
@@ -30,14 +37,25 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final ObjectMapper objectMapper;
+    private final Validator validator;
     private final RefreshTokenCookieManager refreshTokenCookieManager;
 
     // 회원가입
-    @PostMapping("/signup")
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SignupResponse> signup(
-            @RequestBody @Valid final SignupRequest request
-    ){
-        MemberSignupResult memberSignupResult = authService.signup(request);
+            @RequestPart("data") String data,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    ) throws JsonProcessingException {
+
+        SignupRequest request = objectMapper.readValue(data, SignupRequest.class);
+
+        Set<ConstraintViolation<SignupRequest>> violations = validator.validate(request);
+        if (!violations.isEmpty()) {
+            throw new CommonException(ResponseCode.INVALID_REQUEST);
+        }
+
+        MemberSignupResult memberSignupResult = authService.signup(request,  profileImage);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

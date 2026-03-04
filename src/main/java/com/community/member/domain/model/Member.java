@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.OffsetDateTime;
 
@@ -32,6 +33,9 @@ public class Member {
 
     @Column(nullable = false)
     private String name;
+
+    @Column(name = "profile_image", length = 512)
+    private String profileImage;
 
     @Column
     private Integer age;
@@ -67,7 +71,9 @@ public class Member {
             String sex,
             String role,
             OffsetDateTime createdAt,
-            MemberStatus status) {
+            MemberStatus status,
+            String profileImageUrl
+    ) {
         Member member = new Member();
         member.email = email;
         member.memberName = memberName;
@@ -78,16 +84,27 @@ public class Member {
         member.role = role;
         member.createdAt = createdAt;
         member.status = status;
+        member.profileImage = profileImageUrl;
 
         return member;
     }
 
-    public void updateMember(UpdateMemberRequest request, String encodedPassword) {
-        this.memberName = request.getMemberName();
-        this.password = encodedPassword;
-        this.name = request.getName();
-        this.age = request.getAge();
-        this.sex = request.getSex();
+    public void updateMember(UpdateMemberRequest request, String profileImageUrl) {
+        if (request.getMemberName() != null && !request.getMemberName().isBlank()) {
+            this.memberName = request.getMemberName();
+        }
+        if (request.getName() != null && !request.getName().isBlank()) {
+            this.name = request.getName();
+        }
+        if (request.getAge() != null) {
+            this.age = request.getAge();
+        }
+        if (request.getSex() != null && !request.getSex().isBlank()) {
+            this.sex = request.getSex();
+        }
+        if (profileImageUrl != null && !profileImageUrl.isBlank()) {
+            this.profileImage = profileImageUrl;
+        }
         this.updatedAt = OffsetDateTime.now();
     }
 

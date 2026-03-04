@@ -5,6 +5,8 @@ import com.community.auth.api.dto.request.SignupRequest;
 import com.community.auth.api.dto.response.ReissueResponse;
 import com.community.auth.application.dto.MemberSigninResult;
 import com.community.auth.application.dto.MemberSignupResult;
+import com.community.global.component.ProfileImageStorage;
+import com.community.global.component.ProfileProperties;
 import com.community.global.exception.CommonException;
 import com.community.global.jwt.JWTProvider;
 import com.community.global.exception.ResponseCode;
@@ -13,26 +15,39 @@ import com.community.member.domain.model.MemberStatus;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
+@EnableConfigurationProperties(ProfileProperties.class)
 public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
     private final MemberRepositoryAdapter memberRepositoryAdapter;
     private final JWTProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
+    private final ProfileImageStorage profileImageStorage;
+    private final ProfileProperties profileProperties;
+
 
     @Transactional
-    public MemberSignupResult signup(@Valid SignupRequest request) {
+    public MemberSignupResult signup(@Valid SignupRequest request, MultipartFile profileImage) {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
+        String profileImageUrl = profileProperties.defaultImageUrl();
+
+        if (profileImage != null && !profileImage.isEmpty()) {
+            profileImageUrl = profileImageStorage.store(profileImage);
+        }
         Member member = Member.signup(
                 request.getEmail(),
                 request.getMemberName(),
@@ -42,7 +57,8 @@ public class AuthService {
                 request.getSex(),
                 "user",
                 OffsetDateTime.now(),
-                MemberStatus.ACTIVE
+                MemberStatus.ACTIVE,
+                profileImageUrl
         );
 
         Member saved = memberRepositoryAdapter.save(member);

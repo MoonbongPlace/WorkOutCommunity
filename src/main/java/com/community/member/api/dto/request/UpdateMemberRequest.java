@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateMemberRequest {
     private String memberName;
-    private String password;
     private String name;
     private Integer age;
     private String sex;
-
 }
