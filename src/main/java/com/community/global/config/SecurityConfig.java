@@ -66,6 +66,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/assets/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/v1/posts").permitAll()
                         .requestMatchers("/api/v1/notifications/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")

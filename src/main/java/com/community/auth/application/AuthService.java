@@ -5,7 +5,7 @@ import com.community.auth.api.dto.request.SignupRequest;
 import com.community.auth.api.dto.response.ReissueResponse;
 import com.community.auth.application.dto.MemberSigninResult;
 import com.community.auth.application.dto.MemberSignupResult;
-import com.community.global.component.ProfileImageStorage;
+import com.community.global.component.ImageStorage;
 import com.community.global.component.ProfileProperties;
 import com.community.global.exception.CommonException;
 import com.community.global.jwt.JWTProvider;
@@ -35,7 +35,7 @@ public class AuthService {
     private final MemberRepositoryAdapter memberRepositoryAdapter;
     private final JWTProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
-    private final ProfileImageStorage profileImageStorage;
+    private final ImageStorage profileImageStorage;
     private final ProfileProperties profileProperties;
 
 

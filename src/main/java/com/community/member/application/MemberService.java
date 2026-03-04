@@ -1,6 +1,6 @@
 package com.community.member.application;
 
-import com.community.global.component.ProfileImageStorage;
+import com.community.global.component.ImageStorage;
 import com.community.global.exception.CommonException;
 import com.community.global.exception.ResponseCode;
 import com.community.member.api.dto.request.UpdateMemberRequest;
@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberService {
 
     private final MemberRepositoryAdapter memberRepositoryAdapter;
-    private final ProfileImageStorage profileImageStorage;
+    private final ImageStorage profileImageStorage;
 
     @Transactional(readOnly = true)
     public DetailMemberResult getMemberProfile(Long id) {

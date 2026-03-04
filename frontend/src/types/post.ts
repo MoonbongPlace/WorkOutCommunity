@@ -5,7 +5,7 @@ export interface PostListItem {
   title: string
   content: string
   categoryId: number | null
-  image: string | null
+  images: string[]
   visibility: 'VISIBLE' | 'HIDDEN'
   createdAt: string
 }
@@ -34,7 +34,7 @@ export interface PostDetailResult {
   content: string
   categoryId: number | null
   views: number
-  image: string | null
+  images: string[]
   createdAt: string
 }
 
@@ -50,5 +50,12 @@ export interface CreatePostRequest {
   title: string
   content: string
   categoryId?: number
-  image?: string
+}
+
+// PUT /api/v1/posts/{postId}
+export interface UpdatePostRequest {
+  title: string
+  content: string
+  categoryId?: number
+  keepImages?: string[]
 }

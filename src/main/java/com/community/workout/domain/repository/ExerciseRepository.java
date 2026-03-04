@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ExerciseRepository {
+    List<Exercise> findAll();
+
     Optional<Exercise> findByName(String name);
     List<Exercise> findTop5ByNameContainingIgnoreCaseOrderByNameAsc(String name);
 

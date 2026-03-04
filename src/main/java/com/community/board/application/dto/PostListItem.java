@@ -7,17 +7,18 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"id","memberId","title","content","categoryId","image","visibility","createdAt"})
+@JsonPropertyOrder({"id","memberId","title","content","categoryId","images","visibility","createdAt"})
 public class PostListItem {
     private Long id;
     private Long memberId;
     private String title;
     private String content;
     private Long categoryId;
-    private String image;
+    private List<String> images;
     private PostVisibility visibility;
     private OffsetDateTime createdAt;
 
@@ -28,7 +29,7 @@ public class PostListItem {
                 post.getTitle(),
                 post.getContent(),
                 post.getCategoryId(),
-                post.getImage(),
+                post.getImages(),
                 post.getPostVisibility(),
                 post.getCreatedAt()
         );

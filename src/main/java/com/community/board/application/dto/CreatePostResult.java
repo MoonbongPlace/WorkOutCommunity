@@ -6,10 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"id", "memberId", "title", "content", "categoryId", "views", "image", "createdAt"})
+@JsonPropertyOrder({"id", "memberId", "title", "content", "categoryId", "views", "images", "createdAt"})
 public class CreatePostResult {
     private Long id;
     private Long memberId;
@@ -17,7 +18,7 @@ public class CreatePostResult {
     private String content;
     private Long categoryId;
     private int views;
-    private String image;
+    private List<String> images;
     private OffsetDateTime createdAt;
 
     public static CreatePostResult from(Post post){
@@ -28,7 +29,7 @@ public class CreatePostResult {
                 post.getContent(),
                 post.getCategoryId(),
                 post.getViews(),
-                post.getImage(),
+                post.getImages(),
                 post.getCreatedAt()
         );
     }

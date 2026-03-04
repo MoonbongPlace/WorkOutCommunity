@@ -6,6 +6,90 @@ import { postApi } from '../api/endpoints/post'
 import { useAuth } from '../context/AuthContext'
 import type { PostDetailResult } from '../types/post'
 
+function ImageGallery({ images }: { images: string[] }) {
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+
+  if (images.length === 0) return null
+
+  function prev() {
+    setLightboxIdx((i) => (i !== null ? (i - 1 + images.length) % images.length : null))
+  }
+  function next() {
+    setLightboxIdx((i) => (i !== null ? (i + 1) % images.length : null))
+  }
+
+  return (
+    <>
+      <div className="mt-6 pt-5 border-t border-[#E8E7D1]">
+        <p className="text-xs font-medium text-gray-500 mb-3">첨부 이미지 ({images.length})</p>
+        <div className="flex flex-wrap gap-2">
+          {images.map((url, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setLightboxIdx(i)}
+              className="w-32 h-32 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity focus:outline-none"
+            >
+              <img src={url} alt={`이미지 ${i + 1}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 라이트박스 */}
+      {lightboxIdx !== null && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+          onClick={() => setLightboxIdx(null)}
+        >
+          {/* 이전 버튼 */}
+          {images.length > 1 && (
+            <button
+              className="absolute left-4 text-white text-3xl px-3 py-1 hover:bg-white/10 rounded-full transition-colors"
+              onClick={(e) => { e.stopPropagation(); prev() }}
+              aria-label="이전 이미지"
+            >
+              ‹
+            </button>
+          )}
+
+          <img
+            src={images[lightboxIdx]}
+            alt={`이미지 ${lightboxIdx + 1}`}
+            className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          {/* 다음 버튼 */}
+          {images.length > 1 && (
+            <button
+              className="absolute right-4 text-white text-3xl px-3 py-1 hover:bg-white/10 rounded-full transition-colors"
+              onClick={(e) => { e.stopPropagation(); next() }}
+              aria-label="다음 이미지"
+            >
+              ›
+            </button>
+          )}
+
+          {/* 인덱스 표시 */}
+          <span className="absolute bottom-5 text-white/70 text-sm">
+            {lightboxIdx + 1} / {images.length}
+          </span>
+
+          {/* 닫기 */}
+          <button
+            className="absolute top-4 right-4 text-white/70 hover:text-white text-2xl leading-none"
+            onClick={() => setLightboxIdx(null)}
+            aria-label="닫기"
+          >
+            ×
+          </button>
+        </div>
+      )}
+    </>
+  )
+}
+
 export default function PostDetailPage() {
   const { postId } = useParams<{ postId: string }>()
   const navigate   = useNavigate()
@@ -106,6 +190,8 @@ export default function PostDetailPage() {
           <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
             {post.content}
           </p>
+
+          <ImageGallery images={post.images ?? []} />
         </Card>
       )}
 

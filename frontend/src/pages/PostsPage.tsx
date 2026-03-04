@@ -82,14 +82,34 @@ export default function PostsPage() {
                   onClick={() => navigate(`/posts/${post.id}`)}
                 >
                   <Card className={`hover:border-[#A6A66A] transition-colors cursor-pointer${isAuthor ? ' pr-12' : ''}`}>
-                    <h2 className="font-semibold text-gray-800 mb-1">{post.title}</h2>
-                    <div className="flex gap-3 text-xs text-gray-500">
-                      <span>{post.createdAt.slice(0, 10)}</span>
-                      {post.categoryId && <span>카테고리 {post.categoryId}</span>}
+                    <div className="flex gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h2 className="font-semibold text-gray-800 mb-1">{post.title}</h2>
+                        <div className="flex gap-3 text-xs text-gray-500">
+                          <span>{post.createdAt.slice(0, 10)}</span>
+                          {post.categoryId && <span>카테고리 {post.categoryId}</span>}
+                        </div>
+                        {post.content && (
+                          <p className="text-sm text-gray-600 mt-2 line-clamp-2">{post.content}</p>
+                        )}
+                      </div>
+
+                      {/* 첫 번째 이미지 썸네일 */}
+                      {post.images && post.images.length > 0 && (
+                        <div className="relative flex-shrink-0">
+                          <img
+                            src={post.images[0]}
+                            alt="게시글 이미지"
+                            className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                          />
+                          {post.images.length > 1 && (
+                            <span className="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] px-1 rounded">
+                              +{post.images.length - 1}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {post.content && (
-                      <p className="text-sm text-gray-600 mt-2 line-clamp-2">{post.content}</p>
-                    )}
                   </Card>
                 </button>
 

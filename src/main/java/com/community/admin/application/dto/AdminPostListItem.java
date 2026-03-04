@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -17,7 +18,7 @@ public class AdminPostListItem {
     private String title;
     private String content;
     private Long categoryId;
-    private String image;
+    private List<String> images;
     private PostVisibility visibility;
     private OffsetDateTime createdAt;
 
@@ -28,7 +29,7 @@ public class AdminPostListItem {
                 post.getTitle(),
                 post.getContent(),
                 post.getCategoryId(),
-                post.getImage(),
+                post.getImages(),
                 post.getPostVisibility(),
                 post.getCreatedAt()
         );

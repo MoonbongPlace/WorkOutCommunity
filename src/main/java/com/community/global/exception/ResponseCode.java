@@ -33,6 +33,8 @@ public enum ResponseCode {
 
     WORK_OUT_LOG_ALREADY_EXIST("4091",HttpStatus.CONFLICT ,"이미 운동 일지가 존재합니다." ),
 
+    POST_IMAGE_LIMIT_EXCEEDED("4221", HttpStatus.BAD_REQUEST, "게시글 이미지는 최대 6장까지 첨부할 수 있습니다."),
+
     UNSUPPORTED_FILE_TYPE("4151",HttpStatus.UNSUPPORTED_MEDIA_TYPE ,"지원하지 않는 파일 양식입니다." ),
 
     FILE_UPLOAD_FAILED("5001",HttpStatus.INTERNAL_SERVER_ERROR ,"파일 업로드 실패." );

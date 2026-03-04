@@ -58,4 +58,9 @@ public class PostRepositoryAdapter implements PostRepository {
         public Page<Post> findAll(Pageable pageable) {
                 return postJpaRepository.findAll(pageable);
         }
+
+        @Override
+        public Page<Post> findAllByMemberId(Long memberId, Pageable pageable) {
+                return postJpaRepository.findAllByMemberId(memberId, pageable);
+        }
 }

@@ -24,4 +24,7 @@ public interface PostRepository {
 
     // 게시글 전체 조회 : 숨김 처리 비활성화
     Page<Post> findAll(Pageable pageable);
+
+    // 내 게시글 조회
+    Page<Post> findAllByMemberId(Long memberId, Pageable pageable);
 }

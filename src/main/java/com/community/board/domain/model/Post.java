@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.List;
 
 @Entity(name = "Post")
 @Table(name = "posts")
@@ -34,7 +36,9 @@ public class Post {
     @JoinColumn(name="member_id")
     private Long memberId; // User ID 참조 (객체 참조 X)
 
-    private String image;
+    @Convert(converter = StringListConverter.class)
+    @Column(name="image", length = 2048)
+    private List<String> images = Collections.emptyList();
 
     @Column(name="created_at", updatable = false)
     private OffsetDateTime createdAt;
@@ -49,14 +53,13 @@ public class Post {
     @Column(name="visibility", nullable = false)
     private PostVisibility postVisibility;
 
-    public static Post fromRequest(Long memberId, CreatePostRequest request) {
+    public static Post create(Long memberId, CreatePostRequest request, List<String> imageUrls) {
         Post post = new Post();
         post.setTitle(request.getTitle());
-        // 삭제 예정
         post.setMemberId(memberId);
         post.setContent(request.getContent());
         post.setCategoryId(request.getCategoryId());
-        post.setImage(request.getImage());
+        post.setImages(imageUrls != null ? imageUrls : Collections.emptyList());
         post.setPostVisibility(PostVisibility.VISIBLE);
         post.setCreatedAt(OffsetDateTime.now());
         return post;

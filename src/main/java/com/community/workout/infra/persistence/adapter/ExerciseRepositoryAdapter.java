@@ -17,6 +17,11 @@ public class ExerciseRepositoryAdapter implements ExerciseRepository {
 
 
     @Override
+    public List<Exercise> findAll() {
+        return exerciseJpaRepository.findAll();
+    }
+
+    @Override
     public Optional<Exercise> findByName(String name) {
         return exerciseJpaRepository.findByName(name);
     }
