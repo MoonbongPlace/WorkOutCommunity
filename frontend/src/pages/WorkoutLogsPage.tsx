@@ -4,21 +4,21 @@ import PageHeader from '../components/ui/PageHeader'
 import Card from '../components/ui/Card'
 import StateBlock from '../components/ui/StateBlock'
 import { workoutLogApi } from '../api/endpoints/workoutLog'
-import type { WorkoutLogSummary } from '../types/workoutLog'
+import WorkoutLogCalendar from '../components/workout/WorkoutLogCalendar'
 
 type Status = 'loading' | 'success' | 'empty' | 'error'
 
 export default function WorkoutLogsPage() {
   const navigate = useNavigate()
   const [status, setStatus] = useState<Status>('loading')
-  const [logs,   setLogs]   = useState<WorkoutLogSummary[]>([])
+  const [logMap, setLogMap] = useState<Map<string, number>>(new Map())
 
   async function load() {
     setStatus('loading')
     try {
       const { data } = await workoutLogApi.list()
       const items = data.workOutLogListResult.workOutLogList
-      setLogs(items)
+      setLogMap(new Map(items.map(l => [l.logDate, l.id])))
       setStatus(items.length === 0 ? 'empty' : 'success')
     } catch {
       setStatus('error')
@@ -41,25 +41,10 @@ export default function WorkoutLogsPage() {
 
       {status === 'loading' && <StateBlock type="loading" />}
       {status === 'error'   && <StateBlock type="error" onRetry={() => void load()} />}
-      {status === 'empty'   && <StateBlock type="empty" message="운동일지가 없습니다." />}
-      {status === 'success' && (
-        <ul className="flex flex-col gap-3">
-          {logs.map((log) => (
-            <li key={log.id}>
-              <button
-                className="w-full text-left"
-                onClick={() => navigate(`/workout-logs/${log.id}`)}
-              >
-                <Card className="hover:border-[#A6A66A] transition-colors cursor-pointer">
-                  <h2 className="font-semibold text-gray-800 mb-1">{log.logDate}</h2>
-                  <div className="text-xs text-gray-500">
-                    기록일: {log.createdAt.slice(0, 10)}
-                  </div>
-                </Card>
-              </button>
-            </li>
-          ))}
-        </ul>
+      {(status === 'success' || status === 'empty') && (
+        <Card>
+          <WorkoutLogCalendar logMap={logMap} />
+        </Card>
       )}
     </div>
   )

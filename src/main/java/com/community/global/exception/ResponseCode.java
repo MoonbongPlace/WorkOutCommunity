@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum ResponseCode {
 
     INVALID_REQUEST("4001",HttpStatus.BAD_REQUEST ,"잘못된 요청입니다." ),
+    NO_FIELDS_TO_UPDATE("4002",HttpStatus.BAD_REQUEST ,"수정할 필드가 존재하지 않습니다." ),
 
     TOKEN_MISSING("4019", HttpStatus.UNAUTHORIZED, "토큰이 없습니다."),
     TOKEN_EXPIRED("4018", HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
@@ -30,7 +31,11 @@ public enum ResponseCode {
     POST_ALREADY_DELETED("4033",HttpStatus.FORBIDDEN ,"DELETED 게시글 입니다." ),
     INVALID_MEMBER("4033",HttpStatus.FORBIDDEN ,"작성자과 ID가 일치하지 않습니다. " ),
 
-    WORK_OUT_LOG_ALREADY_EXIST("4091",HttpStatus.CONFLICT ,"이미 운동 일지가 존재합니다." );
+    WORK_OUT_LOG_ALREADY_EXIST("4091",HttpStatus.CONFLICT ,"이미 운동 일지가 존재합니다." ),
+
+    UNSUPPORTED_FILE_TYPE("4151",HttpStatus.UNSUPPORTED_MEDIA_TYPE ,"지원하지 않는 파일 양식입니다." ),
+
+    FILE_UPLOAD_FAILED("5001",HttpStatus.INTERNAL_SERVER_ERROR ,"파일 업로드 실패." );
 
     private final String code;
     private final HttpStatus status;

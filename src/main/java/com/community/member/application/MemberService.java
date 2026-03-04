@@ -1,5 +1,6 @@
 package com.community.member.application;
 
+import com.community.global.component.ProfileImageStorage;
 import com.community.global.exception.CommonException;
 import com.community.global.exception.ResponseCode;
 import com.community.member.api.dto.request.UpdateMemberRequest;
@@ -7,44 +8,46 @@ import com.community.member.application.dto.DeletedMemberResult;
 import com.community.member.application.dto.DetailMemberResult;
 import com.community.member.application.dto.UpdatedMemberResult;
 import com.community.member.domain.model.Member;
-import com.community.member.domain.model.MemberStatus;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.time.OffsetDateTime;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepositoryAdapter memberRepositoryAdapter;
-    private final PasswordEncoder passwordEncoder;
+    private final ProfileImageStorage profileImageStorage;
 
     @Transactional(readOnly = true)
     public DetailMemberResult getMemberProfile(Long id) {
-        Member member = memberRepositoryAdapter.findById(id)
+        Member member = memberRepositoryAdapter.findActiveById(id)
                 .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
         return DetailMemberResult.from(member);
     }
 
     @Transactional
-    public UpdatedMemberResult updateProfile(UpdateMemberRequest request, Long id) {
-        Member member = memberRepositoryAdapter.findById(id)
-                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+    public UpdatedMemberResult updateProfile(UpdateMemberRequest request, Long id, MultipartFile profileImage) {
+        Member member = memberRepositoryAdapter.findActiveById(id)
+                .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-        member.updateMember(request, encodedPassword);
+        String profileImageUrl = null;
+        if (profileImage != null && !profileImage.isEmpty()) {
+            profileImageUrl = profileImageStorage.store(profileImage);
+        }
+        member.updateMember(request, profileImageUrl);
 
         return UpdatedMemberResult.from(member);
     }
 
     @Transactional
     public DeletedMemberResult withDrawProfile(Long memberId) {
-        Member member = memberRepositoryAdapter.findById(memberId)
+        Member member = memberRepositoryAdapter.findActiveById(memberId)
                 .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
         member.deleteMember();

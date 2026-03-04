@@ -85,11 +85,6 @@ public class WorkOutLogService {
     @Transactional(readOnly = true)
     public WorkOutLogListResult getListWorkOutLog(Long memberId) {
         List<WorkOutLog> workOutLogList = workOutLogRepositoryAdapter.findAllByMemberIdOrderByLogDateDesc(memberId);
-
-        if (workOutLogList.isEmpty()){
-            throw new CommonException(ResponseCode.WORKOUT_LOG_NOT_FOUND);
-        }
-
         return WorkOutLogListResult.of(workOutLogList);
     }
 
