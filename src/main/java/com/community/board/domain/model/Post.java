@@ -53,6 +53,9 @@ public class Post {
     @Column(name="visibility", nullable = false)
     private PostVisibility postVisibility;
 
+    @Column(name = "like_count")
+    private int likeCount;
+
     public static Post create(Long memberId, CreatePostRequest request, List<String> imageUrls) {
         Post post = new Post();
         post.setTitle(request.getTitle());
@@ -62,8 +65,11 @@ public class Post {
         post.setImages(imageUrls != null ? imageUrls : Collections.emptyList());
         post.setPostVisibility(PostVisibility.VISIBLE);
         post.setCreatedAt(OffsetDateTime.now());
+        post.setLikeCount(0);
         return post;
     }
+
+    public void increaseLikeCount() { this.likeCount++; }
 
     public void increaseViews() {
         this.views++;

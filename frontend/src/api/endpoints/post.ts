@@ -5,8 +5,10 @@ export const postApi = {
   me: (page = 0, size = 20) =>
     axiosInstance.get<PostListResponse>('/v1/posts/me', { params: { page, size, sort: 'createdAt,desc' } }),
 
-  list: (page = 0, size = 20) =>
-    axiosInstance.get<PostListResponse>('/v1/posts', { params: { page, size, sort: 'createdAt,desc' } }),
+  list: (page = 0, size = 20, categoryId?: number) =>
+    axiosInstance.get<PostListResponse>('/v1/posts', {
+      params: { page, size, sort: 'createdAt,desc', ...(categoryId != null && { categoryId }) },
+    }),
 
   detail: (postId: number) =>
     axiosInstance.get<PostDetailResponse>(`/v1/posts/${postId}`),

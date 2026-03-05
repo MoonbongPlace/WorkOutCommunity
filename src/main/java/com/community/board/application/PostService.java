@@ -8,6 +8,8 @@ import com.community.board.infra.persistence.PostRepositoryAdapter;
 import com.community.global.component.ImageStorage;
 import com.community.global.exception.CommonException;
 import com.community.global.exception.ResponseCode;
+import com.community.member.domain.model.Member;
+import com.community.member.infra.persistence.MemberRepositoryAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,14 +29,26 @@ public class PostService {
     private static final int MAX_IMAGES = 6;
 
     private final PostRepositoryAdapter postRepositoryAdapter;
+    private final MemberRepositoryAdapter memberRepositoryAdapter;
     private final ImageStorage profileImageStorage;
 
     // 게시글 리스트 조회
     @Transactional(readOnly = true)
-    public PostListResult getPostList(Pageable pageable) {
-        Page<Post> page = postRepositoryAdapter.findAllActiveByVisibility(pageable);
+    public PostListResult getPostList(Long categoryId, Pageable pageable) {
+        Page<Post> page = categoryId != null
+                ? postRepositoryAdapter.findAllActiveByVisibilityAndCategoryId(categoryId, pageable)
+                : postRepositoryAdapter.findAllActiveByVisibility(pageable);
 
-        return PostListResult.from(page);
+        List<PostListItem> items = page.getContent().stream()
+                .map(post -> {
+                    String memberName = memberRepositoryAdapter.findById(post.getMemberId())
+                            .map(Member::getMemberName)
+                            .orElse("알 수 없음");
+                    return PostListItem.from(post, memberName);
+                })
+                .toList();
+
+        return PostListResult.from(items, page);
     }
 
     // 특정 게시글 상세 조회
@@ -43,7 +57,11 @@ public class PostService {
         Post post = postRepositoryAdapter.findActiveVisibleById(postId)
                 .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
 
-        return DetailPostResult.from(post);
+        String memberName = memberRepositoryAdapter.findById(post.getMemberId())
+                .map(Member::getMemberName)
+                .orElse("알 수 없음");
+
+        return DetailPostResult.from(post, memberName);
     }
 
     // 게시글 생성 (이미지 최대 6장)
@@ -61,7 +79,7 @@ public class PostService {
     // 게시글 수정 (keepImages: 유지할 기존 이미지 URL, images: 새로 업로드할 이미지)
     @Transactional
     public UpdatePostResult update(final UpdatePostRequest request, Long postId, List<MultipartFile> images) {
-        Post post = postRepositoryAdapter.findById(postId)
+        Post post = postRepositoryAdapter.findActiveById(postId)
                 .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
 
         List<String> keepImages = request.getKeepImages() != null ? request.getKeepImages() : Collections.emptyList();
@@ -82,13 +100,23 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostListResult getMyPostList(Long memberId, Pageable pageable) {
         Page<Post> page = postRepositoryAdapter.findAllByMemberId(memberId, pageable);
-        return PostListResult.from(page);
+
+        List<PostListItem> items = page.getContent().stream()
+                .map(post -> {
+                    String memberName = memberRepositoryAdapter.findById(post.getMemberId())
+                            .map(Member::getMemberName)
+                            .orElse("알 수 없음");
+                    return PostListItem.from(post, memberName);
+                })
+                .toList();
+
+        return PostListResult.from(items, page);
     }
 
     // 게시글 삭제
     @Transactional
     public DeletePostResult delete(Long postId) {
-        Post post = postRepositoryAdapter.findById(postId).orElseThrow();
+        Post post = postRepositoryAdapter.findActiveById(postId).orElseThrow();
 
         // 임시 방편 체크
         if (post.getDeletedAt() != null){

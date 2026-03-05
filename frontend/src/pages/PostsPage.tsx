@@ -1,26 +1,58 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Card from '../components/ui/Card'
 import StateBlock from '../components/ui/StateBlock'
 import { postApi } from '../api/endpoints/post'
+import { categoryApi } from '../api/endpoints/category'
 import { useAuth } from '../context/AuthContext'
 import type { PostListItem } from '../types/post'
+import type { CategoryItem } from '../types/category'
 
 type Status = 'loading' | 'success' | 'empty' | 'error'
 
 export default function PostsPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [status,       setStatus]       = useState<Status>('loading')
-  const [posts,        setPosts]        = useState<PostListItem[]>([])
-  const [openMenuId,   setOpenMenuId]   = useState<number | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
-  const [deleting,     setDeleting]     = useState(false)
+  const [status,         setStatus]         = useState<Status>('loading')
+  const [posts,          setPosts]          = useState<PostListItem[]>([])
+  const [openMenuId,     setOpenMenuId]     = useState<number | null>(null)
+  const [deleteTarget,   setDeleteTarget]   = useState<number | null>(null)
+  const [deleting,       setDeleting]       = useState(false)
+  const [categories,     setCategories]     = useState<CategoryItem[]>([])
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null)
+  const tabNavRef = useRef<HTMLElement>(null)
 
-  async function load() {
+  function scrollTabs(direction: 'left' | 'right') {
+    if (!tabNavRef.current) return
+    tabNavRef.current.scrollBy({ left: direction === 'left' ? -160 : 160, behavior: 'smooth' })
+  }
+
+  // 마우스 휠로 탭 수평 스크롤 (passive: false 필수)
+  useEffect(() => {
+    const nav = tabNavRef.current
+    if (!nav) return
+    const handler = (e: WheelEvent) => {
+      if (e.deltaY === 0) return
+      e.preventDefault()
+      nav.scrollBy({ left: e.deltaY, behavior: 'smooth' })
+    }
+    nav.addEventListener('wheel', handler, { passive: false })
+    return () => nav.removeEventListener('wheel', handler)
+  }, [])
+
+  async function loadCategories() {
+    try {
+      const { data } = await categoryApi.list()
+      setCategories(data.categoryListResult.categoryList)
+    } catch {
+      // 카테고리 로드 실패 시 탭 없이 전체 조회만 제공
+    }
+  }
+
+  async function load(categoryId: number | null = activeCategoryId) {
     setStatus('loading')
     try {
-      const { data } = await postApi.list()
+      const { data } = await postApi.list(0, 20, categoryId ?? undefined)
       const items = data.postListResult.content
       setPosts(items)
       setStatus(items.length === 0 ? 'empty' : 'success')
@@ -29,7 +61,15 @@ export default function PostsPage() {
     }
   }
 
-  useEffect(() => { void load() }, [])
+  useEffect(() => {
+    void loadCategories()
+    void load(null)
+  }, [])
+
+  function handleTabChange(categoryId: number | null) {
+    setActiveCategoryId(categoryId)
+    void load(categoryId)
+  }
 
   // 메뉴 외부 클릭 시 닫기
   useEffect(() => {
@@ -56,7 +96,7 @@ export default function PostsPage() {
   return (
     <div>
       {/* 헤더 + 글쓰기 버튼 */}
-      <div className="mb-6 border-b border-[#E8E7D1] pb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#7A7F3A]">게시판</h1>
           <p className="mt-1 text-sm text-gray-500">커뮤니티 게시물</p>
@@ -66,8 +106,64 @@ export default function PostsPage() {
         </button>
       </div>
 
+      {/* 카테고리 탭 */}
+      <div className="mb-5 rounded-lg bg-[#F3F3E6] border border-[#E0DFC4] px-2 py-1 flex items-center gap-1">
+        {/* 왼쪽 스크롤 버튼 */}
+        {categories.length > 0 && (
+          <button
+            onClick={() => scrollTabs('left')}
+            className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-[#7A7F3A] hover:bg-[#E0DFC4] transition-colors"
+            aria-label="이전 탭"
+          >
+            ‹
+          </button>
+        )}
+
+        {/* 탭 네비게이션 */}
+        <nav
+          ref={tabNavRef}
+          className="flex gap-1 flex-1 overflow-x-auto"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
+        >
+          <button
+            onClick={() => handleTabChange(null)}
+            className={`shrink-0 px-4 py-1.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+              activeCategoryId === null
+                ? 'bg-white text-[#7A7F3A] shadow-sm border border-[#C8C89A]'
+                : 'text-gray-500 hover:text-[#7A7F3A] hover:bg-white/60'
+            }`}
+          >
+            전체
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => handleTabChange(cat.id)}
+              className={`shrink-0 px-4 py-1.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+                activeCategoryId === cat.id
+                  ? 'bg-white text-[#7A7F3A] shadow-sm border border-[#C8C89A]'
+                  : 'text-gray-500 hover:text-[#7A7F3A] hover:bg-white/60'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </nav>
+
+        {/* 오른쪽 스크롤 버튼 */}
+        {categories.length > 0 && (
+          <button
+            onClick={() => scrollTabs('right')}
+            className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-[#7A7F3A] hover:bg-[#E0DFC4] transition-colors"
+            aria-label="다음 탭"
+          >
+            ›
+          </button>
+        )}
+      </div>
+
       {status === 'loading' && <StateBlock type="loading" />}
-      {status === 'error'   && <StateBlock type="error" onRetry={() => void load()} />}
+      {status === 'error'   && <StateBlock type="error" onRetry={() => void load(activeCategoryId)} />}
       {status === 'empty'   && <StateBlock type="empty" message="게시물이 없습니다." />}
       {status === 'success' && (
         <ul className="flex flex-col gap-3">
@@ -86,8 +182,16 @@ export default function PostsPage() {
                       <div className="flex-1 min-w-0">
                         <h2 className="font-semibold text-gray-800 mb-1">{post.title}</h2>
                         <div className="flex gap-3 text-xs text-gray-500">
+                          <span>{post.memberName}</span>
                           <span>{post.createdAt.slice(0, 10)}</span>
-                          {post.categoryId && <span>카테고리 {post.categoryId}</span>}
+                          {post.categoryId && (() => {
+                            const cat = categories.find((c) => c.id === post.categoryId)
+                            return cat ? (
+                              <span className="bg-[#F0F0E0] text-[#7A7F3A] px-2 py-0.5 rounded-full text-[11px] font-medium">
+                                {cat.name}
+                              </span>
+                            ) : null
+                          })()}
                         </div>
                         {post.content && (
                           <p className="text-sm text-gray-600 mt-2 line-clamp-2">{post.content}</p>

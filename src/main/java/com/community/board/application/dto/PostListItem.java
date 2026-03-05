@@ -11,27 +11,31 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"id","memberId","title","content","categoryId","images","visibility","createdAt"})
+@JsonPropertyOrder({"id","memberId","memberName","title","content","categoryId","images","visibility","createdAt","likeCount"})
 public class PostListItem {
     private Long id;
     private Long memberId;
+    private String memberName;
     private String title;
     private String content;
     private Long categoryId;
     private List<String> images;
     private PostVisibility visibility;
     private OffsetDateTime createdAt;
+    private int likeCount;
 
-    public static PostListItem from(Post post) {
+    public static PostListItem from(Post post, String memberName) {
         return new PostListItem(
                 post.getId(),
                 post.getMemberId(),
+                memberName,
                 post.getTitle(),
                 post.getContent(),
                 post.getCategoryId(),
                 post.getImages(),
                 post.getPostVisibility(),
-                post.getCreatedAt()
+                post.getCreatedAt(),
+                post.getLikeCount()
         );
     }
 }

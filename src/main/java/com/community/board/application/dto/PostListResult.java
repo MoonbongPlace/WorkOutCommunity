@@ -1,6 +1,5 @@
 package com.community.board.application.dto;
 
-import com.community.board.domain.model.Post;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,9 +19,9 @@ public class PostListResult {
     private int totalPages;
     private boolean last;
 
-    public static PostListResult from(Page<Post> page) {
+    public static PostListResult from(List<PostListItem> items, Page<?> page) {
         return new PostListResult(
-                page.getContent().stream().map(PostListItem::from).toList(),
+                items,
                 page.getNumber(),
                 page.getSize(),
                 page.getTotalElements(),

@@ -3,8 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom'
 import Card from '../components/ui/Card'
 import StateBlock from '../components/ui/StateBlock'
 import { postApi } from '../api/endpoints/post'
+import { commentApi } from '../api/endpoints/comment'
 import { useAuth } from '../context/AuthContext'
 import type { PostDetailResult } from '../types/post'
+import type { CommentItem } from '../types/comment'
 
 function ImageGallery({ images }: { images: string[] }) {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
@@ -42,7 +44,6 @@ function ImageGallery({ images }: { images: string[] }) {
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
           onClick={() => setLightboxIdx(null)}
         >
-          {/* 이전 버튼 */}
           {images.length > 1 && (
             <button
               className="absolute left-4 text-white text-3xl px-3 py-1 hover:bg-white/10 rounded-full transition-colors"
@@ -60,7 +61,6 @@ function ImageGallery({ images }: { images: string[] }) {
             onClick={(e) => e.stopPropagation()}
           />
 
-          {/* 다음 버튼 */}
           {images.length > 1 && (
             <button
               className="absolute right-4 text-white text-3xl px-3 py-1 hover:bg-white/10 rounded-full transition-colors"
@@ -71,12 +71,10 @@ function ImageGallery({ images }: { images: string[] }) {
             </button>
           )}
 
-          {/* 인덱스 표시 */}
           <span className="absolute bottom-5 text-white/70 text-sm">
             {lightboxIdx + 1} / {images.length}
           </span>
 
-          {/* 닫기 */}
           <button
             className="absolute top-4 right-4 text-white/70 hover:text-white text-2xl leading-none"
             onClick={() => setLightboxIdx(null)}
@@ -87,6 +85,126 @@ function ImageGallery({ images }: { images: string[] }) {
         </div>
       )}
     </>
+  )
+}
+
+function CommentSection({ postId }: { postId: number }) {
+  const { user } = useAuth()
+  const [comments, setComments] = useState<CommentItem[]>([])
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
+  const [input, setInput] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+
+  async function loadComments() {
+    setStatus('loading')
+    try {
+      const { data } = await commentApi.list(postId)
+      setComments(data.getCommentsResult.comments)
+      setStatus('success')
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  useEffect(() => { void loadComments() }, [postId])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!input.trim() || submitting) return
+    setSubmitting(true)
+    try {
+      await commentApi.create(postId, { content: input.trim() })
+      setInput('')
+      await loadComments()
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleDelete(commentId: number) {
+    setDeletingId(commentId)
+    try {
+      await commentApi.remove(postId, commentId)
+      setComments((prev) => prev.filter((c) => c.id !== commentId))
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  return (
+    <div className="mt-4">
+      <Card>
+        <h2 className="text-base font-semibold text-gray-800 mb-4">
+          댓글 {status === 'success' ? `(${comments.length})` : ''}
+        </h2>
+
+        {/* 댓글 목록 */}
+        {status === 'loading' && (
+          <p className="text-sm text-gray-400 py-4 text-center">불러오는 중...</p>
+        )}
+        {status === 'error' && (
+          <div className="text-sm text-red-500 py-4 text-center">
+            댓글을 불러오지 못했습니다.{' '}
+            <button className="underline" onClick={() => void loadComments()}>재시도</button>
+          </div>
+        )}
+        {status === 'success' && (
+          <>
+            {comments.length === 0 ? (
+              <p className="text-sm text-gray-400 py-4 text-center">아직 댓글이 없습니다.</p>
+            ) : (
+              <ul className="space-y-3 mb-4">
+                {comments.map((c) => (
+                  <li key={c.id} className="flex items-start justify-between gap-3 py-3 border-b border-[#E8E7D1] last:border-0">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-medium text-gray-700">{c.memberName}</span>
+                        <span className="text-xs text-gray-400">{c.createdAt.slice(0, 10)}</span>
+                      </div>
+                      <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{c.content}</p>
+                    </div>
+                    {user && user.id === c.memberId && (
+                      <button
+                        className="flex-shrink-0 text-xs text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                        onClick={() => void handleDelete(c.id)}
+                        disabled={deletingId === c.id}
+                        aria-label="댓글 삭제"
+                      >
+                        삭제
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+
+        {/* 댓글 입력 */}
+        {user ? (
+          <form onSubmit={(e) => void handleSubmit(e)} className="flex gap-2 pt-2">
+            <input
+              className="flex-1 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#A6A66A]"
+              placeholder="댓글을 입력하세요 (최대 255자)"
+              maxLength={255}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={submitting}
+            />
+            <button
+              type="submit"
+              className="bg-[#7A7F3A] text-white rounded-xl px-4 py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+              disabled={!input.trim() || submitting}
+            >
+              {submitting ? '등록 중' : '등록'}
+            </button>
+          </form>
+        ) : (
+          <p className="text-xs text-gray-400 pt-2">댓글을 작성하려면 로그인이 필요합니다.</p>
+        )}
+      </Card>
+    </div>
   )
 }
 
@@ -114,7 +232,6 @@ export default function PostDetailPage() {
 
   useEffect(() => { void load() }, [postId])
 
-  // 메뉴 외부 클릭 시 닫기
   useEffect(() => {
     if (!menuOpen) return
     function handleClick() { setMenuOpen(false) }
@@ -148,51 +265,56 @@ export default function PostDetailPage() {
       {status === 'loading' && <StateBlock type="loading" />}
       {status === 'error'   && <StateBlock type="error" onRetry={() => void load()} />}
       {status === 'success' && post && (
-        <Card>
-          <div className="flex items-start justify-between mb-3">
-            <h1 className="text-xl font-bold text-gray-800">{post.title}</h1>
+        <>
+          <Card>
+            <div className="flex items-start justify-between mb-3">
+              <h1 className="text-xl font-bold text-gray-800">{post.title}</h1>
 
-            {isAuthor && (
-              <div className="relative ml-2 flex-shrink-0">
-                <button
-                  className="p-1.5 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600 text-lg leading-none"
-                  onClick={(e) => { e.stopPropagation(); setMenuOpen((prev) => !prev) }}
-                  aria-label="게시글 관리"
-                >
-                  ⋮
-                </button>
+              {isAuthor && (
+                <div className="relative ml-2 flex-shrink-0">
+                  <button
+                    className="p-1.5 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600 text-lg leading-none"
+                    onClick={(e) => { e.stopPropagation(); setMenuOpen((prev) => !prev) }}
+                    aria-label="게시글 관리"
+                  >
+                    ⋮
+                  </button>
 
-                {menuOpen && (
-                  <div className="absolute right-0 top-9 w-28 bg-white border border-[#E8E7D1] rounded-lg shadow-md z-10 py-1">
-                    <button
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#E8E7D1] transition-colors"
-                      onClick={() => { setMenuOpen(false); navigate(`/posts/${postId}/edit`) }}
-                    >
-                      수정
-                    </button>
-                    <button
-                      className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
-                      onClick={() => { setMenuOpen(false); setShowDeleteModal(true) }}
-                    >
-                      삭제
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+                  {menuOpen && (
+                    <div className="absolute right-0 top-9 w-28 bg-white border border-[#E8E7D1] rounded-lg shadow-md z-10 py-1">
+                      <button
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#E8E7D1] transition-colors"
+                        onClick={() => { setMenuOpen(false); navigate(`/posts/${postId}/edit`) }}
+                      >
+                        수정
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                        onClick={() => { setMenuOpen(false); setShowDeleteModal(true) }}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
-          <div className="flex gap-3 text-xs text-gray-400 mb-6 pb-4 border-b border-[#E8E7D1]">
-            <span>조회 {post.views}</span>
-            <span>{post.createdAt.slice(0, 10)}</span>
-          </div>
+            <div className="flex gap-3 text-xs text-gray-400 mb-6 pb-4 border-b border-[#E8E7D1]">
+              <span>{post.memberName}</span>
+              <span>조회 {post.views}</span>
+              <span>{post.createdAt.slice(0, 10)}</span>
+            </div>
 
-          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-            {post.content}
-          </p>
+            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {post.content}
+            </p>
 
-          <ImageGallery images={post.images ?? []} />
-        </Card>
+            <ImageGallery images={post.images ?? []} />
+          </Card>
+
+          <CommentSection postId={Number(postId)} />
+        </>
       )}
 
       {/* 삭제 확인 모달 */}

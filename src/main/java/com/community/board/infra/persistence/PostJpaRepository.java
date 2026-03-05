@@ -49,4 +49,10 @@ public interface PostJpaRepository extends JpaRepository<Post, Long> {
             @Param("memberId") Long memberId,
             Pageable pageable
     );
+
+    Page<Post> findAllByDeletedAtIsNullAndPostVisibilityAndCategoryId(
+            PostVisibility postVisibility,
+            Long categoryId,
+            Pageable pageable
+    );
 }

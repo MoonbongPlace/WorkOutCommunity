@@ -66,7 +66,7 @@ public class AdminService {
     // 관리자 : 게시글 상세 조회
     @Transactional(readOnly = true)
     public AdminPostDetailResult detailPost(Long postId) {
-        Post post = postRepositoryAdapter.findById(postId)
+        Post post = postRepositoryAdapter.findActiveById(postId)
                 .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
 
         return AdminPostDetailResult.from(post);
@@ -75,7 +75,7 @@ public class AdminService {
     // 관리자 : 게시글 상태 변경
     @Transactional
     public AdminPostVisibilityUpdateResult updatePostVisibility(PostVisibility visibility, Long postId) {
-        Post post = postRepositoryAdapter.findById(postId)
+        Post post = postRepositoryAdapter.findActiveById(postId)
                 .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
 
         if (post.getDeletedAt()!= null) {

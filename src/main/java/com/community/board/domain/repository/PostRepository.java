@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface PostRepository {
     Post save(Post post);
-    Optional<Post> findById(Long id);
+    Optional<Post> findActiveById(Long id);
     List<Post> findLatest(int size);
     void deleteById(Long id);
 
@@ -27,4 +27,7 @@ public interface PostRepository {
 
     // 내 게시글 조회
     Page<Post> findAllByMemberId(Long memberId, Pageable pageable);
+
+    // 카테고리별 게시글 조회
+    Page<Post> findAllActiveByVisibilityAndCategoryId(Long categoryId, Pageable pageable);
 }

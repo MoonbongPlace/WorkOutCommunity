@@ -61,16 +61,16 @@ public class PostController {
     // 게시글 리스트 조회
     @GetMapping
     public ResponseEntity<PostListResponse> listPost(
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {
-        PostListResult postListResult = postService.getPostList(pageable);
+        PostListResult postListResult = postService.getPostList(categoryId, pageable);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(PostListResponse.from(postListResult, "게시글 리스트 조회 성공"));
     }
-
     // 특정 게시글 상세 조회
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponse> findPost(
@@ -119,7 +119,7 @@ public class PostController {
             @RequestPart(value = "images", required = false) List<MultipartFile> images
     ) throws Exception {
         Long memberId = principal.memberId();
-        Post post = postRepositoryAdapter.findById(postId)
+        Post post = postRepositoryAdapter.findActiveById(postId)
                 .orElseThrow(() -> new CommonException(ResponseCode.POST_NOT_FOUND));
 
         if (!post.getMemberId().equals(memberId)) {
@@ -151,7 +151,7 @@ public class PostController {
             @PathVariable(name = "postId") final Long postId
     ) {
         Long memberId = principal.memberId();
-        Post post = postRepositoryAdapter.findById(postId)
+        Post post = postRepositoryAdapter.findActiveById(postId)
                 .orElseThrow(() -> new CommonException(ResponseCode.POST_NOT_FOUND));
 
         if (!post.getMemberId().equals(memberId)) {

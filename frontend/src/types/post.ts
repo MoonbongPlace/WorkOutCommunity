@@ -2,6 +2,7 @@
 export interface PostListItem {
   id: number
   memberId: number
+  memberName: string
   title: string
   content: string
   categoryId: number | null
@@ -30,6 +31,7 @@ export interface PostListResponse {
 export interface PostDetailResult {
   id: number
   member_id: number
+  memberName: string
   title: string
   content: string
   categoryId: number | null

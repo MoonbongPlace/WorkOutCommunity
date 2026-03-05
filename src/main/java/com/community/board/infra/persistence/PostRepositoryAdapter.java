@@ -24,7 +24,7 @@ public class PostRepositoryAdapter implements PostRepository {
         }
 
         @Override
-        public Optional<Post> findById(Long id) {
+        public Optional<Post> findActiveById(Long id) {
                 return postJpaRepository.findById(id);
         }
 
@@ -62,5 +62,11 @@ public class PostRepositoryAdapter implements PostRepository {
         @Override
         public Page<Post> findAllByMemberId(Long memberId, Pageable pageable) {
                 return postJpaRepository.findAllByMemberId(memberId, pageable);
+        }
+
+        @Override
+        public Page<Post> findAllActiveByVisibilityAndCategoryId(Long categoryId, Pageable pageable) {
+                return postJpaRepository.findAllByDeletedAtIsNullAndPostVisibilityAndCategoryId(
+                        PostVisibility.VISIBLE, categoryId, pageable);
         }
 }
