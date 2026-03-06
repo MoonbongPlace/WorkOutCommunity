@@ -54,3 +54,5 @@ src/main/resources/application-*.yml
 src/main/resources/application-*.yaml
 
 .claude/settings.local.json
+
+uploads/*

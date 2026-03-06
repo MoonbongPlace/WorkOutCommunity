@@ -1,34 +1,35 @@
 import Calendar from 'react-calendar'
-import { useNavigate } from 'react-router-dom'
 
 interface Props {
   logMap: Map<string, number>
+  selectedDate: string | null
+  onDateSelect: (dateKey: string) => void
 }
 
-export default function WorkoutLogCalendar({ logMap }: Props) {
-  const navigate = useNavigate()
-
-  function tileContent({ date }: { date: Date }) {
-    const key = date.toLocaleDateString('sv') // "YYYY-MM-DD"
-    if (!logMap.has(key)) return null
+export default function WorkoutLogCalendar({ logMap, selectedDate, onDateSelect }: Props) {
+  function tileContent({ date, view }: { date: Date; view: string }) {
+    if (view !== 'month') return null
+    const key = date.toLocaleDateString('sv')
+    const hasLog = logMap.has(key)
     return (
-      <div className="flex justify-center mt-0.5">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#7A7F3A]" />
+      <div className="flex justify-center items-center mt-0.5 h-2">
+        {hasLog && <span className="w-1.5 h-1.5 rounded-full bg-[#7A7F3A] tile-dot" />}
       </div>
     )
   }
 
-  function handleClickDay(date: Date) {
-    const key = date.toLocaleDateString('sv')
-    const id = logMap.get(key)
-    if (id !== undefined) navigate(`/workout-logs/${id}`)
+  function tileClassName({ date, view }: { date: Date; view: string }) {
+    if (view !== 'month') return null
+    return date.toLocaleDateString('sv') === selectedDate ? 'calendar-tile--selected' : null
   }
 
   return (
     <Calendar
       locale="ko-KR"
+      minDetail="year"
       tileContent={tileContent}
-      onClickDay={handleClickDay}
+      tileClassName={tileClassName}
+      onClickDay={(date) => onDateSelect(date.toLocaleDateString('sv'))}
       className="!border-none !w-full"
     />
   )

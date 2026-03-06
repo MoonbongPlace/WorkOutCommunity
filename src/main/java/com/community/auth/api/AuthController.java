@@ -42,20 +42,12 @@ public class AuthController {
     private final RefreshTokenCookieManager refreshTokenCookieManager;
 
     // 회원가입
-    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/signup")
     public ResponseEntity<SignupResponse> signup(
-            @RequestPart("data") String data,
-            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
-    ) throws JsonProcessingException {
+            @RequestBody @Valid SignupRequest request
+    ) {
 
-        SignupRequest request = objectMapper.readValue(data, SignupRequest.class);
-
-        Set<ConstraintViolation<SignupRequest>> violations = validator.validate(request);
-        if (!violations.isEmpty()) {
-            throw new CommonException(ResponseCode.INVALID_REQUEST);
-        }
-
-        MemberSignupResult memberSignupResult = authService.signup(request,  profileImage);
+        MemberSignupResult memberSignupResult = authService.signup(request);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

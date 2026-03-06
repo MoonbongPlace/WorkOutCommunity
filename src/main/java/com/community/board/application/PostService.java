@@ -41,10 +41,9 @@ public class PostService {
 
         List<PostListItem> items = page.getContent().stream()
                 .map(post -> {
-                    String memberName = memberRepositoryAdapter.findById(post.getMemberId())
-                            .map(Member::getMemberName)
-                            .orElse("알 수 없음");
-                    return PostListItem.from(post, memberName);
+                    Member member = memberRepositoryAdapter.findById(post.getMemberId())
+                            .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+                    return PostListItem.from(post, member);
                 })
                 .toList();
 
@@ -57,11 +56,9 @@ public class PostService {
         Post post = postRepositoryAdapter.findActiveVisibleById(postId)
                 .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
 
-        String memberName = memberRepositoryAdapter.findById(post.getMemberId())
-                .map(Member::getMemberName)
-                .orElse("알 수 없음");
-
-        return DetailPostResult.from(post, memberName);
+        Member member = memberRepositoryAdapter.findById(post.getMemberId())
+                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+        return DetailPostResult.from(post, member);
     }
 
     // 게시글 생성 (이미지 최대 6장)
@@ -103,10 +100,9 @@ public class PostService {
 
         List<PostListItem> items = page.getContent().stream()
                 .map(post -> {
-                    String memberName = memberRepositoryAdapter.findById(post.getMemberId())
-                            .map(Member::getMemberName)
-                            .orElse("알 수 없음");
-                    return PostListItem.from(post, memberName);
+                    Member member = memberRepositoryAdapter.findById(post.getMemberId())
+                            .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+                    return PostListItem.from(post, member);
                 })
                 .toList();
 

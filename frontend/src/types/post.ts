@@ -3,12 +3,14 @@ export interface PostListItem {
   id: number
   memberId: number
   memberName: string
+  profileImage: string | null
   title: string
   content: string
   categoryId: number | null
   images: string[]
   visibility: 'VISIBLE' | 'HIDDEN'
   createdAt: string
+  likeCount: number
 }
 
 export interface PostListResult {
@@ -32,12 +34,14 @@ export interface PostDetailResult {
   id: number
   member_id: number
   memberName: string
+  profileImage: string | null
   title: string
   content: string
   categoryId: number | null
   views: number
   images: string[]
   createdAt: string
+  likeCount: number
 }
 
 export interface PostDetailResponse {

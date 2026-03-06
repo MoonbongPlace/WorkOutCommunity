@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react'
 import axiosInstance, { setAccessToken } from '../api/axiosInstance'
+import { authApi } from '../api/endpoints/auth'
 import type { ReissueResponse } from '../types/auth'
 import type { MemberInfoResponse } from '../types/member'
 
@@ -8,6 +9,7 @@ export interface AuthUser {
   email: string
   memberName: string
   role: string
+  profileImage: string | null
 }
 
 interface AuthContextValue {
@@ -15,7 +17,7 @@ interface AuthContextValue {
   isAuthenticated: boolean
   initializing: boolean
   login: (token: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -40,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // 유저 정보 조회
         const { data: memberResp } = await axiosInstance.get<MemberInfoResponse>('/v1/members/me')
         const m = memberResp.detailMember
-        setUser({ id: m.id, email: m.email, memberName: m.memberName, role: m.role })
+        setUser({ id: m.id, email: m.email, memberName: m.memberName, role: m.role, profileImage: m.profileImage })
       } catch {
         // RT 만료·없음 → 비로그인 상태 유지
       } finally {
@@ -54,10 +56,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(token)
     const { data: memberResp } = await axiosInstance.get<MemberInfoResponse>('/v1/members/me')
     const m = memberResp.detailMember
-    setUser({ id: m.id, email: m.email, memberName: m.memberName, role: m.role })
+    setUser({ id: m.id, email: m.email, memberName: m.memberName, role: m.role, profileImage: m.profileImage })
   }
 
-  function logout() {
+  async function logout() {
+    try { await authApi.logout() } catch { /* 무시 */ }
     setAccessToken(null)
     setUser(null)
   }

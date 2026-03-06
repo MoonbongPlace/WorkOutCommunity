@@ -3,6 +3,7 @@ export interface CommentItem {
   id: number
   memberId: number
   memberName: string
+  profileImage: string | null
   content: string
   createdAt: string
 }

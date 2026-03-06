@@ -1,35 +1,90 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Card from '../components/ui/Card'
 import PageHeader from '../components/ui/PageHeader'
 import StateBlock from '../components/ui/StateBlock'
+import BlockEditor, { type Block, type KeepImageBlock, type TextBlock, uid } from '../components/post/BlockEditor'
 import { postApi } from '../api/endpoints/post'
 import { categoryApi } from '../api/endpoints/category'
 import type { CategoryItem } from '../types/category'
 
 const MAX_IMAGES = 6
 
-type NewImageEntry = { file: File; preview: string }
+function parseToBlocks(content: string, images: string[]): Block[] {
+  if (!images.length && !/\[\[image:\d+\]\]/.test(content)) {
+    return [{ id: uid(), type: 'text', value: content }]
+  }
+
+  // 마커 없는 기존 게시글 (하위 호환)
+  if (images.length > 0 && !/\[\[image:\d+\]\]/.test(content)) {
+    const result: Block[] = [{ id: uid(), type: 'text', value: content }]
+    images.forEach(url => {
+      result.push({ id: uid(), type: 'image', source: 'keep', url } as KeepImageBlock)
+      result.push({ id: uid(), type: 'text', value: '' } as TextBlock)
+    })
+    return result
+  }
+
+  const parts = content.split(/(\[\[image:\d+\]\])/)
+  const result: Block[] = []
+  for (const part of parts) {
+    const match = part.match(/^\[\[image:(\d+)\]\]$/)
+    if (match) {
+      const idx = parseInt(match[1])
+      if (idx < images.length) {
+        result.push({ id: uid(), type: 'image', source: 'keep', url: images[idx] } as KeepImageBlock)
+      }
+    } else {
+      const text = part.replace(/^\n/, '').replace(/\n$/, '')
+      result.push({ id: uid(), type: 'text', value: text } as TextBlock)
+    }
+  }
+
+  if (!result.length || result[0].type === 'image') result.unshift({ id: uid(), type: 'text', value: '' })
+  if (result[result.length - 1].type === 'image') result.push({ id: uid(), type: 'text', value: '' })
+  return result
+}
+
+function serializeBlocks(blocks: Block[]): { content: string; keepImages: string[]; newFiles: File[] } {
+  const keepImages: string[] = []
+  const newFiles: File[] = []
+
+  // 먼저 수집해서 인덱스 오프셋 파악
+  for (const b of blocks) {
+    if (b.type !== 'image') continue
+    if (b.source === 'keep') keepImages.push(b.url)
+    else newFiles.push(b.file)
+  }
+
+  const keepCount = keepImages.length
+  let keepIdx = 0
+  let newIdx = 0
+  const parts: string[] = []
+
+  for (const b of blocks) {
+    if (b.type === 'text') {
+      if (b.value.trim()) parts.push(b.value)
+    } else if (b.source === 'keep') {
+      parts.push(`[[image:${keepIdx++}]]`)
+    } else {
+      parts.push(`[[image:${keepCount + newIdx++}]]`)
+    }
+  }
+
+  return { content: parts.join('\n'), keepImages, newFiles }
+}
 
 export default function PostEditPage() {
   const { postId }   = useParams<{ postId: string }>()
   const navigate     = useNavigate()
-  const textareaRef  = useRef<HTMLTextAreaElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [loadStatus,     setLoadStatus]     = useState<'loading' | 'success' | 'error'>('loading')
-  const [title,          setTitle]          = useState('')
-  const [content,        setContent]        = useState('')
-  const [categoryId,     setCategoryId]     = useState<number | null>(null)
-  const [categories,     setCategories]     = useState<CategoryItem[]>([])
-  // 기존 이미지 중 유지할 URL 목록
-  const [keepImages,     setKeepImages]     = useState<string[]>([])
-  // 새로 첨부할 이미지 목록
-  const [newImages,      setNewImages]      = useState<NewImageEntry[]>([])
-  const [saving,         setSaving]         = useState(false)
-  const [error,          setError]          = useState<string | null>(null)
-
-  const totalCount = keepImages.length + newImages.length
+  const [loadStatus, setLoadStatus] = useState<'loading' | 'success' | 'error'>('loading')
+  const [title,      setTitle]      = useState('')
+  const [categoryId, setCategoryId] = useState<number | null>(null)
+  const [categories, setCategories] = useState<CategoryItem[]>([])
+  const [blocks,     setBlocks]     = useState<Block[]>([])
+  const [saving,     setSaving]     = useState(false)
+  const [error,      setError]      = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -41,10 +96,9 @@ export default function PostEditPage() {
         ])
         const p = postRes.data.post
         setTitle(p.title)
-        setContent(p.content)
         setCategoryId(p.categoryId ?? null)
-        setKeepImages(p.images ?? [])
         setCategories(catRes.data.categoryListResult.categoryList)
+        setBlocks(parseToBlocks(p.content, p.images ?? []))
         setLoadStatus('success')
       } catch {
         setLoadStatus('error')
@@ -53,40 +107,10 @@ export default function PostEditPage() {
     void load()
   }, [postId])
 
-  // 새 이미지 미리보기 URL 해제
-  useEffect(() => {
-    return () => newImages.forEach((img) => URL.revokeObjectURL(img.preview))
-  }, [])
-
-  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const files     = Array.from(e.target.files ?? [])
-    const remaining = MAX_IMAGES - totalCount
-    const toAdd     = files.slice(0, remaining).map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-    }))
-    if (files.length > remaining) {
-      setError(`이미지는 최대 ${MAX_IMAGES}장까지 첨부할 수 있습니다.`)
-    }
-    setNewImages((prev) => [...prev, ...toAdd])
-    e.target.value = ''
-    textareaRef.current?.focus()
-  }
-
-  function removeKeepImage(url: string) {
-    setKeepImages((prev) => prev.filter((u) => u !== url))
-  }
-
-  function removeNewImage(index: number) {
-    setNewImages((prev) => {
-      URL.revokeObjectURL(prev[index].preview)
-      return prev.filter((_, i) => i !== index)
-    })
-  }
-
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!title.trim() || !content.trim()) {
+    const { content, keepImages, newFiles } = serializeBlocks(blocks)
+    if (!title.trim() || !content) {
       setError('제목과 내용을 모두 입력해주세요.')
       return
     }
@@ -95,13 +119,8 @@ export default function PostEditPage() {
     try {
       await postApi.update(
         Number(postId),
-        {
-          title: title.trim(),
-          content: content.trim(),
-          ...(categoryId !== null && { categoryId }),
-          keepImages,
-        },
-        newImages.map((img) => img.file),
+        { title: title.trim(), content, ...(categoryId !== null && { categoryId }), keepImages },
+        newFiles,
       )
       navigate(`/posts/${postId}`)
     } catch {
@@ -156,83 +175,15 @@ export default function PostEditPage() {
             </select>
           </div>
 
-          {/* 내용 + 이미지 첨부 툴바 일체형 */}
+          {/* 블록 에디터 */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              내용 <span className="text-red-400">*</span>
-            </label>
-            <div className="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#7A7F3A]/30 transition-shadow">
-              <textarea
-                ref={textareaRef}
-                className="w-full px-3 pt-3 pb-2 text-sm text-gray-800 resize-none outline-none bg-white"
-                rows={10}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-              />
-
-              {/* 이미지 첨부 툴바 */}
-              <div className="flex items-center gap-2 px-3 py-2 border-t border-gray-100 bg-gray-50">
-                <button
-                  type="button"
-                  disabled={totalCount >= MAX_IMAGES}
-                  onClick={() => {
-                    setError(null)
-                    fileInputRef.current?.click()
-                  }}
-                  className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#7A7F3A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  이미지 첨부
-                </button>
-                <span className="ml-auto text-xs text-gray-400">{totalCount}/{MAX_IMAGES}</span>
-              </div>
-            </div>
-
-            {/* 이미지 미리보기: 기존 이미지(유지 목록) + 새 이미지 */}
-            {(keepImages.length > 0 || newImages.length > 0) && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {keepImages.map((url) => (
-                  <div key={url} className="relative group">
-                    <img
-                      src={url}
-                      alt="기존 이미지"
-                      className="w-20 h-20 object-cover rounded-lg border border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeKeepImage(url)}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-700 text-white text-xs rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity leading-none"
-                      aria-label="이미지 제거"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                {newImages.map((img, i) => (
-                  <div key={`new-${i}`} className="relative group">
-                    <img
-                      src={img.preview}
-                      alt={`새 이미지 ${i + 1}`}
-                      className="w-20 h-20 object-cover rounded-lg border border-[#7A7F3A]/40"
-                    />
-                    {/* 새 이미지는 초록 테두리로 구분 */}
-                    <span className="absolute bottom-0 left-0 right-0 text-center text-[10px] bg-[#7A7F3A]/70 text-white rounded-b-lg py-0.5">
-                      새 이미지
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeNewImage(i)}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-700 text-white text-xs rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity leading-none"
-                      aria-label="이미지 제거"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <label className="block text-xs font-medium text-gray-600 mb-1">내용</label>
+            <BlockEditor
+              blocks={blocks}
+              onChange={setBlocks}
+              disabled={saving}
+              maxImages={MAX_IMAGES}
+            />
           </div>
 
           {error && <p className="text-xs text-red-500">{error}</p>}
@@ -247,16 +198,6 @@ export default function PostEditPage() {
           </div>
         </Card>
       </form>
-
-      {/* hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        multiple
-        className="hidden"
-        onChange={handleImageSelect}
-      />
     </div>
   )
 }

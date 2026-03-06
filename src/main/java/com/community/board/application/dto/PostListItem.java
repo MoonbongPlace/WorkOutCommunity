@@ -2,6 +2,7 @@ package com.community.board.application.dto;
 
 import com.community.board.domain.model.Post;
 import com.community.board.domain.model.PostVisibility;
+import com.community.member.domain.model.Member;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"id","memberId","memberName","title","content","categoryId","images","visibility","createdAt","likeCount"})
+@JsonPropertyOrder({"id","memberId","memberName","title","content","categoryId","images","visibility","createdAt","likeCount", "profileImage"})
 public class PostListItem {
     private Long id;
     private Long memberId;
@@ -23,19 +24,21 @@ public class PostListItem {
     private PostVisibility visibility;
     private OffsetDateTime createdAt;
     private int likeCount;
+    private String profileImage;
 
-    public static PostListItem from(Post post, String memberName) {
+    public static PostListItem from(Post post, Member member) {
         return new PostListItem(
                 post.getId(),
                 post.getMemberId(),
-                memberName,
+                member.getMemberName(),
                 post.getTitle(),
                 post.getContent(),
                 post.getCategoryId(),
                 post.getImages(),
                 post.getPostVisibility(),
                 post.getCreatedAt(),
-                post.getLikeCount()
+                post.getLikeCount(),
+                member.getProfileImage()
         );
     }
 }

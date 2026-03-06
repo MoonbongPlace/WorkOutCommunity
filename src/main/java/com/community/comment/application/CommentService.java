@@ -36,11 +36,14 @@ public class CommentService {
 
         List<Comment> comments = commentRepositoryAdapter.findActiveByPostId(postId);
         List<CommentDetailResult> results = comments.stream()
-                .map(c -> {
-                    String memberName = memberRepositoryAdapter.findById(c.getMemberId())
+                .map(comment -> {
+                    String memberName = memberRepositoryAdapter.findActiveById(comment.getMemberId())
                             .map(Member::getMemberName)
                             .orElse("알 수 없음");
-                    return CommentDetailResult.from(c, memberName);
+                    String profileImage = memberRepositoryAdapter.findActiveById(comment.getMemberId())
+                            .map(Member::getProfileImage)
+                            .orElse("알 수 없음");
+                    return CommentDetailResult.from(comment, memberName, profileImage);
                 })
                 .toList();
 
@@ -69,7 +72,7 @@ public class CommentService {
         // 댓글 삭제 시 해당 게시글이 존재하는지, 댓글 작성자 본인인지 확인 절차 추가
         Post post = postRepositoryAdapter.findActiveById(postId)
                 .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
-        Member member = memberRepositoryAdapter.findById(memberId)
+        Member member = memberRepositoryAdapter.findActiveById(memberId)
                 .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
         Comment comment = commentRepositoryAdapter.findById(commentId)

@@ -1,5 +1,7 @@
 package com.community.board.domain.model;
 
+import com.community.global.exception.CommonException;
+import com.community.global.exception.ResponseCode;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,5 +34,11 @@ public class PostLike {
         postLike.postId = postId;
         postLike.createdAt = OffsetDateTime.now();
         return postLike;
+    }
+
+    public void validateDelete(Long memberId) {
+        if (!this.memberId.equals(memberId)){
+            throw new CommonException(ResponseCode.AUTHORIZATION_FORBIDDEN);
+        }
     }
 }

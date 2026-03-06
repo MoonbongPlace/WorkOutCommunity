@@ -40,14 +40,11 @@ public class AuthService {
 
 
     @Transactional
-    public MemberSignupResult signup(@Valid SignupRequest request, MultipartFile profileImage) {
+    public MemberSignupResult signup(@Valid SignupRequest request) {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         String profileImageUrl = profileProperties.defaultImageUrl();
 
-        if (profileImage != null && !profileImage.isEmpty()) {
-            profileImageUrl = profileImageStorage.store(profileImage);
-        }
         Member member = Member.signup(
                 request.getEmail(),
                 request.getMemberName(),
