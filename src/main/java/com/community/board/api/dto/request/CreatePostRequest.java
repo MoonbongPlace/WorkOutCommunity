@@ -18,5 +18,4 @@ public class CreatePostRequest {
     String title;
     String content;
     Long categoryId;
-    String image;
 }

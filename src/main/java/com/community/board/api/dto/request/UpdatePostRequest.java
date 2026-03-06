@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Collections;
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,5 +20,6 @@ public class UpdatePostRequest {
     String title;
     String content;
     Long categoryId;
-    String image;
+    // 수정 후에도 유지할 기존 이미지 URL 목록 (null 또는 빈 목록이면 기존 이미지 전체 제거)
+    List<String> keepImages = Collections.emptyList();
 }

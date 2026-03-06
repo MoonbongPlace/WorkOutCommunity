@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import Avatar from '../ui/Avatar'
+import NotificationWidget from '../ui/NotificationWidget'
 
 const links = [
-  { to: '/posts',          label: '게시판' },
-  { to: '/workout-logs',   label: '운동일지' },
-  { to: '/notifications',  label: '알림' },
-  { to: '/chat',           label: 'AI 채팅' },
-  { to: '/me',             label: '내 정보' },
+  { to: '/posts',        label: '게시판' },
+  { to: '/workout-logs', label: '운동일지' },
 ]
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -19,6 +19,13 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  async function handleLogout() {
+    await logout()
+    navigate('/login')
+  }
 
   // 메뉴 외부 클릭 시 닫기
   useEffect(() => {
@@ -46,6 +53,26 @@ export default function Navbar() {
               <NavLink to={to} className={linkClass}>{label}</NavLink>
             </li>
           ))}
+          {user && (
+            <>
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 rounded text-sm font-medium text-gray-600 hover:bg-[#E8E7D1] hover:text-[#7A7F3A] transition-colors"
+                >
+                  로그아웃
+                </button>
+              </li>
+              <li>
+                <NavLink to="/me" className="flex items-center ml-1">
+                  <Avatar src={user.profileImage} name={user.memberName} size="sm" />
+                </NavLink>
+              </li>
+              <li>
+                <NotificationWidget />
+              </li>
+            </>
+          )}
         </ul>
 
         {/* 모바일 햄버거 버튼 (md 미만) */}
@@ -88,6 +115,33 @@ export default function Navbar() {
                   </NavLink>
                 </li>
               ))}
+              {user && (
+                <>
+                  <li>
+                    <NavLink
+                      to="/me"
+                      className={({ isActive }) =>
+                        `block px-4 py-2 text-sm font-medium transition-colors ${
+                          isActive
+                            ? 'bg-[#E8E7D1] text-[#7A7F3A]'
+                            : 'text-gray-600 hover:bg-[#E8E7D1] hover:text-[#7A7F3A]'
+                        }`
+                      }
+                      onClick={() => setOpen(false)}
+                    >
+                      내 정보
+                    </NavLink>
+                  </li>
+                  <li>
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm font-medium text-gray-600 hover:bg-[#E8E7D1] hover:text-[#7A7F3A] transition-colors"
+                      onClick={() => { setOpen(false); handleLogout() }}
+                    >
+                      로그아웃
+                    </button>
+                  </li>
+                </>
+              )}
             </ul>
           )}
         </div>

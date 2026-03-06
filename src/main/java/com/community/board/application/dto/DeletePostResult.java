@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -17,7 +18,7 @@ public class DeletePostResult {
     private String content;
     private Long categoryId;
     private int views;
-    private String image;
+    private List<String> images;
     private OffsetDateTime deletedAt;
 
     public static DeletePostResult from(Post post) {
@@ -28,7 +29,7 @@ public class DeletePostResult {
                 post.getContent(),
                 post.getCategoryId(),
                 post.getViews(),
-                post.getImage(),
+                post.getImages(),
                 post.getDeletedAt()
         );
     }

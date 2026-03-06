@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import RootLayout from './layouts/RootLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage'
@@ -13,7 +13,6 @@ import WorkoutLogsPage from './pages/WorkoutLogsPage'
 import WorkoutLogDetailPage from './pages/WorkoutLogDetailPage'
 import WorkoutLogNewPage from './pages/WorkoutLogNewPage'
 import NotificationsPage from './pages/NotificationsPage'
-import ChatPage from './pages/ChatPage'
 
 const router = createBrowserRouter([
   // 공개 라우트
@@ -37,7 +36,7 @@ const router = createBrowserRouter([
           { path: '/workout-logs/new',       element: <WorkoutLogNewPage /> },
           { path: '/workout-logs/:logId',    element: <WorkoutLogDetailPage /> },
           { path: '/notifications',          element: <NotificationsPage /> },
-          { path: '/chat',                   element: <ChatPage /> },
+          { path: '/chat',                   element: <Navigate to="/posts" replace /> },
         ],
       },
     ],

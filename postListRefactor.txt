@@ -1,0 +1,464 @@
+================================================================================
+  POST LIST REFACTOR - 카테고리 필터링 기능 추가 (Backend)
+================================================================================
+
+변경 범위:
+  - PostJpaRepository.java    : 카테고리별 조회 쿼리 추가
+  - PostRepository.java       : 도메인 인터페이스 메서드 추가
+  - PostRepositoryAdapter.java: 구현체 메서드 추가
+  - PostService.java          : categoryId 파라미터 추가
+  - PostController.java       : categoryId 쿼리 파라미터 수신
+  - CategoryController.java   : 인증 제거 (public 엔드포인트화)
+  - CategoryService.java      : memberId 의존 제거
+  - SecurityConfig.java       : /api/v1/categories permitAll 추가
+
+================================================================================
+  1. PostJpaRepository.java
+================================================================================
+
+[ BEFORE ]
+----------------------------------------------------------------
+public interface PostJpaRepository extends JpaRepository<Post, Long> {
+    List<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    @Query("select p.memberId from Post p where p.id = :postId")
+    Optional<Long> findMemberIdByPostId(@Param("postId") Long postId);
+
+    @Query("""
+    SELECT p
+    FROM Post p
+    WHERE p.id = :id
+      AND p.deletedAt IS NULL
+      AND p.postVisibility = com.community.board.domain.model.PostVisibility.VISIBLE
+""")
+    Optional<Post> findActiveVisibleById(@Param("id") Long id);
+
+    @Query("""
+    SELECT p
+    FROM Post p
+    WHERE p.deletedAt IS NULL
+      AND p.postVisibility = :visibility
+    ORDER BY p.createdAt DESC
+""")
+    Page<Post> findAllActiveByVisibility(
+            @Param("visibility") PostVisibility visibility,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT p
+    FROM Post p
+    WHERE p.memberId = :memberId
+      AND p.deletedAt IS NULL
+    ORDER BY p.createdAt DESC
+""")
+    Page<Post> findAllByMemberId(
+            @Param("memberId") Long memberId,
+            Pageable pageable
+    );
+}
+----------------------------------------------------------------
+
+[ AFTER ]
+----------------------------------------------------------------
+public interface PostJpaRepository extends JpaRepository<Post, Long> {
+    List<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    @Query("select p.memberId from Post p where p.id = :postId")
+    Optional<Long> findMemberIdByPostId(@Param("postId") Long postId);
+
+    @Query("""
+    SELECT p
+    FROM Post p
+    WHERE p.id = :id
+      AND p.deletedAt IS NULL
+      AND p.postVisibility = com.community.board.domain.model.PostVisibility.VISIBLE
+""")
+    Optional<Post> findActiveVisibleById(@Param("id") Long id);
+
+    @Query("""
+    SELECT p
+    FROM Post p
+    WHERE p.deletedAt IS NULL
+      AND p.postVisibility = :visibility
+    ORDER BY p.createdAt DESC
+""")
+    Page<Post> findAllActiveByVisibility(
+            @Param("visibility") PostVisibility visibility,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT p
+    FROM Post p
+    WHERE p.memberId = :memberId
+      AND p.deletedAt IS NULL
+    ORDER BY p.createdAt DESC
+""")
+    Page<Post> findAllByMemberId(
+            @Param("memberId") Long memberId,
+            Pageable pageable
+    );
+
+    // [추가] 카테고리별 게시글 조회
+    // countQuery 를 명시적으로 분리하여 Page<T> count 파생 오류 방지
+    @Query(
+        value = """
+            SELECT p FROM Post p
+            WHERE p.deletedAt IS NULL
+              AND p.postVisibility = :visibility
+              AND p.categoryId = :categoryId
+        """,
+        countQuery = """
+            SELECT COUNT(p) FROM Post p
+            WHERE p.deletedAt IS NULL
+              AND p.postVisibility = :visibility
+              AND p.categoryId = :categoryId
+        """
+    )
+    Page<Post> findAllActiveByVisibilityAndCategoryId(
+            @Param("visibility") PostVisibility visibility,
+            @Param("categoryId") Long categoryId,
+            Pageable pageable
+    );
+}
+----------------------------------------------------------------
+
+
+================================================================================
+  2. PostRepository.java  (domain interface)
+================================================================================
+
+[ BEFORE ]
+----------------------------------------------------------------
+public interface PostRepository {
+    Post save(Post post);
+    Optional<Post> findActiveById(Long id);
+    List<Post> findLatest(int size);
+    void deleteById(Long id);
+
+    Optional<Long> findAuthorIdByPostId(Long postId);
+    Optional<Post> findActiveVisibleById(Long postId);
+    Page<Post> findAllActiveByVisibility(Pageable pageable);
+    Page<Post> findAll(Pageable pageable);
+    Page<Post> findAllByMemberId(Long memberId, Pageable pageable);
+}
+----------------------------------------------------------------
+
+[ AFTER ]
+----------------------------------------------------------------
+public interface PostRepository {
+    Post save(Post post);
+    Optional<Post> findActiveById(Long id);
+    List<Post> findLatest(int size);
+    void deleteById(Long id);
+
+    Optional<Long> findAuthorIdByPostId(Long postId);
+    Optional<Post> findActiveVisibleById(Long postId);
+    Page<Post> findAllActiveByVisibility(Pageable pageable);
+    Page<Post> findAll(Pageable pageable);
+    Page<Post> findAllByMemberId(Long memberId, Pageable pageable);
+
+    // [추가] 카테고리별 게시글 조회
+    Page<Post> findAllActiveByVisibilityAndCategoryId(Long categoryId, Pageable pageable);
+}
+----------------------------------------------------------------
+
+
+================================================================================
+  3. PostRepositoryAdapter.java
+================================================================================
+
+[ BEFORE ]
+----------------------------------------------------------------
+@Repository
+@RequiredArgsConstructor
+public class PostRepositoryAdapter implements PostRepository {
+
+    private final PostJpaRepository postJpaRepository;
+
+    // ... (기존 메서드 생략)
+
+    @Override
+    public Page<Post> findAllByMemberId(Long memberId, Pageable pageable) {
+        return postJpaRepository.findAllByMemberId(memberId, pageable);
+    }
+}
+----------------------------------------------------------------
+
+[ AFTER ]
+----------------------------------------------------------------
+@Repository
+@RequiredArgsConstructor
+public class PostRepositoryAdapter implements PostRepository {
+
+    private final PostJpaRepository postJpaRepository;
+
+    // ... (기존 메서드 동일)
+
+    @Override
+    public Page<Post> findAllByMemberId(Long memberId, Pageable pageable) {
+        return postJpaRepository.findAllByMemberId(memberId, pageable);
+    }
+
+    // [추가]
+    @Override
+    public Page<Post> findAllActiveByVisibilityAndCategoryId(Long categoryId, Pageable pageable) {
+        return postJpaRepository.findAllActiveByVisibilityAndCategoryId(
+                PostVisibility.VISIBLE, categoryId, pageable);
+    }
+}
+----------------------------------------------------------------
+
+
+================================================================================
+  4. PostService.java
+================================================================================
+
+[ BEFORE ]
+----------------------------------------------------------------
+// 게시글 리스트 조회
+@Transactional(readOnly = true)
+public PostListResult getPostList(Pageable pageable) {
+    Page<Post> page = postRepositoryAdapter.findAllActiveByVisibility(pageable);
+
+    List<PostListItem> items = page.getContent().stream()
+            .map(post -> {
+                String memberName = memberRepositoryAdapter.findById(post.getMemberId())
+                        .map(Member::getMemberName)
+                        .orElse("알 수 없음");
+                return PostListItem.from(post, memberName);
+            })
+            .toList();
+
+    return PostListResult.from(items, page);
+}
+----------------------------------------------------------------
+
+[ AFTER ]
+----------------------------------------------------------------
+// 게시글 리스트 조회
+@Transactional(readOnly = true)
+public PostListResult getPostList(Long categoryId, Pageable pageable) {
+    Page<Post> page = categoryId != null
+            ? postRepositoryAdapter.findAllActiveByVisibilityAndCategoryId(categoryId, pageable)
+            : postRepositoryAdapter.findAllActiveByVisibility(pageable);
+
+    List<PostListItem> items = page.getContent().stream()
+            .map(post -> {
+                String memberName = memberRepositoryAdapter.findById(post.getMemberId())
+                        .map(Member::getMemberName)
+                        .orElse("알 수 없음");
+                return PostListItem.from(post, memberName);
+            })
+            .toList();
+
+    return PostListResult.from(items, page);
+}
+----------------------------------------------------------------
+
+
+================================================================================
+  5. PostController.java
+================================================================================
+
+[ BEFORE ]
+----------------------------------------------------------------
+// 게시글 리스트 조회
+@GetMapping
+public ResponseEntity<PostListResponse> listPost(
+        @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+        Pageable pageable
+) {
+    PostListResult postListResult = postService.getPostList(pageable);
+
+    return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(PostListResponse.from(postListResult, "게시글 리스트 조회 성공"));
+}
+----------------------------------------------------------------
+
+[ AFTER ]
+----------------------------------------------------------------
+// 게시글 리스트 조회
+@GetMapping
+public ResponseEntity<PostListResponse> listPost(
+        @RequestParam(value = "categoryId", required = false) Long categoryId,
+        @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+        Pageable pageable
+) {
+    PostListResult postListResult = postService.getPostList(categoryId, pageable);
+
+    return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(PostListResponse.from(postListResult, "게시글 리스트 조회 성공"));
+}
+----------------------------------------------------------------
+
+
+================================================================================
+  6. CategoryController.java
+================================================================================
+
+[ BEFORE ]
+----------------------------------------------------------------
+@GetMapping
+public ResponseEntity<CategoryListResponse> getCategoryList(
+        @AuthenticationPrincipal CustomUserPrincipal principal
+) {
+    Long memberId = principal.memberId();
+    CategoryListResult categoryListResult = categoryService.getList(memberId);
+
+    return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(CategoryListResponse.from(categoryListResult, "카테고리 리스트 조회 성공"));
+}
+----------------------------------------------------------------
+
+[ AFTER ]
+----------------------------------------------------------------
+@GetMapping
+public ResponseEntity<CategoryListResponse> getCategoryList() {
+    CategoryListResult categoryListResult = categoryService.getList();
+
+    return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(CategoryListResponse.from(categoryListResult, "카테고리 리스트 조회 성공"));
+}
+----------------------------------------------------------------
+
+
+================================================================================
+  7. CategoryService.java
+================================================================================
+
+[ BEFORE ]
+----------------------------------------------------------------
+@Service
+@RequiredArgsConstructor
+public class CategoryService {
+    private final MemberRepositoryAdapter memberRepositoryAdapter;
+    private final CategoryRepositoryAdapter categoryRepositoryAdapter;
+
+    public CategoryListResult getList(Long memberId) {
+        Member member = memberRepositoryAdapter.findById(memberId)
+                .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+
+        List<Category> list = categoryRepositoryAdapter.findAll();
+        return CategoryListResult.of(list);
+    }
+}
+----------------------------------------------------------------
+
+[ AFTER ]
+----------------------------------------------------------------
+@Service
+@RequiredArgsConstructor
+public class CategoryService {
+    private final CategoryRepositoryAdapter categoryRepositoryAdapter;
+
+    public CategoryListResult getList() {
+        List<Category> list = categoryRepositoryAdapter.findAll();
+        return CategoryListResult.of(list);
+    }
+}
+----------------------------------------------------------------
+
+
+================================================================================
+  8. SecurityConfig.java
+================================================================================
+
+[ BEFORE ]
+----------------------------------------------------------------
+.requestMatchers("/api/v1/posts").permitAll()
+.requestMatchers("/api/v1/notifications/**").permitAll()
+----------------------------------------------------------------
+
+[ AFTER ]
+----------------------------------------------------------------
+.requestMatchers("/api/v1/posts").permitAll()
+.requestMatchers("/api/v1/categories").permitAll()   // [추가]
+.requestMatchers("/api/v1/notifications/**").permitAll()
+----------------------------------------------------------------
+
+
+================================================================================
+  [BUG FIX] 카테고리별 게시글 조회 미작동 수정
+================================================================================
+
+원인 분석:
+  Post 엔티티의 categoryId 필드에 @JoinColumn(name="category_id") 이 관계 매핑
+  없이 단순 Long 타입에 적용되어 있음. 이 경우 JPQL 파서가 해당 필드를 일반
+  속성으로 인식하지 못할 수 있어 @Query 기반 JPQL 필터가 정상 동작하지 않음.
+
+해결 방법:
+  @Query JPQL 방식 → Spring Data JPA 메서드명 자동 파생 방식으로 교체.
+  Spring Data JPA가 메서드명을 분석하여 SQL을 직접 생성하므로 JPQL 파싱
+  이슈 및 count 쿼리 파생 문제가 원천 차단됨.
+
+  생성되는 SQL:
+    SELECT * FROM posts
+    WHERE deleted_at IS NULL
+      AND visibility = 'VISIBLE'
+      AND category_id = ?
+
+================================================================================
+  PostJpaRepository.java  (카테고리 쿼리 교체)
+================================================================================
+
+[ BEFORE ]
+----------------------------------------------------------------
+    @Query(
+        value = """
+            SELECT p FROM Post p
+            WHERE p.deletedAt IS NULL
+              AND p.postVisibility = :visibility
+              AND p.categoryId = :categoryId
+        """,
+        countQuery = """
+            SELECT COUNT(p) FROM Post p
+            WHERE p.deletedAt IS NULL
+              AND p.postVisibility = :visibility
+              AND p.categoryId = :categoryId
+        """
+    )
+    Page<Post> findAllActiveByVisibilityAndCategoryId(
+            @Param("visibility") PostVisibility visibility,
+            @Param("categoryId") Long categoryId,
+            Pageable pageable
+    );
+----------------------------------------------------------------
+
+[ AFTER ]
+----------------------------------------------------------------
+    // @Query 제거 — 메서드명 자동 파생으로 SQL 직접 생성
+    Page<Post> findAllByDeletedAtIsNullAndPostVisibilityAndCategoryId(
+            PostVisibility postVisibility,
+            Long categoryId,
+            Pageable pageable
+    );
+----------------------------------------------------------------
+
+
+================================================================================
+  PostRepositoryAdapter.java  (호출 메서드명 변경)
+================================================================================
+
+[ BEFORE ]
+----------------------------------------------------------------
+    @Override
+    public Page<Post> findAllActiveByVisibilityAndCategoryId(Long categoryId, Pageable pageable) {
+        return postJpaRepository.findAllActiveByVisibilityAndCategoryId(
+                PostVisibility.VISIBLE, categoryId, pageable);
+    }
+----------------------------------------------------------------
+
+[ AFTER ]
+----------------------------------------------------------------
+    @Override
+    public Page<Post> findAllActiveByVisibilityAndCategoryId(Long categoryId, Pageable pageable) {
+        return postJpaRepository.findAllByDeletedAtIsNullAndPostVisibilityAndCategoryId(
+                PostVisibility.VISIBLE, categoryId, pageable);
+    }
+----------------------------------------------------------------

@@ -29,9 +29,12 @@ public enum ResponseCode {
     NOTIFICATION_FORBIDDEN("4031", HttpStatus.FORBIDDEN, "해당 알림에 접근할 수 없습니다."),
     MEMBER_ALREADY_DELETED("4032",HttpStatus.FORBIDDEN ,"DELETED 회원 입니다." ),
     POST_ALREADY_DELETED("4033",HttpStatus.FORBIDDEN ,"DELETED 게시글 입니다." ),
-    INVALID_MEMBER("4033",HttpStatus.FORBIDDEN ,"작성자과 ID가 일치하지 않습니다. " ),
+    INVALID_MEMBER("4034",HttpStatus.FORBIDDEN ,"작성자과 ID가 일치하지 않습니다. " ),
+    AUTHORIZATION_FORBIDDEN("4035",HttpStatus.FORBIDDEN ,"해당 작업 권한이 없습니다." ),
 
     WORK_OUT_LOG_ALREADY_EXIST("4091",HttpStatus.CONFLICT ,"이미 운동 일지가 존재합니다." ),
+
+    POST_IMAGE_LIMIT_EXCEEDED("4221", HttpStatus.BAD_REQUEST, "게시글 이미지는 최대 6장까지 첨부할 수 있습니다."),
 
     UNSUPPORTED_FILE_TYPE("4151",HttpStatus.UNSUPPORTED_MEDIA_TYPE ,"지원하지 않는 파일 양식입니다." ),
 

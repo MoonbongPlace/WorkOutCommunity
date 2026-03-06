@@ -37,4 +37,22 @@ public interface PostJpaRepository extends JpaRepository<Post, Long> {
             @Param("visibility") PostVisibility visibility,
             Pageable pageable
     );
+
+    @Query("""
+    SELECT p
+    FROM Post p
+    WHERE p.memberId = :memberId
+      AND p.deletedAt IS NULL
+    ORDER BY p.createdAt DESC
+""")
+    Page<Post> findAllByMemberId(
+            @Param("memberId") Long memberId,
+            Pageable pageable
+    );
+
+    Page<Post> findAllByDeletedAtIsNullAndPostVisibilityAndCategoryId(
+            PostVisibility postVisibility,
+            Long categoryId,
+            Pageable pageable
+    );
 }

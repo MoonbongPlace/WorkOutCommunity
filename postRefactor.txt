@@ -1,0 +1,46 @@
+## Post 이미지 다중 첨부 리팩토링
+
+### Post.java
+- Before: `String image` (단일 URL)
+- After: `List<String> images` + `@Convert(StringListConverter)`, 컬럼 길이 2048, `create()` 버그 수정
+
+### StringListConverter.java (신규)
+- After: `List<String>` ↔ JSON 직렬화 JPA 컨버터
+
+### CreatePostRequest / UpdatePostRequest
+- Before: `String image` 필드 존재
+- After: `image` 제거. UpdatePostRequest에 `List<String> keepImages` 추가
+
+### PostService.java
+- Before: `MultipartFile profileImage` 단일 파일 처리
+- After: `List<MultipartFile> images` 처리, `uploadImages()` 헬퍼로 최대 6장 초과 시 예외 발생
+
+### PostController.java
+- Before: create는 `profileImage` 단일 파일, update는 `@RequestBody` JSON
+- After: create/update 모두 `multipart/form-data`, `List<MultipartFile> images` 수신
+
+### Result DTOs (Create/Detail/Update/ListItem)
+- Before: `String image`
+- After: `List<String> images`
+
+### ResponseCode.java
+- After: `POST_IMAGE_LIMIT_EXCEEDED` 추가
+
+### DB
+- Before: `image VARCHAR(512)`
+- After: `image VARCHAR(2048)` (JSON 배열 저장)
+
+ ┌───────────────────┬──────────────────────────────────────────────────────────────────────────────────────┐
+  │       파일        │                                         변경                                         │
+  ├───────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ ImageStorage.java │ store() / storePost() 분리, 공통 로직 save() private 메서드로 추출.                  │
+  │                   │ ${app.upload.post-dir} 프로퍼티 추가                                                 │
+  ├───────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ WebConfig.java    │ /uploads/postImage/** → postDir 경로 리소스 핸들러 추가                              │
+  ├───────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ PostService.java  │ store() → storePost() 호출로 변경                                                    │
+  └───────────────────┴──────────────────────────────────────────────────────────────────────────────────────┘
+
+  max-request-size: 32MB로 설정해야 하는 이유: max-file-size는 단일 파일 크기 제한이고 max-request-size는
+  multipart 요청 전체 크기 제한입니다. 5MB 파일 6장이면 30MB이므로 max-request-size: 5MB로는 2장 업로드부터 바로
+   MaxUploadSizeExceededException이 발생합니다.

@@ -9,6 +9,7 @@ export interface DetailMemberResult {
   role: string
   createdAt: string
   status: 'ACTIVE' | 'SUSPENDED' | 'DELETED'
+  profileImage: string | null
 }
 
 export interface MemberInfoResponse {

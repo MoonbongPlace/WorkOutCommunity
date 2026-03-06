@@ -3,9 +3,11 @@ package com.community.comment.api;
 import com.community.comment.api.dto.request.CreateCommentRequest;
 import com.community.comment.api.dto.response.CreateCommentResponse;
 import com.community.comment.api.dto.response.DeleteCommentResponse;
+import com.community.comment.api.dto.response.CommentListResponse;
 import com.community.comment.application.CommentService;
 import com.community.comment.application.dto.CreateCommentResult;
 import com.community.comment.application.dto.DeleteCommentResult;
+import com.community.comment.application.dto.CommentListResult;
 import com.community.global.CustomUserPrincipal;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -24,6 +26,19 @@ import org.springframework.web.bind.annotation.*;
 public class CommentController {
 
     private final CommentService commentService;
+
+    // 댓글 목록 조회
+    @GetMapping
+    public ResponseEntity<CommentListResponse> getComments(
+            @PathVariable(name = "postId") final Long postId
+    ) {
+        CommentListResult commentListResult = commentService.getComments(postId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(CommentListResponse.from(commentListResult, "댓글 조회 성공"));
+    }
+
     // 댓글 작성
     @PostMapping
     public ResponseEntity<CreateCommentResponse> leaveComment(

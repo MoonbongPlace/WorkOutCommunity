@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import router from './router'
-import './styles/index.css'
 import 'react-calendar/dist/Calendar.css'
+import './styles/index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

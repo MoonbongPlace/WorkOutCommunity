@@ -34,9 +34,9 @@ public class SecurityConfig {
      * auth / swagger 경로는 JWT 필터 자체를 등록하지 않는다.
      * shouldNotFilter 와 달리 필터 인스턴스가 아예 체인에 없으므로
      * 만료 토큰이 붙어 있어도 절대 401이 발생하지 않는다.
-     *
+     * <p>
      * ※ 현재 JwtAuthenticationFilter 의 shouldNotFilter() 로도 동일 효과를 낼 수 있다.
-     *   이 듀얼 체인 방식은 "필터 적용 범위를 SecurityConfig 에서 명시적으로 관리"하고 싶을 때 선택한다.
+     * 이 듀얼 체인 방식은 "필터 적용 범위를 SecurityConfig 에서 명시적으로 관리"하고 싶을 때 선택한다.
      */
     @Bean
     @Order(1)
@@ -66,13 +66,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/posts").permitAll()
-                        .requestMatchers("/api/v1/notifications/**").permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/chatbot/**").permitAll()
-                        .requestMatchers("/api/v1/comments/**").permitAll()
-                        .requestMatchers("/api/v1/workout-logs/**").permitAll()
-                        .anyRequest().authenticated()
+                                .requestMatchers("/assets/**").permitAll()
+                                .requestMatchers("/uploads/**").permitAll()
+                                .requestMatchers("/api/v1/posts").permitAll()
+                                .requestMatchers("/api/v1/categories").permitAll()
+                                .requestMatchers("/api/v1/notifications/**").permitAll()
+                                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/api/v1/chatbot/**").permitAll()
+//                        .requestMatchers("/api/v1/comments/**").permitAll()
+                                .requestMatchers("/api/v1/workout-logs/**").permitAll()
+                                .requestMatchers("/api/v1/postLikes/**").authenticated()
+                                .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(),
                         UsernamePasswordAuthenticationFilter.class);

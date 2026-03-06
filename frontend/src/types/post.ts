@@ -2,12 +2,15 @@
 export interface PostListItem {
   id: number
   memberId: number
+  memberName: string
+  profileImage: string | null
   title: string
   content: string
   categoryId: number | null
-  image: string | null
+  images: string[]
   visibility: 'VISIBLE' | 'HIDDEN'
   createdAt: string
+  likeCount: number
 }
 
 export interface PostListResult {
@@ -30,12 +33,15 @@ export interface PostListResponse {
 export interface PostDetailResult {
   id: number
   member_id: number
+  memberName: string
+  profileImage: string | null
   title: string
   content: string
   categoryId: number | null
   views: number
-  image: string | null
+  images: string[]
   createdAt: string
+  likeCount: number
 }
 
 export interface PostDetailResponse {
@@ -50,5 +56,12 @@ export interface CreatePostRequest {
   title: string
   content: string
   categoryId?: number
-  image?: string
+}
+
+// PUT /api/v1/posts/{postId}
+export interface UpdatePostRequest {
+  title: string
+  content: string
+  categoryId?: number
+  keepImages?: string[]
 }

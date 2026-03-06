@@ -5,8 +5,10 @@ export const memberApi = {
   me: () =>
     axiosInstance.get<MemberInfoResponse>('/v1/members/me'),
 
-  update: (body: { memberName?: string; name?: string; age?: number; sex?: string }) =>
-    axiosInstance.put('/v1/members/me', body),
+  update: (form: FormData) =>
+    axiosInstance.patch('/v1/members/me', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 
   withdraw: () =>
     axiosInstance.delete('/v1/members/me'),
