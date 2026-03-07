@@ -56,12 +56,7 @@ export default function Navbar() {
           {user && (
             <>
               <li>
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-1.5 rounded text-sm font-medium text-gray-600 hover:bg-[#E8E7D1] hover:text-[#7A7F3A] transition-colors"
-                >
-                  로그아웃
-                </button>
+                <NotificationWidget />
               </li>
               <li>
                 <NavLink to="/me" className="flex items-center ml-1">
@@ -69,7 +64,12 @@ export default function Navbar() {
                 </NavLink>
               </li>
               <li>
-                <NotificationWidget />
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 rounded text-sm font-medium text-gray-600 hover:bg-[#E8E7D1] hover:text-[#7A7F3A] transition-colors"
+                >
+                  로그아웃
+                </button>
               </li>
             </>
           )}
