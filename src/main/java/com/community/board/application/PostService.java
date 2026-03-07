@@ -51,13 +51,16 @@ public class PostService {
     }
 
     // 특정 게시글 상세 조회
-    @Transactional(readOnly = true)
-    public DetailPostResult getPostDetail(final Long postId) {
+    @Transactional
+    public DetailPostResult getDetailPost(final Long postId) {
         Post post = postRepositoryAdapter.findActiveVisibleById(postId)
                 .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
 
         Member member = memberRepositoryAdapter.findById(post.getMemberId())
                 .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+
+        post.increaseViews();
+
         return DetailPostResult.from(post, member);
     }
 

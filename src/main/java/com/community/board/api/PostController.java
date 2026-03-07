@@ -76,7 +76,7 @@ public class PostController {
     public ResponseEntity<PostResponse> findPost(
             @PathVariable(name = "postId") final Long postId
     ) {
-        DetailPostResult detail = postService.getPostDetail(postId);
+        DetailPostResult detail = postService.getDetailPost(postId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(PostResponse.get(detail, "게시글 상세 조회 성공"));
