@@ -69,4 +69,14 @@ public class PostRepositoryAdapter implements PostRepository {
                 return postJpaRepository.findAllByDeletedAtIsNullAndPostVisibilityAndCategoryId(
                         PostVisibility.VISIBLE, categoryId, pageable);
         }
+
+        @Override
+        public Optional<String> findPostTitleById(Long postId) {
+                return postJpaRepository.findPostTitleByIdAndDeletedAt(postId);
+        }
+
+        @Override
+        public boolean existsById(Long postId) {
+                return postJpaRepository.existsByIdAndDeletedAtIsNull(postId);
+        }
 }

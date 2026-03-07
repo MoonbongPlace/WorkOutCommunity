@@ -30,4 +30,8 @@ public interface PostRepository {
 
     // 카테고리별 게시글 조회
     Page<Post> findAllActiveByVisibilityAndCategoryId(Long categoryId, Pageable pageable);
+
+    Optional<String> findPostTitleById(Long postId);
+
+    boolean existsById(Long postId);
 }

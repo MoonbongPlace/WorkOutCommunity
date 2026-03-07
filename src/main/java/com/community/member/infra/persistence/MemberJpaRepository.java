@@ -2,7 +2,6 @@ package com.community.member.infra.persistence;
 
 import com.community.member.domain.model.Member;
 import com.community.member.domain.model.MemberStatus;
-import jakarta.persistence.Id;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,4 +36,13 @@ public interface MemberJpaRepository extends JpaRepository<Member, Long> {
             and m.deletedAt is null
             """)
     Optional<Member> findByIdAndStatusNotAndDeletedAtIsNull(@Param("id") Long id, @Param("status") MemberStatus status);
+
+    @Query("""
+    select m.memberName
+    from Member m
+    where m.id = :memberId
+      and m.status = :status
+""")
+    Optional<String> findMemberNameByIdAndStatus(@Param("memberId") Long memberId,
+                                                 @Param("status") MemberStatus status);
 }

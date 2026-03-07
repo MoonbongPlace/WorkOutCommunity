@@ -7,6 +7,8 @@ import com.community.board.infra.persistence.PostRepositoryAdapter;
 import com.community.global.exception.CommonException;
 import com.community.global.exception.ResponseCode;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
+import com.community.notification.application.dto.CreateNotificationPostLikeResult;
+import com.community.notification.application.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ public class PostLikeService {
     private final MemberRepositoryAdapter memberRepositoryAdapter;
     private final PostRepositoryAdapter postRepositoryAdapter;
     private final PostLikeRepositoryAdapter postLikeRepositoryAdapter;
+    private final NotificationService notificationService;
 
     @Transactional
     public CreatePostLikeResult createLike(Long memberId, Long postId) {
@@ -29,9 +32,13 @@ public class PostLikeService {
         PostLike postLike = PostLike.create(memberId, postId);
         PostLike savedPostLike = postLikeRepositoryAdapter.save(postLike);
 
+        // todo: 알림 후처리 이벤트 리스너 도입 예정 v2
+        CreateNotificationPostLikeResult createNotificationPostLikeResult =
+                notificationService.createNotificationPostLike(memberId, post.getMemberId());
+
         post.increaseLikeCount();
 
-        return CreatePostLikeResult.of(savedPostLike);
+        return CreatePostLikeResult.of(savedPostLike, createNotificationPostLikeResult);
     }
 
     @Transactional

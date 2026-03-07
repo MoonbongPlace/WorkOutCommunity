@@ -39,7 +39,7 @@ public class Comment {
     private OffsetDateTime deletedAt;
 
     // 댓글 생성
-    public static Comment fromRequest(CreateCommentRequest request, Long memberId, Long postId) {
+    public static Comment create(CreateCommentRequest request, Long memberId, Long postId) {
         Comment comment = new Comment();
         comment.setMemberId(memberId);
         comment.setPostId(postId);

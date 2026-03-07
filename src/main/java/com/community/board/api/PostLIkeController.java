@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class PostLIkeController {
     private final PostLikeService postLikeService;
 
-    // 좋아요 반영
+    // 좋아요 조회
     @GetMapping("/{postId}")
     public ResponseEntity<PostLikeResponse> checkPostLike(
             @AuthenticationPrincipal CustomUserPrincipal principal,
@@ -46,6 +46,7 @@ public class PostLIkeController {
                 .status(HttpStatus.CREATED)
                 .body(CreatePostLikeResponse.from(createPostLikeResult, "좋아요 누르기 성공"));
     }
+
 
     // 게시글 취소.
     @DeleteMapping("/{postId}")

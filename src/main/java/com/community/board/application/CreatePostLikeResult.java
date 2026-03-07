@@ -1,6 +1,7 @@
 package com.community.board.application;
 
 import com.community.board.domain.model.PostLike;
+import com.community.notification.application.dto.CreateNotificationPostLikeResult;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,13 +16,15 @@ public class CreatePostLikeResult {
     private Long memberId;
     private Long postId;
     private OffsetDateTime createdAt;
+    private CreateNotificationPostLikeResult createNotificationPostLikeResult;
 
-    public static CreatePostLikeResult of(PostLike postLike) {
+    public static CreatePostLikeResult of(PostLike postLike, CreateNotificationPostLikeResult createNotificationPostLikeResult) {
         return new CreatePostLikeResult(
                 postLike.getId(),
                 postLike.getMemberId(),
                 postLike.getPostId(),
-                postLike.getCreatedAt()
+                postLike.getCreatedAt(),
+                createNotificationPostLikeResult
         );
     }
 }

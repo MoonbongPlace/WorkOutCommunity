@@ -50,4 +50,9 @@ public class MemberRepositoryAdapter implements MemberRepository {
     public Optional<Member> findActiveById(Long memberId) {
         return memberJpaRepository.findByIdAndStatusNotAndDeletedAtIsNull(memberId, MemberStatus.DELETED);
     }
+
+    @Override
+    public Optional<String> findMemberNameByIdAndStatus(Long senderId) {
+            return memberJpaRepository.findMemberNameByIdAndStatus(senderId, MemberStatus.ACTIVE);
+    }
 }

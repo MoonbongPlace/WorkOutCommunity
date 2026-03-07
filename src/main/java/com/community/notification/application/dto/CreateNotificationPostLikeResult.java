@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 @Getter
 @AllArgsConstructor
 @JsonPropertyOrder({"notificationId", "memberId", "senderId", "postId", "createdAt", "message"})
-public class NotificationCreateResult {
+public class CreateNotificationPostLikeResult {
     private boolean created;
     private Long notificationId;
     private Long memberId;
@@ -19,8 +19,8 @@ public class NotificationCreateResult {
     private OffsetDateTime createdAt;
     private String message;
 
-    public static NotificationCreateResult of(Notification saved) {
-        return new NotificationCreateResult(
+    public static CreateNotificationPostLikeResult of(Notification saved) {
+        return new CreateNotificationPostLikeResult(
                 true,
                 saved.getId(),
                 saved.getMemberId(),
@@ -31,8 +31,8 @@ public class NotificationCreateResult {
         );
     }
 
-    public static NotificationCreateResult skipped() {
-        return new NotificationCreateResult(
+    public static CreateNotificationPostLikeResult skipped() {
+        return new CreateNotificationPostLikeResult(
                 false,
                 null,
                 null,
