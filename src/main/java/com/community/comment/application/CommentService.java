@@ -14,6 +14,8 @@ import com.community.global.exception.ResponseCode;
 import com.community.member.domain.model.Member;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
 
+import com.community.notification.application.dto.CreateNotificationCommentResult;
+import com.community.notification.application.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ public class CommentService {
     private final PostRepositoryAdapter postRepositoryAdapter;
     private final CommentRepositoryAdapter commentRepositoryAdapter;
     private final MemberRepositoryAdapter memberRepositoryAdapter;
+    private final NotificationService notificationService;
 
     // todo: 수정 예정.
     @Transactional(readOnly = true)
@@ -52,18 +55,18 @@ public class CommentService {
 
     @Transactional
     public CreateCommentResult create(CreateCommentRequest request, Long memberId, Long postId) {
-        Post post = postRepositoryAdapter.findActiveById(postId)
-                .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
-        // post 관련 refactor 및 fix 사항
-//        if(!postRepositoryAdapter.existsById(postId)){
-//            throw new CommonException(ResponseCode.POST_NOT_FOUND);
-//        }
+        if(!postRepositoryAdapter.existsById(postId)){
+            throw new CommonException(ResponseCode.POST_NOT_FOUND);
+        }
 
-        Comment comment = Comment.fromRequest(request, memberId, postId);
-
+        Comment comment = Comment.create(request, memberId, postId);
         Comment saved = commentRepositoryAdapter.save(comment);
 
-        return CreateCommentResult.from(saved);
+        // todo: 알림 후처리 이벤트 리스너 도입 예정 v2
+        CreateNotificationCommentResult createNotificationCommentResult =
+                notificationService.createNotificationComment(memberId, postId);
+
+        return CreateCommentResult.from(saved, createNotificationCommentResult);
     }
 
     @Transactional

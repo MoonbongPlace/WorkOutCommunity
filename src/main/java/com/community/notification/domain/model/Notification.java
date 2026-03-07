@@ -46,48 +46,13 @@ public class Notification {
     @Column(name = "sender_id", nullable = false)
     private Long senderId;
 
-    // 댓글 알림
-    public static Notification createComment(
-            Long receiverId,
-            Long senderId,
-            Long postId,
-            String message,
-            String linkUrl
-    ) {
-        return create(
-                receiverId,
-                senderId,
-                postId,
-                NotificationType.COMMENT,
-                message,
-                linkUrl
-        );
-    }
-
-    // 브로드캐스트 알림
-    public static Notification createBroadcast(
-            Long receiverId,
-            Long adminId,
-            String message,
-            String linkUrl
-    ) {
-        return create(
-                receiverId,
-                adminId,
-                null,
-                NotificationType.BROADCAST,
-                message,
-                linkUrl
-        );
-    }
-
     public static Notification create(
             Long memberId,
             Long senderId,
             Long postId,
-            NotificationType type,
             String message,
-            String linkUrl
+            String linkUrl,
+            NotificationType type
     ) {
         Notification notification = new Notification();
         notification.memberId = memberId;
@@ -102,6 +67,59 @@ public class Notification {
         return notification;
     }
 
+    // 댓글 알림
+    public static Notification createComment(
+            Long receiverId,
+            Long senderId,
+            Long postId,
+            String message,
+            String linkUrl,
+            NotificationType type) {
+        return create(
+                receiverId,
+                senderId,
+                postId,
+                message,
+                linkUrl,
+                type
+        );
+    }
+
+    // 게시글 좋아요 알림
+    public static Notification createPostLike(
+            Long receiverId,
+            Long senderId,
+            Long postId,
+            String message,
+            String linkUrl,
+            NotificationType type) {
+        return create(
+                receiverId,
+                senderId,
+                postId,
+                message,
+                linkUrl,
+                type
+        );
+    }
+
+    // 브로드캐스트 알림
+    public static Notification createBroadcast(
+            Long receiverId,
+            Long adminId,
+            String message,
+            String linkUrl,
+            NotificationType type
+    ) {
+        return create(
+                receiverId,
+                adminId,
+                null,
+                message,
+                linkUrl,
+                NotificationType.BROADCAST
+        );
+    }
 
     public void markRead() {
         if (!this.isRead) {

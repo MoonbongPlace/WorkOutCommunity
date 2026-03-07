@@ -1,16 +1,11 @@
 package com.community.notification.api;
 
-import com.community.global.exception.CommonException;
 import com.community.global.CustomUserPrincipal;
-import com.community.global.exception.ResponseCode;
-import com.community.notification.api.dto.request.NotificationCreateRequest;
 import com.community.notification.api.dto.response.*;
 import com.community.notification.application.*;
 import com.community.notification.application.dto.MyNotificationsResult;
-import com.community.notification.application.dto.NotificationCreateResult;
 import com.community.notification.application.dto.ReadOneResult;
 import com.community.notification.application.dto.UnReadCountResult;
-import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -87,25 +82,6 @@ public class NotificationController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(NotificationReadAllResponse.of("전체 알림 읽음 처리 성공", updated));
-    }
-
-
-    // 알림 생성
-    @PostMapping
-    public ResponseEntity<NotificationCreateResponse> create(
-            @AuthenticationPrincipal CustomUserPrincipal principal,
-            @RequestBody @Valid NotificationCreateRequest request
-    ) {
-        Long senderId = principal.memberId();
-        if (senderId == null) {
-            throw new CommonException(ResponseCode.MEMBER_NOT_FOUND);
-        }
-
-        NotificationCreateResult notificationCreateResult = notificationService.createNotificationFromApi(senderId, request);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(NotificationCreateResponse.from(notificationCreateResult, "알림 생성 성공"));
     }
 
 }

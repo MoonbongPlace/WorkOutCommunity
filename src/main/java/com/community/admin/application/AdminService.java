@@ -12,6 +12,7 @@ import com.community.member.domain.model.Member;
 import com.community.member.domain.model.MemberStatus;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
 import com.community.notification.domain.model.Notification;
+import com.community.notification.domain.model.NotificationType;
 import com.community.notification.infra.persistence.NotificationRepositoryAdapter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -97,7 +98,8 @@ public class AdminService {
                         receiverId,
                         adminId,
                         request.getMessage(),
-                        request.getLinkUrl()
+                        request.getLinkUrl(),
+                        NotificationType.BROADCAST
                 ))
                 .toList();
 

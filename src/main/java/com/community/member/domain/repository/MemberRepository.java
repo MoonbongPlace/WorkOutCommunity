@@ -20,4 +20,6 @@ public interface MemberRepository {
     Optional<Member> findActiveByEmail(@NotBlank String email);
 
     Optional<Member> findActiveById(Long memberId);
+
+    Optional<String> findMemberNameByIdAndStatus(Long senderId);
 }

@@ -55,4 +55,14 @@ public interface PostJpaRepository extends JpaRepository<Post, Long> {
             Long categoryId,
             Pageable pageable
     );
+
+    @Query("""
+    SELECT p.title
+    FROM Post p
+    WHERE p.id = :postId
+      AND p.deletedAt IS NULL
+    """)
+    Optional<String> findPostTitleByIdAndDeletedAt(@Param("postId") Long postId);
+
+    boolean existsByIdAndDeletedAtIsNull(@Param("postId") Long postId);
 }

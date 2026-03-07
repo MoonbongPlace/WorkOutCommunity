@@ -3,11 +3,8 @@ package com.community.notification.application;
 import com.community.board.infra.persistence.PostRepositoryAdapter;
 import com.community.global.exception.CommonException;
 import com.community.global.exception.ResponseCode;
-import com.community.notification.api.dto.request.NotificationCreateRequest;
-import com.community.notification.application.dto.MyNotificationsResult;
-import com.community.notification.application.dto.NotificationCreateResult;
-import com.community.notification.application.dto.ReadOneResult;
-import com.community.notification.application.dto.UnReadCountResult;
+import com.community.member.infra.persistence.MemberRepositoryAdapter;
+import com.community.notification.application.dto.*;
 import com.community.notification.domain.model.Notification;
 import com.community.notification.domain.model.NotificationType;
 import com.community.notification.infra.persistence.NotificationRepositoryAdapter;
@@ -26,6 +23,7 @@ public class NotificationService {
 
     private final NotificationRepositoryAdapter notificationRepositoryAdapter;
     private final PostRepositoryAdapter postRepositoryAdapter;
+    private final MemberRepositoryAdapter memberRepositoryAdapter;
 
     @Transactional(readOnly = true)
     public MyNotificationsResult getMyNotifications(Long memberId, Pageable pageable) {
@@ -78,61 +76,76 @@ public class NotificationService {
         return notificationRepositoryAdapter.markAllRead(memberId, OffsetDateTime.now());
     }
 
+    // 댓글 작성 시 알림 생성.
     @Transactional
-    public NotificationCreateResult createNotificationFromApi(
-            Long senderId, NotificationCreateRequest request) {
-
-        Long receiverId = postRepositoryAdapter.findAuthorIdByPostId(request.getPostId())
+    public CreateNotificationCommentResult createNotificationComment(
+            Long senderId, Long postId) {
+        Long receiverId = postRepositoryAdapter.findAuthorIdByPostId(postId)
                 .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
 
         // 자기 자신에게 알림 방지
         if (receiverId.equals(senderId)) {
-            return NotificationCreateResult.skipped();
+            return CreateNotificationCommentResult.skipped();
         }
 
-        String linkUrl = "/posts/" + request.getPostId();
+        String memberName = memberRepositoryAdapter.findMemberNameByIdAndStatus(senderId)
+                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
-        Notification notification = Notification.createComment(
-                receiverId,
-                senderId,
-                request.getPostId(),
-                request.getMessage(),
-                linkUrl
-        );
+        String postTitle = postRepositoryAdapter.findPostTitleById(postId)
+                .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
 
-        Notification saved = notificationRepositoryAdapter.save(notification);
-
-        return NotificationCreateResult.of(saved);
-    }
-
-    @Transactional
-    public void saveNotification(Long receiverId, Long senderId, Long postId,
-                                 NotificationType type, String message, String linkUrl) {
-
-        if (receiverId == null || senderId == null || postId == null || type == null) {
-            throw new IllegalArgumentException("receiverId/senderId/postId/type must not be null");
-        }
-        if (message == null || message.isBlank()) {
-            throw new IllegalArgumentException("message must not be blank");
-        }
-        // 자기 자신 알람 방지
-        if (receiverId.equals(senderId)) {
-            return;
-        }
-
-        // 링크 url 기본값 설정
-        String finalLinkUrl = (linkUrl == null || linkUrl.isBlank())
-                ? "/posts/" + postId
-                : linkUrl;
+        String message = memberName + "님이 '" + postTitle + "' 게시글에 댓글을 작성했습니다!";
+        String linkUrl = "/posts/" + postId;
 
         Notification notification = Notification.createComment(
                 receiverId,
                 senderId,
                 postId,
                 message,
-                finalLinkUrl
+                linkUrl,
+                NotificationType.COMMENT
         );
 
-        notificationRepositoryAdapter.save(notification);
+        Notification saved = notificationRepositoryAdapter.save(notification);
+
+        return CreateNotificationCommentResult.of(saved);
+    }
+
+    // 게시글 좋아요 누르기 알림 생성.
+    @Transactional
+    public CreateNotificationPostLikeResult createNotificationPostLike(
+            Long senderId, Long postId) {
+
+        Long receiverId = postRepositoryAdapter.findAuthorIdByPostId(postId)
+                .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
+
+        // 자기 자신에게 알림 방지
+        if (receiverId.equals(senderId)) {
+            return CreateNotificationPostLikeResult.skipped();
+        }
+
+        String memberName = memberRepositoryAdapter.findMemberNameByIdAndStatus(senderId)
+                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+
+        String postTitle = postRepositoryAdapter.findPostTitleById(postId)
+                .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
+
+
+        String message = memberName + "님이 '" + postTitle + "' 게시글에 좋아요을 눌렀습니다!";
+        String linkUrl = "/posts/" + postId;
+
+        Notification notification = Notification.createPostLike(
+                receiverId,
+                senderId,
+                postId,
+                message,
+                linkUrl,
+                NotificationType.POST_LIKE
+
+        );
+
+        Notification saved = notificationRepositoryAdapter.save(notification);
+
+        return CreateNotificationPostLikeResult.of(saved);
     }
 }
