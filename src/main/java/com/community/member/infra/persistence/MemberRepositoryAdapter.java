@@ -55,4 +55,19 @@ public class MemberRepositoryAdapter implements MemberRepository {
     public Optional<String> findMemberNameByIdAndStatus(Long senderId) {
             return memberJpaRepository.findMemberNameByIdAndStatus(senderId, MemberStatus.ACTIVE);
     }
+
+    @Override
+    public List<Member> findAllByStatus(MemberStatus status) {
+        return memberJpaRepository.findAllByStatus(status);
+    }
+
+    @Override
+    public Page<Member> findByStatus(MemberStatus status, Pageable pageable) {
+        return memberJpaRepository.findByStatus(status, pageable);
+    }
+
+    @Override
+    public boolean existsByEmailAndStatus(String email) {
+        return memberJpaRepository.existsByEmailAndStatus(email, MemberStatus.SUSPENDED);
+    }
 }

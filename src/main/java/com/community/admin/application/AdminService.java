@@ -21,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -33,25 +32,41 @@ public class AdminService {
 
     // 관리자 : 회원 조회
     @Transactional(readOnly = true)
-    public AdminMemberListResult memberList(Pageable pageable) {
-        Page<Member> page = memberRepositoryAdapter.findAll(pageable);
+    public AdminMemberListResult memberList(MemberStatus status, Pageable pageable) {
+        Page<Member> page = (status != null)
+                ? memberRepositoryAdapter.findByStatus(status, pageable)
+                : memberRepositoryAdapter.findAll(pageable);
 
         return AdminMemberListResult.from(page);
     }
 
-    // 관리자 : 회원 상태 변경
-    @Transactional
-    public AdminMemberStatusUpdateResult updateMemberStatus(Long memberId, AdminMemberStatusUpdateRequest request) {
+    // 관리자 : 회원 상세 조회
+    @Transactional(readOnly = true)
+    public AdminMemberDetailResult getDetailMember(Long memberId) {
         Member member = memberRepositoryAdapter.findById(memberId)
                 .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
+        return AdminMemberDetailResult.of(member);
+    }
+
+    // 관리자 : 회원 상태 변경
+    @Transactional
+    public AdminMemberStatusUpdateResult updateMemberStatus(Long adminId, Long memberId, AdminMemberStatusUpdateRequest request) {
+        Member member = memberRepositoryAdapter.findById(memberId)
+                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+
+        if(memberId.equals(adminId)){
+            throw new CommonException(ResponseCode.INVALID_STATUS_TRANSITION);
+        }
         if (member.getDeletedAt() != null && request.getStatus() != MemberStatus.DELETED) {
             throw new CommonException(ResponseCode.MEMBER_ALREADY_DELETED);
         }
 
+        if (request.getStatus().equals(MemberStatus.DELETED)){
+            throw new CommonException(ResponseCode.INVALID_STATUS_TRANSITION);
+        }
+
         member.changeStatus(request.getStatus());
-        if (request.getStatus()==MemberStatus.DELETED)
-            member.setDeletedAt(OffsetDateTime.now());
 
         return AdminMemberStatusUpdateResult.from(member);
     }
