@@ -98,3 +98,16 @@ export interface AdminPostVisibilityUpdateResponse {
   message: string
   timestamp: string
 }
+
+// ── 알림 브로드캐스트 ──────────────────────────────────────────────────
+export interface AdminBroadcastRequest {
+  message: string
+  linkUrl?: string
+}
+
+export interface AdminBroadcastResponse {
+  code: string
+  message: string
+  timestamp: string
+  sent: number
+}

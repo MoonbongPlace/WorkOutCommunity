@@ -5,6 +5,8 @@ import type {
   AdminMemberStatusUpdateResponse,
   AdminPostListResponse,
   AdminPostVisibilityUpdateResponse,
+  AdminBroadcastRequest,
+  AdminBroadcastResponse,
   MemberStatus,
   PostVisibility,
 } from '../../types/admin'
@@ -41,4 +43,8 @@ export const adminApi = {
       `/v1/admin/posts/${postId}/visibility`,
       { postVisibility },
     ),
+
+  // 알림 브로드캐스트
+  broadcast: (body: AdminBroadcastRequest) =>
+    axiosInstance.post<AdminBroadcastResponse>('/v1/admin/broadcast', body),
 }

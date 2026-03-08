@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { adminApi } from '../api/endpoints/admin'
 import Avatar from '../components/ui/Avatar'
 import StateBlock from '../components/ui/StateBlock'
+import PostDetailModal from '../components/post/PostDetailModal'
 import type {
   AdminMemberListItem,
   AdminMemberDetail,
@@ -330,11 +331,12 @@ function MemberTab() {
 
 // ── 게시글 관리 탭 ─────────────────────────────────────────────────────
 function PostTab() {
-  const [pageStatus,  setPageStatus]  = useState<PageStatus>('loading')
-  const [posts,       setPosts]       = useState<AdminPostListItem[]>([])
-  const [currentPage, setCurrentPage] = useState(0)
-  const [totalPages,  setTotalPages]  = useState(0)
-  const [togglingId,  setTogglingId]  = useState<number | null>(null)
+  const [pageStatus,    setPageStatus]    = useState<PageStatus>('loading')
+  const [posts,         setPosts]         = useState<AdminPostListItem[]>([])
+  const [currentPage,   setCurrentPage]   = useState(0)
+  const [totalPages,    setTotalPages]    = useState(0)
+  const [togglingId,    setTogglingId]    = useState<number | null>(null)
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null)
 
   async function load(page: number) {
     setPageStatus('loading')
@@ -395,7 +397,11 @@ function PostTab() {
                 {posts.map((post) => {
                   const isToggling = togglingId === post.id
                   return (
-                    <tr key={post.id} className="hover:bg-[#F9F9F0] transition-colors">
+                    <tr
+                      key={post.id}
+                      onClick={() => setSelectedPostId(post.id)}
+                      className="hover:bg-[#F9F9F0] cursor-pointer transition-colors"
+                    >
                       <td className="px-4 py-3 text-gray-400">{post.id}</td>
                       <td className="px-4 py-3 text-gray-500">{post.memberId}</td>
                       <td className="px-4 py-3 max-w-xs">
@@ -412,7 +418,7 @@ function PostTab() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{post.createdAt.slice(0, 10)}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => void handleVisibilityToggle(post)}
                           disabled={isToggling}
@@ -439,16 +445,124 @@ function PostTab() {
           <Pagination current={currentPage} total={totalPages} onChange={handlePageChange} />
         </>
       )}
+
+      {/* 게시글 상세 모달 */}
+      {selectedPostId !== null && (
+        <PostDetailModal
+          postId={selectedPostId}
+          onClose={() => setSelectedPostId(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+// ── 알림 브로드캐스트 탭 ───────────────────────────────────────────────
+function BroadcastTab() {
+  const [message,    setMessage]    = useState('')
+  const [linkUrl,    setLinkUrl]    = useState('')
+  const [sending,    setSending]    = useState(false)
+  const [result,     setResult]     = useState<{ sent: number } | null>(null)
+  const [error,      setError]      = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!message.trim() || sending) return
+
+    setSending(true)
+    setResult(null)
+    setError(null)
+
+    try {
+      const body = { message: message.trim(), ...(linkUrl.trim() ? { linkUrl: linkUrl.trim() } : {}) }
+      const { data } = await adminApi.broadcast(body)
+      setResult({ sent: data.sent })
+      setMessage('')
+      setLinkUrl('')
+    } catch {
+      setError('브로드캐스트 전송에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <div className="flex justify-center py-6">
+      <div className="w-full max-w-lg bg-white rounded-2xl border border-[#E8E7D1] shadow-sm px-8 py-8">
+        <h2 className="text-base font-semibold text-gray-800 mb-1">알림 브로드캐스트</h2>
+        <p className="text-sm text-gray-500 mb-6">
+          전체 활성 회원에게 알림을 일괄 발송합니다.
+        </p>
+
+        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
+          {/* 메시지 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              메시지 <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="전송할 알림 메시지를 입력하세요."
+              rows={4}
+              maxLength={500}
+              disabled={sending}
+              className="w-full rounded-xl border border-neutral-200 bg-[#FAFAF5] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#A6A66A] disabled:opacity-50 resize-none"
+            />
+            <p className="mt-1 text-xs text-gray-400 text-right">{message.length} / 500</p>
+          </div>
+
+          {/* 링크 URL (선택) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              링크 URL <span className="text-gray-400 font-normal">(선택)</span>
+            </label>
+            <input
+              type="url"
+              value={linkUrl}
+              onChange={(e) => setLinkUrl(e.target.value)}
+              placeholder="https://example.com"
+              disabled={sending}
+              className="w-full rounded-xl border border-neutral-200 bg-[#FAFAF5] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#A6A66A] disabled:opacity-50"
+            />
+          </div>
+
+          {/* 결과 / 오류 메시지 */}
+          {result && (
+            <div className="flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+              <span className="text-base">✓</span>
+              <span>브로드캐스트 완료 — <strong>{result.sent.toLocaleString()}명</strong>에게 발송되었습니다.</span>
+            </div>
+          )}
+          {error && (
+            <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
+              <span className="text-base">✕</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="pt-1 flex justify-end">
+            <button
+              type="submit"
+              disabled={!message.trim() || sending}
+              className="bg-[#7A7F3A] hover:bg-[#666B2F] text-white font-medium px-6 py-2.5 rounded-xl transition-colors disabled:opacity-50"
+            >
+              {sending ? '전송 중...' : '전체 발송'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }
 
 // ── 메인 관리자 페이지 ──────────────────────────────────────────────────
-type AdminTab = 'members' | 'posts'
+type AdminTab = 'members' | 'posts' | 'broadcast'
 
 const ADMIN_TABS: { label: string; value: AdminTab }[] = [
-  { label: '회원 관리', value: 'members' },
-  { label: '게시글 관리', value: 'posts' },
+  { label: '회원 관리',   value: 'members'   },
+  { label: '게시글 관리', value: 'posts'     },
+  { label: '알림 발송',   value: 'broadcast' },
 ]
 
 export default function AdminPage() {
@@ -479,8 +593,9 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {activeTab === 'members' && <MemberTab />}
-      {activeTab === 'posts'   && <PostTab />}
+      {activeTab === 'members'   && <MemberTab />}
+      {activeTab === 'posts'     && <PostTab />}
+      {activeTab === 'broadcast' && <BroadcastTab />}
     </div>
   )
 }
