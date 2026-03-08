@@ -1,4 +1,4 @@
-package com.community.admin.application.dto;
+package com.community.admin.application;
 
 import com.community.member.domain.model.Member;
 import com.community.member.domain.model.MemberStatus;
@@ -10,8 +10,8 @@ import java.time.OffsetDateTime;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"id","email","memberName","name","age","sex","role","status","createdAt"})
-public class AdminMemberListItem {
+@JsonPropertyOrder({"id","email","memberName","name","age","sex","role","status","createdAt","deletedAt","profileImage"})
+public class AdminMemberDetailResult {
     private Long id;
     private String email;
     private String memberName;
@@ -21,9 +21,11 @@ public class AdminMemberListItem {
     private String role;
     private MemberStatus status;
     private OffsetDateTime createdAt;
+    private OffsetDateTime deletedAt;
+    private String profileImage;
 
-    public static AdminMemberListItem from(Member member) {
-        return new AdminMemberListItem(
+    public static AdminMemberDetailResult of(Member member) {
+        return new AdminMemberDetailResult(
                 member.getId(),
                 member.getEmail(),
                 member.getMemberName(),
@@ -32,7 +34,9 @@ public class AdminMemberListItem {
                 member.getSex(),
                 member.getRole(),
                 member.getStatus(),
-                member.getCreatedAt()
+                member.getCreatedAt(),
+                member.getDeletedAt(),
+                member.getProfileImage()
         );
     }
 }

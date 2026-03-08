@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { notificationApi } from '../../api/endpoints/notification'
 import type { NotificationItem } from '../../types/notification'
 
@@ -9,18 +9,28 @@ export default function NotificationWidget() {
   const [open, setOpen] = useState(false)
   const [status, setStatus] = useState<Status>('idle')
   const [items, setItems] = useState<NotificationItem[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
   const panelRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
-  const unreadCount = items.filter((i) => !i.isRead).length
+  async function fetchUnreadCount() {
+    try {
+      const { data } = await notificationApi.unreadCount()
+      setUnreadCount(data.unReadCountResult.unreadCount)
+    } catch {
+      // 조용히 무시
+    }
+  }
 
   async function load() {
     setStatus('loading')
     try {
       const { data } = await notificationApi.list()
-      const list = data.myNotificationsResult.notifications
-      setItems(list)
-      setStatus(list.length === 0 ? 'empty' : 'success')
+      const result = data.myNotificationsResult
+      setItems(result.notifications)
+      setUnreadCount(result.unreadCount)
+      setStatus(result.notifications.length === 0 ? 'empty' : 'success')
     } catch {
       setStatus('error')
     }
@@ -33,6 +43,7 @@ export default function NotificationWidget() {
         setItems((prev) =>
           prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n))
         )
+        setUnreadCount((prev) => Math.max(0, prev - 1))
       } catch {
         // 조용히 무시
       }
@@ -47,10 +58,16 @@ export default function NotificationWidget() {
     try {
       await notificationApi.readAll()
       setItems((prev) => prev.map((n) => ({ ...n, isRead: true })))
+      setUnreadCount(0)
     } catch {
       // 조용히 무시
     }
   }
+
+  // 마운트 및 페이지 이동 시 unread count 로드
+  useEffect(() => {
+    void fetchUnreadCount()
+  }, [location.pathname])
 
   // 열릴 때 데이터 로드
   useEffect(() => {

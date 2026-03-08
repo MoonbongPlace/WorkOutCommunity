@@ -5,6 +5,10 @@ import com.community.member.domain.model.MemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,11 +42,22 @@ public interface MemberJpaRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByIdAndStatusNotAndDeletedAtIsNull(@Param("id") Long id, @Param("status") MemberStatus status);
 
     @Query("""
-    select m.memberName
-    from Member m
-    where m.id = :memberId
-      and m.status = :status
-""")
+                select m.memberName
+                from Member m
+                where m.id = :memberId
+                  and m.status = :status
+            """)
     Optional<String> findMemberNameByIdAndStatus(@Param("memberId") Long memberId,
                                                  @Param("status") MemberStatus status);
+
+    @Query("""
+                select m
+                from Member m
+                where m.status = :status
+            """)
+    List<Member> findAllByStatus(@Param("status")MemberStatus status);
+
+    Page<Member> findByStatus(MemberStatus status, Pageable pageable);
+
+    boolean existsByEmailAndStatus(String email, MemberStatus memberStatus);
 }

@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import RootLayout from './layouts/RootLayout'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
@@ -13,6 +14,7 @@ import WorkoutLogsPage from './pages/WorkoutLogsPage'
 import WorkoutLogDetailPage from './pages/WorkoutLogDetailPage'
 import WorkoutLogNewPage from './pages/WorkoutLogNewPage'
 import NotificationsPage from './pages/NotificationsPage'
+import AdminPage from './pages/AdminPage'
 
 const router = createBrowserRouter([
   // 공개 라우트
@@ -37,6 +39,14 @@ const router = createBrowserRouter([
           { path: '/workout-logs/:logId',    element: <WorkoutLogDetailPage /> },
           { path: '/notifications',          element: <NotificationsPage /> },
           { path: '/chat',                   element: <Navigate to="/posts" replace /> },
+
+          // 관리자 전용
+          {
+            element: <AdminRoute />,
+            children: [
+              { path: '/admin', element: <AdminPage /> },
+            ],
+          },
         ],
       },
     ],

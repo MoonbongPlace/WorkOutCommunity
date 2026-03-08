@@ -34,7 +34,7 @@ public class PostLikeService {
 
         // todo: 알림 후처리 이벤트 리스너 도입 예정 v2
         CreateNotificationPostLikeResult createNotificationPostLikeResult =
-                notificationService.createNotificationPostLike(memberId, post.getMemberId());
+                notificationService.createNotificationPostLike(memberId, postId);
 
         post.increaseLikeCount();
 

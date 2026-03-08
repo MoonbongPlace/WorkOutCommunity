@@ -26,13 +26,6 @@ public class JWTProvider {
         this.key = Keys.hmacShaKeyFor(jwtProperties.secret().getBytes(StandardCharsets.UTF_8));
     }
 
-    public TokenPairDTO issueTokenPair(Long memberId, String role){
-        String at = issueAccessToken(memberId, role);
-        String rt = issueRefreshToken(memberId);
-
-        return new TokenPairDTO(at, rt, jwtProperties.accessExpSeconds(), jwtProperties.refreshExpSeconds());
-    }
-
     public String issueAccessToken(Long memberId, String role) {
         Map<String, Object> claims = Map.of("role", role);
         return issueToken(String.valueOf(memberId), jwtProperties.accessExpSeconds(), claims);

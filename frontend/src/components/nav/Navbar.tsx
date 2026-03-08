@@ -9,6 +9,10 @@ const links = [
   { to: '/workout-logs', label: '운동일지' },
 ]
 
+const adminLinks = [
+  { to: '/admin', label: '관리자' },
+]
+
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `px-3 py-1.5 rounded text-sm font-medium transition-colors ${
     isActive
@@ -53,15 +57,15 @@ export default function Navbar() {
               <NavLink to={to} className={linkClass}>{label}</NavLink>
             </li>
           ))}
+          {user?.role === 'admin' && adminLinks.map(({ to, label }) => (
+            <li key={to}>
+              <NavLink to={to} className={linkClass}>{label}</NavLink>
+            </li>
+          ))}
           {user && (
             <>
               <li>
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-1.5 rounded text-sm font-medium text-gray-600 hover:bg-[#E8E7D1] hover:text-[#7A7F3A] transition-colors"
-                >
-                  로그아웃
-                </button>
+                <NotificationWidget />
               </li>
               <li>
                 <NavLink to="/me" className="flex items-center ml-1">
@@ -69,7 +73,12 @@ export default function Navbar() {
                 </NavLink>
               </li>
               <li>
-                <NotificationWidget />
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 rounded text-sm font-medium text-gray-600 hover:bg-[#E8E7D1] hover:text-[#7A7F3A] transition-colors"
+                >
+                  로그아웃
+                </button>
               </li>
             </>
           )}
@@ -99,6 +108,23 @@ export default function Navbar() {
           {open && (
             <ul className="absolute right-0 top-full mt-1 w-36 bg-white border border-[#E8E7D1] rounded-lg shadow-md py-1 flex flex-col">
               {links.map(({ to, label }) => (
+                <li key={to}>
+                  <NavLink
+                    to={to}
+                    className={({ isActive }) =>
+                      `block px-4 py-2 text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-[#E8E7D1] text-[#7A7F3A]'
+                          : 'text-gray-600 hover:bg-[#E8E7D1] hover:text-[#7A7F3A]'
+                      }`
+                    }
+                    onClick={() => setOpen(false)}
+                  >
+                    {label}
+                  </NavLink>
+                </li>
+              ))}
+              {user?.role === 'admin' && adminLinks.map(({ to, label }) => (
                 <li key={to}>
                   <NavLink
                     to={to}

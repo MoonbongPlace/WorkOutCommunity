@@ -1,6 +1,7 @@
 package com.community.member.domain.repository;
 
 import com.community.member.domain.model.Member;
+import com.community.member.domain.model.MemberStatus;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,4 +23,10 @@ public interface MemberRepository {
     Optional<Member> findActiveById(Long memberId);
 
     Optional<String> findMemberNameByIdAndStatus(Long senderId);
+
+    List<Member> findAllByStatus(MemberStatus status);
+
+    Page<Member> findByStatus(MemberStatus status, Pageable pageable);
+
+    boolean existsByEmailAndStatus(@NotBlank String email);
 }
