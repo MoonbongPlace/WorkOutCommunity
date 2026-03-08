@@ -9,4 +9,8 @@ public interface CommentRepository {
     Comment save(Comment comment);
     Optional<Comment> findById(Long commentId);
     List<Comment> findActiveByPostId(Long postId);
+
+    int countByPostId(Long postId);
+
+    int countActiveByPostId(Long postId);
 }

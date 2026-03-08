@@ -10,4 +10,8 @@ import java.util.List;
 public interface CommentJpaRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c WHERE c.postId = :postId AND c.deletedAt IS NULL ORDER BY c.createdAt ASC")
     List<Comment> findActiveByPostId(@Param("postId") Long postId);
+
+    int countByPostId(Long postId);
+
+    int countByPostIdAndDeletedAtIsNull(Long postId);
 }

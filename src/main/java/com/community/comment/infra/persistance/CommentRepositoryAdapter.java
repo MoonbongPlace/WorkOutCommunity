@@ -27,4 +27,14 @@ public class CommentRepositoryAdapter implements CommentRepository {
     public List<Comment> findActiveByPostId(Long postId) {
         return commentJpaRepository.findActiveByPostId(postId);
     }
+
+    @Override
+    public int countByPostId(Long postId) {
+        return commentJpaRepository.countByPostId(postId);
+    }
+
+    @Override
+    public int countActiveByPostId(Long postId) {
+        return commentJpaRepository.countByPostIdAndDeletedAtIsNull(postId);
+    }
 }

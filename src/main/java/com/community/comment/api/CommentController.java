@@ -4,10 +4,12 @@ import com.community.comment.api.dto.request.CreateCommentRequest;
 import com.community.comment.api.dto.response.CreateCommentResponse;
 import com.community.comment.api.dto.response.DeleteCommentResponse;
 import com.community.comment.api.dto.response.CommentListResponse;
+import com.community.comment.api.dto.response.ReadCountCommentResponse;
 import com.community.comment.application.CommentService;
 import com.community.comment.application.dto.CreateCommentResult;
 import com.community.comment.application.dto.DeleteCommentResult;
 import com.community.comment.application.dto.CommentListResult;
+import com.community.comment.application.dto.ReadCountCommentResult;
 import com.community.global.CustomUserPrincipal;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -52,6 +54,18 @@ public class CommentController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(CreateCommentResponse.from(createdComment, "댓글 작성 성공"));
+    }
+
+    // 댓글 카운트
+    @GetMapping("/commentCount")
+    public ResponseEntity<ReadCountCommentResponse> readCount(
+            @PathVariable(name="postId") final Long postId
+    ){
+        int readCountCommentResult = commentService.readCountComment(postId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ReadCountCommentResponse.from(readCountCommentResult, "댓글 갯수 조회 성공"));
     }
 
     // 댓글 삭제
