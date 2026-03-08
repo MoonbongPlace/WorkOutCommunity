@@ -12,7 +12,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-@JsonPropertyOrder({"id","memberId","memberName","title","content","categoryId","images","visibility","createdAt","likeCount", "profileImage"})
+@JsonPropertyOrder({"id","memberId","memberName","title","content","categoryId","images","visibility","createdAt","likeCount","commentCount","profileImage"})
 public class PostListItem {
     private Long id;
     private Long memberId;
@@ -24,9 +24,10 @@ public class PostListItem {
     private PostVisibility visibility;
     private OffsetDateTime createdAt;
     private int likeCount;
+    private int commentCount;
     private String profileImage;
 
-    public static PostListItem from(Post post, Member member) {
+    public static PostListItem from(Post post, Member member, int commentCount) {
         return new PostListItem(
                 post.getId(),
                 post.getMemberId(),
@@ -38,6 +39,7 @@ public class PostListItem {
                 post.getPostVisibility(),
                 post.getCreatedAt(),
                 post.getLikeCount(),
+                commentCount,
                 member.getProfileImage()
         );
     }

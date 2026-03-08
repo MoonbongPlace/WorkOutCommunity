@@ -321,6 +321,7 @@ export default function PostsPage() {
                         <span className="text-base leading-none">{isLiked ? '♥' : '♡'}</span>
                         <span>{likeCount}</span>
                       </button>
+                      <span className="text-sm px-2 py-1 text-gray-400">댓글 {post.commentCount}</span>
                     </div>
                   </Card>
                 </div>

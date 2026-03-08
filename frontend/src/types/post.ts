@@ -11,6 +11,7 @@ export interface PostListItem {
   visibility: 'VISIBLE' | 'HIDDEN'
   createdAt: string
   likeCount: number
+  commentCount: number
 }
 
 export interface PostListResult {

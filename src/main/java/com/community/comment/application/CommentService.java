@@ -3,10 +3,7 @@ package com.community.comment.application;
 import com.community.board.domain.model.Post;
 import com.community.board.infra.persistence.PostRepositoryAdapter;
 import com.community.comment.api.dto.request.CreateCommentRequest;
-import com.community.comment.application.dto.CreateCommentResult;
-import com.community.comment.application.dto.DeleteCommentResult;
-import com.community.comment.application.dto.CommentDetailResult;
-import com.community.comment.application.dto.CommentListResult;
+import com.community.comment.application.dto.*;
 import com.community.comment.domain.model.Comment;
 import com.community.comment.infra.persistance.CommentRepositoryAdapter;
 import com.community.global.exception.CommonException;
@@ -89,5 +86,12 @@ public class CommentService {
         Comment saved = commentRepositoryAdapter.save(comment);
 
         return DeleteCommentResult.from(saved);
+    }
+
+    public int readCountComment(Long postId) {
+        Post post = postRepositoryAdapter.findActiveVisibleById(postId)
+                .orElseThrow(()-> new CommonException(ResponseCode.POST_NOT_FOUND));
+
+        return commentRepositoryAdapter.countByPostId(post.getId());
     }
 }

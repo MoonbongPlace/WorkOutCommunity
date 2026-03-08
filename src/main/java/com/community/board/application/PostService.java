@@ -5,6 +5,7 @@ import com.community.board.application.dto.*;
 import com.community.board.api.dto.request.UpdatePostRequest;
 import com.community.board.domain.model.Post;
 import com.community.board.infra.persistence.PostRepositoryAdapter;
+import com.community.comment.infra.persistance.CommentRepositoryAdapter;
 import com.community.global.component.ImageStorage;
 import com.community.global.exception.CommonException;
 import com.community.global.exception.ResponseCode;
@@ -30,6 +31,7 @@ public class PostService {
 
     private final PostRepositoryAdapter postRepositoryAdapter;
     private final MemberRepositoryAdapter memberRepositoryAdapter;
+    private final CommentRepositoryAdapter commentRepositoryAdapter;
     private final ImageStorage profileImageStorage;
 
     // 게시글 리스트 조회
@@ -43,7 +45,8 @@ public class PostService {
                 .map(post -> {
                     Member member = memberRepositoryAdapter.findById(post.getMemberId())
                             .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
-                    return PostListItem.from(post, member);
+                    int commentCount = commentRepositoryAdapter.countActiveByPostId(post.getId());
+                    return PostListItem.from(post, member, commentCount);
                 })
                 .toList();
 
@@ -105,7 +108,8 @@ public class PostService {
                 .map(post -> {
                     Member member = memberRepositoryAdapter.findById(post.getMemberId())
                             .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
-                    return PostListItem.from(post, member);
+                    int commentCount = commentRepositoryAdapter.countActiveByPostId(post.getId());
+                    return PostListItem.from(post, member, commentCount);
                 })
                 .toList();
 
