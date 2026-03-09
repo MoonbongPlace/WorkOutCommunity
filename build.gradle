@@ -46,6 +46,7 @@ dependencies {
 
     // (선택) 헬스 체크 / 메트릭
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
