@@ -2,6 +2,7 @@ package com.community.board.infra.persistence;
 
 import com.community.board.domain.model.Post;
 import com.community.board.domain.model.PostVisibility;
+import com.community.board.domain.model.SearchType;
 import com.community.board.domain.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -78,5 +79,33 @@ public class PostRepositoryAdapter implements PostRepository {
         @Override
         public boolean existsById(Long postId) {
                 return postJpaRepository.existsByIdAndDeletedAtIsNull(postId);
+        }
+
+        @Override
+        public Page<Post> searchByKeyword(String keyword, SearchType searchType, Pageable pageable) {
+                return switch (searchType) {
+                        case TITLE -> postJpaRepository.findAllActiveVisibleByTitleContaining(keyword, pageable);
+                        case CONTENT -> postJpaRepository.findAllActiveVisibleByContentContaining(keyword, pageable);
+                        default -> postJpaRepository.findAllActiveVisibleByTitleOrContentContaining(keyword, pageable);
+                };
+        }
+
+        @Override
+        public Page<Post> searchByKeywordAndCategoryId(String keyword, SearchType searchType, Long categoryId, Pageable pageable) {
+                return switch (searchType) {
+                        case TITLE -> postJpaRepository.findAllActiveVisibleByTitleContainingAndCategoryId(keyword, categoryId, pageable);
+                        case CONTENT -> postJpaRepository.findAllActiveVisibleByContentContainingAndCategoryId(keyword, categoryId, pageable);
+                        default -> postJpaRepository.findAllActiveVisibleByTitleOrContentContainingAndCategoryId(keyword, categoryId, pageable);
+                };
+        }
+
+        @Override
+        public Page<Post> searchByMemberIds(List<Long> memberIds, Pageable pageable) {
+                return postJpaRepository.findAllActiveVisibleByMemberIdIn(memberIds, pageable);
+        }
+
+        @Override
+        public Page<Post> searchByMemberIdsAndCategoryId(List<Long> memberIds, Long categoryId, Pageable pageable) {
+                return postJpaRepository.findAllActiveVisibleByMemberIdInAndCategoryId(memberIds, categoryId, pageable);
         }
 }

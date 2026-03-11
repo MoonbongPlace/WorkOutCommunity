@@ -3,6 +3,7 @@ package com.community.comment.domain.repository;
 import com.community.comment.domain.model.Comment;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface CommentRepository {
@@ -13,4 +14,6 @@ public interface CommentRepository {
     int countByPostId(Long postId);
 
     int countActiveByPostId(Long postId);
+
+    Map<Long, Integer> countActiveByPostIds(List<Long> postIds);
 }

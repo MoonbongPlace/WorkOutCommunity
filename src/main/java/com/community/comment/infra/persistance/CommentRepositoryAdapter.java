@@ -1,12 +1,15 @@
 package com.community.comment.infra.persistance;
 
+import com.community.comment.application.dto.PostCommentCountRow;
 import com.community.comment.domain.model.Comment;
 import com.community.comment.domain.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -36,5 +39,15 @@ public class CommentRepositoryAdapter implements CommentRepository {
     @Override
     public int countActiveByPostId(Long postId) {
         return commentJpaRepository.countByPostIdAndDeletedAtIsNull(postId);
+    }
+
+    public Map<Long, Integer> countActiveByPostIds(List<Long> postIds) {
+        List<PostCommentCountRow> rows = commentJpaRepository.countActiveByPostIds(postIds);
+
+        return rows.stream()
+                .collect(Collectors.toMap(
+                        PostCommentCountRow::postId,
+                        row -> Math.toIntExact(row.commentCount())
+                ));
     }
 }

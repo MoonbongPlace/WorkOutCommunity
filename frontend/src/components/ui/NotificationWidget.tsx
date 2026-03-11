@@ -115,7 +115,7 @@ export default function NotificationWidget() {
 
       {/* 드롭다운 패널 */}
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-[#E8E7D1] rounded-xl shadow-lg z-50 flex flex-col overflow-hidden">
+        <div className="absolute left-0 top-full mt-2 w-80 bg-white border border-[#E8E7D1] rounded-xl shadow-lg z-50 flex flex-col overflow-hidden">
           {/* 패널 헤더 */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#E8E7D1]">
             <span className="text-sm font-semibold text-gray-800">알림</span>

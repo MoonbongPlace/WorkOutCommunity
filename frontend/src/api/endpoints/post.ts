@@ -1,5 +1,5 @@
 import axiosInstance from '../axiosInstance'
-import type { PostListResponse, PostDetailResponse, CreatePostRequest, UpdatePostRequest } from '../../types/post'
+import type { PostListResponse, PostDetailResponse, CreatePostRequest, UpdatePostRequest, SearchType } from '../../types/post'
 
 export const postApi = {
   me: (page = 0, size = 20) =>
@@ -32,6 +32,11 @@ export const postApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
+
+  search: (page = 0, size = 20, keyword: string, searchType: SearchType, categoryId?: number) =>
+    axiosInstance.get<PostListResponse>('/v1/posts/search', {
+      params: { page, size, sort: 'createdAt,desc', keyword, searchType, ...(categoryId != null && { categoryId }) },
+    }),
 
   remove: (postId: number) =>
     axiosInstance.delete(`/v1/posts/${postId}`),

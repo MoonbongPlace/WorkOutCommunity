@@ -70,4 +70,14 @@ public class MemberRepositoryAdapter implements MemberRepository {
     public boolean existsByEmailAndStatus(String email) {
         return memberJpaRepository.existsByEmailAndStatus(email, MemberStatus.SUSPENDED);
     }
+
+    @Override
+    public List<Member> findAllByIdIn(List<Long> memberIds) {
+        return memberJpaRepository.findAllByIdIn(memberIds);
+    }
+
+    @Override
+    public List<Member> findAllActiveByMemberNameContaining(String memberName) {
+        return memberJpaRepository.findAllActiveByMemberNameContaining(memberName);
+    }
 }

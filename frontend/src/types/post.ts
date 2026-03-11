@@ -1,3 +1,5 @@
+export type SearchType = 'TITLE' | 'CONTENT' | 'TITLE_CONTENT' | 'AUTHOR'
+
 // GET /api/v1/posts
 export interface PostListItem {
   id: number

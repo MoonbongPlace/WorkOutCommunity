@@ -51,7 +51,6 @@ public class AiChatService {
         );
         Collections.reverse(recent);
 
-        // ✅ v1: 루틴 추천 제거
         String instructions = promptFactory.friendCoachInstructions();
         Object input = llmInputFactory.buildForInfoChat(recent, message);
 

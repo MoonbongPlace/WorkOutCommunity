@@ -1,0 +1,26 @@
+## Cloud Run 배포 이슈 정리
+
+**[1] placeholder 에러**
+- 문제: prod 프로필에서 `app.upload.profile-dir` 미해결
+- 원인: jar에 @Profile 없는 구버전 ImageStorage.class 포함
+- 수정: `gradlew clean build` 후 `docker build --no-cache` 재빌드
+
+**[2] GCS 환경변수 누락**
+- 문제: GcsImageStorage 빈 생성 실패
+- 원인: Cloud Run에 APP_UPLOAD_BUCKET 등 3개 환경변수 미설정
+- 수정: APP_UPLOAD_BUCKET, APP_UPLOAD_PROFILE_PREFIX, APP_UPLOAD_POST_PREFIX 추가
+
+**[3] ProfileProperties 바인딩 실패**
+- 문제: 기본 프로필 이미지 URL null
+- 원인: DEFAULT_PROFILE_IMAGE_URL → app.profile.default-image-url 미매핑
+- 수정: 환경변수명을 APP_PROFILE_DEFAULT_IMAGE_URL로 변경
+
+**[4] Security 설정 누락**
+- 문제: /images/** 경로 401 반환
+- 원인: SecurityConfig permitAll 목록에 /images/** 미포함
+- 수정: protectedFilterChain에 `/images/**` permitAll 추가
+
+**[5] Cold Start**
+- 문제: 첫 요청 시 18초 지연으로 서버 불능처럼 보임
+- 원인: 최소 인스턴스 0개 설정
+- 수정: --min-instances 1 배포 옵션 적용

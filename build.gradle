@@ -2,7 +2,6 @@ plugins {
     id 'org.springframework.boot' version '3.5.3'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
-
 }
 
 group = 'com.community'
@@ -57,8 +56,19 @@ dependencies {
 
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:postgresql'
+
+    implementation 'org.postgresql:postgresql'
+    implementation 'com.google.cloud.sql:postgres-socket-factory:1.28.1'
+
+    implementation(platform("com.google.cloud:libraries-bom:26.76.0"))
+    implementation("com.google.cloud:google-cloud-storage")
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// plain jar 생성 비활성화 (Dockerfile COPY build/libs/*.jar 가 fat jar 하나만 잡도록)
+jar {
+    enabled = false
 }

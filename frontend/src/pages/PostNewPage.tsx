@@ -15,7 +15,7 @@ function serializeBlocks(blocks: Block[]): { content: string; files: File[] } {
   for (const b of blocks) {
     if (b.type === 'text') {
       if (b.value.trim()) parts.push(b.value)
-    } else {
+    } else if (b.source === 'new') {
       parts.push(`[[image:${files.length}]]`)
       files.push(b.file)
     }

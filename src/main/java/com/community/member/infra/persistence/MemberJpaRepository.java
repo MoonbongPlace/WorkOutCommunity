@@ -60,4 +60,14 @@ public interface MemberJpaRepository extends JpaRepository<Member, Long> {
     Page<Member> findByStatus(MemberStatus status, Pageable pageable);
 
     boolean existsByEmailAndStatus(String email, MemberStatus memberStatus);
+
+    List<Member> findAllByIdIn(List<Long> memberIds);
+
+    @Query("""
+            SELECT m FROM Member m
+            WHERE m.memberName LIKE %:memberName%
+              AND m.status <> com.community.member.domain.model.MemberStatus.DELETED
+              AND m.deletedAt IS NULL
+            """)
+    List<Member> findAllActiveByMemberNameContaining(@Param("memberName") String memberName);
 }

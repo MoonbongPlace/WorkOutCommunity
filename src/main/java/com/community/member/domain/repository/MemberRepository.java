@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,4 +30,9 @@ public interface MemberRepository {
     Page<Member> findByStatus(MemberStatus status, Pageable pageable);
 
     boolean existsByEmailAndStatus(@NotBlank String email);
+
+    List<Member> findAllByIdIn(List<Long> memberIds);
+
+    // 닉네임으로 활성 멤버 검색
+    List<Member> findAllActiveByMemberNameContaining(String memberName);
 }

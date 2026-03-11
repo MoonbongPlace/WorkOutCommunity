@@ -1,24 +1,27 @@
 import http from 'k6/http';
-import { check, sleep } from 'k6';
-
+import { check } from 'k6';
+// import { check, sleep } from 'k6';
 export const options = {
+
     scenarios: {
         post_list_load: {
             executor: 'ramping-vus',
             startVUs: 1,
             stages: [
-                { duration: '30s', target: 20 },
-                { duration: '30s', target: 50 },
                 { duration: '30s', target: 100 },
-                { duration: '1m', target: 100 },
-                { duration: '30s', target: 0 },
+                { duration: '30s', target: 200 },
+                { duration: '30s', target: 300 },
+                { duration: '30s', target: 400 },
+                { duration: '4m', target: 400 },
+                { duration: '1m', target: 0 },
             ],
             gracefulRampDown: '10s',
         },
     },
+    summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
     thresholds: {
         http_req_failed: ['rate<0.01'],
-        http_req_duration: ['p(95)<500'],
+        http_req_duration: ['p(95)<500', 'p(99)<1000'],
     },
 };
 

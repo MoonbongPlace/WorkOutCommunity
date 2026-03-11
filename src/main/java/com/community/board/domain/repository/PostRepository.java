@@ -1,6 +1,7 @@
 package com.community.board.domain.repository;
 
 import com.community.board.domain.model.Post;
+import com.community.board.domain.model.SearchType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -34,4 +35,14 @@ public interface PostRepository {
     Optional<String> findPostTitleById(Long postId);
 
     boolean existsById(Long postId);
+
+    // 키워드 검색 (제목 / 내용 / 제목+내용)
+    Page<Post> searchByKeyword(String keyword, SearchType searchType, Pageable pageable);
+
+    Page<Post> searchByKeywordAndCategoryId(String keyword, SearchType searchType, Long categoryId, Pageable pageable);
+
+    // 작성자 닉네임 검색
+    Page<Post> searchByMemberIds(List<Long> memberIds, Pageable pageable);
+
+    Page<Post> searchByMemberIdsAndCategoryId(List<Long> memberIds, Long categoryId, Pageable pageable);
 }

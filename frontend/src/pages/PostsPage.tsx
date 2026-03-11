@@ -7,12 +7,19 @@ import { postApi } from '../api/endpoints/post'
 import { postLikeApi } from '../api/endpoints/postLike'
 import { categoryApi } from '../api/endpoints/category'
 import { useAuth } from '../context/AuthContext'
-import type { PostListItem } from '../types/post'
+import type { PostListItem, SearchType } from '../types/post'
 import type { CategoryItem } from '../types/category'
 
 type Status = 'loading' | 'success' | 'empty' | 'error'
 
 const PAGE_SIZE = 10
+
+const SEARCH_TYPE_LABELS: Record<SearchType, string> = {
+  TITLE_CONTENT: '제목+내용',
+  TITLE: '제목',
+  CONTENT: '내용',
+  AUTHOR: '작성자',
+}
 
 export default function PostsPage() {
   const navigate = useNavigate()
@@ -29,6 +36,12 @@ export default function PostsPage() {
   const [likedPostIds,     setLikedPostIds]     = useState<Set<number>>(new Set())
   const [likeCounts,       setLikeCounts]       = useState<Map<number, number>>(new Map())
   const [likingIds,        setLikingIds]        = useState<Set<number>>(new Set())
+
+  // 검색
+  const [searchInput,   setSearchInput]   = useState('')
+  const [searchType,    setSearchType]    = useState<SearchType>('TITLE_CONTENT')
+  const [activeSearch,  setActiveSearch]  = useState<{ keyword: string; searchType: SearchType } | null>(null)
+
   const tabNavRef = useRef<HTMLElement>(null)
 
   function scrollTabs(direction: 'left' | 'right') {
@@ -71,10 +84,17 @@ export default function PostsPage() {
     setLikedPostIds(liked)
   }
 
-  async function load(page: number, categoryId: number | null = activeCategoryId) {
+  async function load(
+    page: number,
+    categoryId: number | null = activeCategoryId,
+    search: { keyword: string; searchType: SearchType } | null = activeSearch,
+  ) {
     setStatus('loading')
     try {
-      const { data } = await postApi.list(page, PAGE_SIZE, categoryId ?? undefined)
+      const { data } = search
+        ? await postApi.search(page, PAGE_SIZE, search.keyword, search.searchType, categoryId ?? undefined)
+        : await postApi.list(page, PAGE_SIZE, categoryId ?? undefined)
+
       const result = data.postListResult
       setPosts(result.content)
       setCurrentPage(result.page)
@@ -91,7 +111,7 @@ export default function PostsPage() {
 
   useEffect(() => {
     void loadCategories()
-    void load(0, null)
+    void load(0, null, null)
   }, [])
 
   // user 세팅 후(auth 복원 완료) 좋아요 상태 재조회
@@ -102,13 +122,30 @@ export default function PostsPage() {
 
   function handleTabChange(categoryId: number | null) {
     setActiveCategoryId(categoryId)
-    void load(0, categoryId)
+    void load(0, categoryId, activeSearch)
   }
 
   function handlePageChange(page: number) {
     setCurrentPage(page)
     void load(page)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault()
+    const keyword = searchInput.trim()
+    if (!keyword) return
+    const search = { keyword, searchType }
+    setActiveSearch(search)
+    setCurrentPage(0)
+    void load(0, activeCategoryId, search)
+  }
+
+  function handleClearSearch() {
+    setSearchInput('')
+    setActiveSearch(null)
+    setCurrentPage(0)
+    void load(0, activeCategoryId, null)
   }
 
   useEffect(() => {
@@ -191,6 +228,59 @@ export default function PostsPage() {
         </button>
       </div>
 
+      {/* 검색 바 (로그인 사용자 전용) */}
+      {user && (
+        <form onSubmit={handleSearch} className="mb-4">
+          <div className="flex items-center bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-[#A6A66A] focus-within:border-transparent transition-all">
+            <select
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value as SearchType)}
+              className="shrink-0 self-stretch border-r border-gray-200 bg-[#F7F7F0] text-[#7A7F3A] text-sm font-medium px-3 focus:outline-none cursor-pointer"
+            >
+              {(Object.keys(SEARCH_TYPE_LABELS) as SearchType[]).map((type) => (
+                <option key={type} value={type}>{SEARCH_TYPE_LABELS[type]}</option>
+              ))}
+            </select>
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="검색어를 입력하세요"
+              className="flex-1 px-4 py-3 text-sm bg-transparent focus:outline-none placeholder-gray-400"
+              maxLength={100}
+            />
+            {activeSearch && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="shrink-0 px-2 text-gray-300 hover:text-gray-500 transition-colors text-lg leading-none"
+                aria-label="검색 초기화"
+              >
+                ✕
+              </button>
+            )}
+            <button
+              type="submit"
+              className="shrink-0 m-1.5 px-5 py-2 bg-[#7A7F3A] hover:bg-[#696e30] text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              검색
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* 검색 중 표시 */}
+      {activeSearch && (
+        <div className="mb-3 flex items-center gap-1.5 text-sm text-gray-500">
+          <span className="bg-[#F0F0E0] text-[#7A7F3A] border border-[#D8D8B0] px-2 py-0.5 rounded text-xs font-medium">
+            {SEARCH_TYPE_LABELS[activeSearch.searchType]}
+          </span>
+          <span>
+            "<strong className="text-gray-700 font-semibold">{activeSearch.keyword}</strong>" 검색 결과
+          </span>
+        </div>
+      )}
+
       {/* 카테고리 탭 */}
       <div className="mb-5 rounded-lg bg-[#F3F3E6] border border-[#E0DFC4] px-2 py-1 flex items-center gap-1">
         {categories.length > 0 && (
@@ -245,8 +335,13 @@ export default function PostsPage() {
       </div>
 
       {status === 'loading' && <StateBlock type="loading" />}
-      {status === 'error'   && <StateBlock type="error" onRetry={() => void load(activeCategoryId)} />}
-      {status === 'empty'   && <StateBlock type="empty" message="게시물이 없습니다." />}
+      {status === 'error'   && <StateBlock type="error" onRetry={() => void load(currentPage)} />}
+      {status === 'empty'   && (
+        <StateBlock
+          type="empty"
+          message={activeSearch ? '검색 결과가 없습니다.' : '게시물이 없습니다.'}
+        />
+      )}
       {status === 'success' && (
         <ul className="flex flex-col gap-3">
           {posts.map((post) => {
@@ -362,37 +457,44 @@ export default function PostsPage() {
       )}
 
       {/* 페이지 번호 */}
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-1">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 0}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-sm text-gray-500 hover:bg-[#E0DFC4] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            ‹
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => handlePageChange(i)}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                i === currentPage
-                  ? 'bg-[#7A7F3A] text-white'
-                  : 'text-gray-600 hover:bg-[#E0DFC4]'
-              }`}
-            >
-              {i + 1}
+      {totalPages > 1 && (() => {
+        const MAX = 8
+        const start = Math.min(Math.max(0, currentPage - Math.floor(MAX / 2)), Math.max(0, totalPages - MAX))
+        const end = Math.min(start + MAX, totalPages)
+        const pages = Array.from({ length: end - start }, (_, i) => start + i)
+        const btnCls = "w-8 h-8 flex items-center justify-center rounded-lg text-sm text-gray-500 hover:bg-[#E0DFC4] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        return (
+          <div className="mt-6 flex items-center justify-center gap-1">
+            {/* 첫 페이지 */}
+            <button onClick={() => handlePageChange(0)} disabled={currentPage === 0} className={btnCls} title="첫 페이지">
+              «
             </button>
-          ))}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages - 1}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-sm text-gray-500 hover:bg-[#E0DFC4] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            ›
-          </button>
-        </div>
-      )}
+            <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 0} className={btnCls}>
+              ‹
+            </button>
+            {pages.map((i) => (
+              <button
+                key={i}
+                onClick={() => handlePageChange(i)}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                  i === currentPage
+                    ? 'bg-[#7A7F3A] text-white'
+                    : 'text-gray-600 hover:bg-[#E0DFC4]'
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages - 1} className={btnCls}>
+              ›
+            </button>
+            {/* 마지막 페이지 */}
+            <button onClick={() => handlePageChange(totalPages - 1)} disabled={currentPage === totalPages - 1} className={btnCls} title="마지막 페이지">
+              »
+            </button>
+          </div>
+        )
+      })()}
 
       {/* 삭제 확인 모달 */}
       {deleteTarget !== null && (

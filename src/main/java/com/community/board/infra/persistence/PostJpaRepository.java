@@ -65,4 +65,92 @@ public interface PostJpaRepository extends JpaRepository<Post, Long> {
     Optional<String> findPostTitleByIdAndDeletedAt(@Param("postId") Long postId);
 
     boolean existsByIdAndDeletedAtIsNull(@Param("postId") Long postId);
+
+    // 제목 검색
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.deletedAt IS NULL
+      AND p.postVisibility = com.community.board.domain.model.PostVisibility.VISIBLE
+      AND p.title LIKE %:keyword%
+    """)
+    Page<Post> findAllActiveVisibleByTitleContaining(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.deletedAt IS NULL
+      AND p.postVisibility = com.community.board.domain.model.PostVisibility.VISIBLE
+      AND p.categoryId = :categoryId
+      AND p.title LIKE %:keyword%
+    """)
+    Page<Post> findAllActiveVisibleByTitleContainingAndCategoryId(
+            @Param("keyword") String keyword,
+            @Param("categoryId") Long categoryId,
+            Pageable pageable
+    );
+
+    // 내용 검색
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.deletedAt IS NULL
+      AND p.postVisibility = com.community.board.domain.model.PostVisibility.VISIBLE
+      AND p.content LIKE %:keyword%
+    """)
+    Page<Post> findAllActiveVisibleByContentContaining(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.deletedAt IS NULL
+      AND p.postVisibility = com.community.board.domain.model.PostVisibility.VISIBLE
+      AND p.categoryId = :categoryId
+      AND p.content LIKE %:keyword%
+    """)
+    Page<Post> findAllActiveVisibleByContentContainingAndCategoryId(
+            @Param("keyword") String keyword,
+            @Param("categoryId") Long categoryId,
+            Pageable pageable
+    );
+
+    // 제목 + 내용 통합 검색
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.deletedAt IS NULL
+      AND p.postVisibility = com.community.board.domain.model.PostVisibility.VISIBLE
+      AND (p.title LIKE %:keyword% OR p.content LIKE %:keyword%)
+    """)
+    Page<Post> findAllActiveVisibleByTitleOrContentContaining(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.deletedAt IS NULL
+      AND p.postVisibility = com.community.board.domain.model.PostVisibility.VISIBLE
+      AND p.categoryId = :categoryId
+      AND (p.title LIKE %:keyword% OR p.content LIKE %:keyword%)
+    """)
+    Page<Post> findAllActiveVisibleByTitleOrContentContainingAndCategoryId(
+            @Param("keyword") String keyword,
+            @Param("categoryId") Long categoryId,
+            Pageable pageable
+    );
+
+    // 작성자 검색
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.deletedAt IS NULL
+      AND p.postVisibility = com.community.board.domain.model.PostVisibility.VISIBLE
+      AND p.memberId IN :memberIds
+    """)
+    Page<Post> findAllActiveVisibleByMemberIdIn(@Param("memberIds") List<Long> memberIds, Pageable pageable);
+
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.deletedAt IS NULL
+      AND p.postVisibility = com.community.board.domain.model.PostVisibility.VISIBLE
+      AND p.categoryId = :categoryId
+      AND p.memberId IN :memberIds
+    """)
+    Page<Post> findAllActiveVisibleByMemberIdInAndCategoryId(
+            @Param("memberIds") List<Long> memberIds,
+            @Param("categoryId") Long categoryId,
+            Pageable pageable
+    );
 }

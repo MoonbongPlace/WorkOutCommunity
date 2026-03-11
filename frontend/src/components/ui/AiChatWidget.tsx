@@ -7,11 +7,11 @@ interface ChatMessage {
 }
 
 export default function AiChatWidget() {
-  const [open, setOpen] = useState(false)
+  const [open,    setOpen]    = useState(false)
   const [closing, setClosing] = useState(false)
-  const [loaded, setLoaded] = useState(false)
+  const [loaded,  setLoaded]  = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [input, setInput] = useState('')
+  const [input,   setInput]   = useState('')
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -79,16 +79,27 @@ export default function AiChatWidget() {
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {/* 채팅 창 */}
       {(open || closing) && (
-        <div className={`${closing ? 'animate-chat-slide-down' : 'animate-chat-slide-up'} w-80 sm:w-96 h-[624px] bg-white border border-[#E8E7D1] rounded-2xl shadow-2xl flex flex-col overflow-hidden`}>
-          {/* 헤더 */}
+        <div className={`${closing ? 'animate-chat-slide-down' : 'animate-chat-slide-up'} w-80 sm:w-96 h-[624px] max-h-[calc(100vh-8rem)] bg-white border border-[#E8E7D1] rounded-2xl shadow-2xl flex flex-col overflow-hidden`}>
+
+          {/* 헤더 - 랜딩 페이지 스타일 */}
           <div className="bg-[#7A7F3A] text-white px-4 py-3 flex items-center justify-between shrink-0">
-            <div>
-              <p className="font-semibold text-sm">AI 운동 Q&A</p>
-              <p className="text-xs text-[#E8E7D1] mt-0.5">운동에 관한 질문을 입력하세요.</p>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-sm leading-tight">AI 운동 Q&A</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                  <p className="text-xs text-white/75">온라인</p>
+                </div>
+              </div>
             </div>
             <button
               onClick={handleClose}
-              className="p-1 rounded hover:bg-[#5e6430] transition-colors"
+              className="p-1 rounded hover:bg-white/20 transition-colors"
               aria-label="닫기"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,7 +117,13 @@ export default function AiChatWidget() {
               <p className="text-sm text-gray-400 text-center mt-8">운동에 관한 질문을 해보세요.</p>
             )}
             {messages.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {/* AI 아바타 - 랜딩 페이지 스타일 */}
+                {msg.role === 'assistant' && (
+                  <div className="w-6 h-6 rounded-full bg-[#E8E7D1] flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-[#7A7F3A] mt-0.5">
+                    AI
+                  </div>
+                )}
                 <div
                   className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
                     msg.role === 'user'
@@ -118,10 +135,21 @@ export default function AiChatWidget() {
                 </div>
               </div>
             ))}
+
+            {/* 3-dot 타이핑 인디케이터 - 랜딩 페이지 스타일 */}
             {sending && (
-              <div className="flex justify-start">
-                <div className="bg-[#E8E7D1] px-3 py-2 rounded-2xl rounded-bl-sm text-sm text-gray-500 animate-pulse">
-                  답변 생성 중...
+              <div className="flex gap-2 justify-start">
+                <div className="w-6 h-6 rounded-full bg-[#E8E7D1] flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-[#7A7F3A] mt-0.5">
+                  AI
+                </div>
+                <div className="bg-[#E8E7D1] px-3.5 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="w-1.5 h-1.5 bg-[#7A7F3A]/60 rounded-full animate-bounce"
+                      style={{ animationDelay: `${i * 0.15}s` }}
+                    />
+                  ))}
                 </div>
               </div>
             )}
@@ -129,10 +157,10 @@ export default function AiChatWidget() {
           </div>
 
           {/* 입력 영역 */}
-          <div className="border-t border-[#E8E7D1] p-3 flex gap-2 items-end shrink-0">
+          <div className="border-t border-[#E8E7D1] px-4 py-3 flex items-center gap-2 shrink-0">
             <textarea
-              className="input-base resize-none flex-1 text-sm border-[#BCC0C5]"
-              rows={2}
+              className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#A6A66A] focus:border-transparent transition placeholder-gray-400"
+              rows={1}
               placeholder="질문을 입력하세요... (Shift+Enter: 줄바꿈)"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -140,11 +168,14 @@ export default function AiChatWidget() {
               disabled={sending}
             />
             <button
-              className="btn-primary shrink-0 h-10 text-sm"
+              className="w-9 h-9 rounded-xl bg-[#7A7F3A] hover:bg-[#696e30] flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition-colors"
               onClick={() => void handleSend()}
               disabled={sending || !input.trim()}
+              aria-label="전송"
             >
-              전송
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+              </svg>
             </button>
           </div>
         </div>

@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberService {
 
     private final MemberRepositoryAdapter memberRepositoryAdapter;
-    private final ImageStorage profileImageStorage;
+    private final ImageStorage imageStorage;
 
     @Transactional(readOnly = true)
     public DetailMemberResult getMemberProfile(Long id) {
@@ -38,7 +38,7 @@ public class MemberService {
 
         String profileImageUrl = null;
         if (profileImage != null && !profileImage.isEmpty()) {
-            profileImageUrl = profileImageStorage.store(profileImage);
+            profileImageUrl = imageStorage.store(profileImage);
         }
         member.updateMember(request, profileImageUrl);
 

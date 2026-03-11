@@ -4,6 +4,7 @@ import com.community.board.api.dto.request.CreatePostRequest;
 import com.community.board.application.dto.*;
 import com.community.board.api.dto.request.UpdatePostRequest;
 import com.community.board.domain.model.Post;
+import com.community.board.domain.model.SearchType;
 import com.community.board.infra.persistence.PostRepositoryAdapter;
 import com.community.comment.infra.persistance.CommentRepositoryAdapter;
 import com.community.global.component.ImageStorage;
@@ -22,6 +23,9 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,24 +36,61 @@ public class PostService {
     private final PostRepositoryAdapter postRepositoryAdapter;
     private final MemberRepositoryAdapter memberRepositoryAdapter;
     private final CommentRepositoryAdapter commentRepositoryAdapter;
-    private final ImageStorage profileImageStorage;
+    private final ImageStorage imageStorage;
 
     // 게시글 리스트 조회
     @Transactional(readOnly = true)
     public PostListResult getPostList(Long categoryId, Pageable pageable) {
         Page<Post> page = categoryId != null
-                ? postRepositoryAdapter.findAllActiveByVisibilityAndCategoryId(categoryId, pageable)
-                : postRepositoryAdapter.findAllActiveByVisibility(pageable);
+                ? postRepositoryAdapter.findAllActiveByVisibilityAndCategoryId(categoryId, pageable) :
+                postRepositoryAdapter.findAllActiveByVisibility(pageable);
 
-        List<PostListItem> items = page.getContent().stream()
+        // 성능 개선 before
+//        List<PostListItem> items = page.getContent().stream()
+//                .map(post -> {
+//                    Member member = memberRepositoryAdapter.findById(post.getMemberId())
+//                            .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+//                    int commentCount = commentRepositoryAdapter.countActiveByPostId(post.getId());
+//                    return PostListItem.from(post, member, commentCount);
+//                })
+//                .toList();
+
+        // 성능 개선 after
+        List<Post> posts = page.getContent();
+
+        if (posts.isEmpty()) {
+            return PostListResult.from(List.of(), page);
+        }
+
+        // 1. 작성자 ID / 게시글 ID 추출
+        List<Long> memberIds = posts.stream()
+                .map(Post::getMemberId)
+                .distinct()
+                .toList();
+
+        List<Long> postIds = posts.stream()
+                .map(Post::getId)
+                .toList();
+
+        // 2. 작성자 일괄 조회
+        Map<Long, Member> memberMap = memberRepositoryAdapter.findAllByIdIn(memberIds).stream()
+                .collect(Collectors.toMap(Member::getId, Function.identity()));
+
+        // 3. 댓글 수 일괄 조회
+        Map<Long, Integer> commentCountMap = commentRepositoryAdapter.countActiveByPostIds(postIds);
+
+        // 4. DTO 변환
+        List<PostListItem> items = posts.stream()
                 .map(post -> {
-                    Member member = memberRepositoryAdapter.findById(post.getMemberId())
-                            .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
-                    int commentCount = commentRepositoryAdapter.countActiveByPostId(post.getId());
+                    Member member = memberMap.get(post.getMemberId());
+                    if (member == null) {
+                        throw new CommonException(ResponseCode.MEMBER_NOT_FOUND);
+                    }
+
+                    int commentCount = commentCountMap.getOrDefault(post.getId(), 0);
                     return PostListItem.from(post, member, commentCount);
                 })
                 .toList();
-
         return PostListResult.from(items, page);
     }
 
@@ -116,6 +157,63 @@ public class PostService {
         return PostListResult.from(items, page);
     }
 
+    // 게시글 검색 (로그인 필요)
+    @Transactional(readOnly = true)
+    public PostListResult searchPosts(String keyword, SearchType searchType, Long categoryId, Pageable pageable) {
+        Page<Post> page;
+
+        if (searchType == SearchType.AUTHOR) {
+            List<Long> memberIds = memberRepositoryAdapter.findAllActiveByMemberNameContaining(keyword).stream()
+                    .map(Member::getId)
+                    .toList();
+
+            if (memberIds.isEmpty()) {
+                return PostListResult.from(List.of(), org.springframework.data.domain.Page.empty(pageable));
+            }
+
+            page = categoryId != null
+                    ? postRepositoryAdapter.searchByMemberIdsAndCategoryId(memberIds, categoryId, pageable)
+                    : postRepositoryAdapter.searchByMemberIds(memberIds, pageable);
+        } else {
+            page = categoryId != null
+                    ? postRepositoryAdapter.searchByKeywordAndCategoryId(keyword, searchType, categoryId, pageable)
+                    : postRepositoryAdapter.searchByKeyword(keyword, searchType, pageable);
+        }
+
+        List<Post> posts = page.getContent();
+
+        if (posts.isEmpty()) {
+            return PostListResult.from(List.of(), page);
+        }
+
+        List<Long> memberIds = posts.stream()
+                .map(Post::getMemberId)
+                .distinct()
+                .toList();
+
+        List<Long> postIds = posts.stream()
+                .map(Post::getId)
+                .toList();
+
+        Map<Long, Member> memberMap = memberRepositoryAdapter.findAllByIdIn(memberIds).stream()
+                .collect(Collectors.toMap(Member::getId, Function.identity()));
+
+        Map<Long, Integer> commentCountMap = commentRepositoryAdapter.countActiveByPostIds(postIds);
+
+        List<PostListItem> items = posts.stream()
+                .map(post -> {
+                    Member member = memberMap.get(post.getMemberId());
+                    if (member == null) {
+                        throw new CommonException(ResponseCode.MEMBER_NOT_FOUND);
+                    }
+                    int commentCount = commentCountMap.getOrDefault(post.getId(), 0);
+                    return PostListItem.from(post, member, commentCount);
+                })
+                .toList();
+
+        return PostListResult.from(items, page);
+    }
+
     // 게시글 삭제
     @Transactional
     public DeletePostResult delete(Long postId) {
@@ -143,7 +241,7 @@ public class PostService {
                 if (result.size() >= MAX_IMAGES) {
                     throw new CommonException(ResponseCode.POST_IMAGE_LIMIT_EXCEEDED);
                 }
-                result.add(profileImageStorage.storePost(file));
+                result.add(imageStorage.storePost(file));
             }
         }
 

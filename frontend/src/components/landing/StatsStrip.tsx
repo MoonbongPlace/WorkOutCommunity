@@ -1,20 +1,19 @@
-const STATS = [
-  { value: 'JWT', label: '인증', desc: 'Access + Refresh 토큰 기반 보안 인증 구조' },
-  { value: 'PostgreSQL', label: '마이그레이션', desc: 'H2 → PostgreSQL 도메인 기반 스키마 재설계' },
-  { value: 'REST API', label: '도메인 분리', desc: '기능별 컨트롤러 + DTO 계층 구조' },
-]
+const FEATURES = ['커뮤니티 피드', '운동일지', 'AI 코치', '실시간 알림', '카테고리', '좋아요 · 댓글']
 
 export default function StatsStrip() {
   return (
-    <section className="py-12">
-      <div className="grid md:grid-cols-3 gap-4">
-        {STATS.map(({ value, label, desc }) => (
-          <div key={value} className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-5">
-            <p className="text-lg font-semibold text-neutral-900">{value}</p>
-            <p className="text-xs font-medium text-[#7A7F3A] mt-0.5">{label}</p>
-            <p className="text-xs text-neutral-500 mt-2 leading-relaxed">{desc}</p>
-          </div>
-        ))}
+    <section className="py-5 bg-gradient-to-r from-[#7A7F3A] to-[#A6A66A]">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+          {FEATURES.map((feat, i) => (
+            <div key={feat} className="flex items-center gap-6">
+              <span className="text-sm font-medium text-white/90">{feat}</span>
+              {i < FEATURES.length - 1 && (
+                <span className="text-white/30 text-xs">·</span>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )

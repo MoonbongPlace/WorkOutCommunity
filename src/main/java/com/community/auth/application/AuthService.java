@@ -5,7 +5,6 @@ import com.community.auth.api.dto.request.SignupRequest;
 import com.community.auth.api.dto.response.ReissueResponse;
 import com.community.auth.application.dto.MemberSigninResult;
 import com.community.auth.application.dto.MemberSignupResult;
-import com.community.global.component.ImageStorage;
 import com.community.global.component.ProfileProperties;
 import com.community.global.exception.CommonException;
 import com.community.global.jwt.JWTProvider;
@@ -20,7 +19,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -35,7 +33,6 @@ public class AuthService {
     private final MemberRepositoryAdapter memberRepositoryAdapter;
     private final JWTProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
-    private final ImageStorage profileImageStorage;
     private final ProfileProperties profileProperties;
 
 

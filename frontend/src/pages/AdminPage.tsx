@@ -45,16 +45,21 @@ function Pagination({
   onChange: (page: number) => void
 }) {
   if (total <= 1) return null
+  const MAX = 8
+  const start = Math.min(Math.max(0, current - Math.floor(MAX / 2)), Math.max(0, total - MAX))
+  const end = Math.min(start + MAX, total)
+  const pages = Array.from({ length: end - start }, (_, i) => start + i)
+  const btnCls = "w-8 h-8 flex items-center justify-center rounded-lg text-sm text-gray-500 hover:bg-[#E0DFC4] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
   return (
     <div className="mt-5 flex items-center justify-center gap-1">
-      <button
-        onClick={() => onChange(current - 1)}
-        disabled={current === 0}
-        className="w-8 h-8 flex items-center justify-center rounded-lg text-sm text-gray-500 hover:bg-[#E0DFC4] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-      >
+      {/* 첫 페이지 */}
+      <button onClick={() => onChange(0)} disabled={current === 0} className={btnCls} title="첫 페이지">
+        «
+      </button>
+      <button onClick={() => onChange(current - 1)} disabled={current === 0} className={btnCls}>
         ‹
       </button>
-      {Array.from({ length: total }, (_, i) => (
+      {pages.map((i) => (
         <button
           key={i}
           onClick={() => onChange(i)}
@@ -67,12 +72,12 @@ function Pagination({
           {i + 1}
         </button>
       ))}
-      <button
-        onClick={() => onChange(current + 1)}
-        disabled={current === total - 1}
-        className="w-8 h-8 flex items-center justify-center rounded-lg text-sm text-gray-500 hover:bg-[#E0DFC4] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-      >
+      <button onClick={() => onChange(current + 1)} disabled={current === total - 1} className={btnCls}>
         ›
+      </button>
+      {/* 마지막 페이지 */}
+      <button onClick={() => onChange(total - 1)} disabled={current === total - 1} className={btnCls} title="마지막 페이지">
+        »
       </button>
     </div>
   )

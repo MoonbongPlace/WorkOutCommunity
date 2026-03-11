@@ -10,6 +10,7 @@ import com.community.board.application.dto.DeletePostResult;
 import com.community.board.application.dto.DetailPostResult;
 import com.community.board.application.dto.UpdatePostResult;
 import com.community.board.domain.model.Post;
+import com.community.board.domain.model.SearchType;
 import com.community.board.infra.persistence.PostRepositoryAdapter;
 import com.community.global.exception.CommonException;
 import com.community.global.CustomUserPrincipal;
@@ -58,6 +59,23 @@ public class PostController {
                 .body(PostListResponse.from(postListResult, "내 게시글 리스트 조회 성공"));
     }
 
+    // 게시글 검색 (로그인 필요)
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/search")
+    public ResponseEntity<PostListResponse> searchPost(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "TITLE_CONTENT") SearchType searchType,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        PostListResult postListResult = postService.searchPosts(keyword, searchType, categoryId, pageable);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(PostListResponse.from(postListResult, "게시글 검색 성공"));
+    }
+
     // 게시글 리스트 조회
     @GetMapping
     public ResponseEntity<PostListResponse> listPost(
@@ -71,6 +89,7 @@ public class PostController {
                 .status(HttpStatus.OK)
                 .body(PostListResponse.from(postListResult, "게시글 리스트 조회 성공"));
     }
+
     // 특정 게시글 상세 조회
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponse> findPost(

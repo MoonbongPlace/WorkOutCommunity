@@ -4,17 +4,26 @@ import com.community.global.jwt.JWTProvider;
 import com.community.global.jwt.JwtAuthenticationFilter;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -23,6 +32,29 @@ public class SecurityConfig {
 
     private final JWTProvider jwtProvider;
     private final MemberRepositoryAdapter memberRepositoryAdapter;
+
+    @Value("${cors.allowed-origins:*}")
+    private String allowedOrigins;
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        List<String> origins = List.of(allowedOrigins.split(","));
+        if (origins.contains("*")) {
+            config.addAllowedOriginPattern("*");
+        } else {
+            config.setAllowedOrigins(origins);
+        }
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+        config.setAllowCredentials(!origins.contains("*"));
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -49,10 +81,10 @@ public class SecurityConfig {
                         "/swagger-resources/**",
                         "/actuator/**"
                 )
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        // JWT 필터 미등록 — 토큰 유무·만료 여부와 무관하게 항상 통과
         return http.build();
     }
 
@@ -64,20 +96,25 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain protectedFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers("/assets/**").permitAll()
+                                .requestMatchers("/images/**").permitAll()
                                 .requestMatchers("/uploads/**").permitAll()
                                 .requestMatchers("/api/v1/posts").permitAll()
                                 .requestMatchers("/api/v1/categories").permitAll()
                                 .requestMatchers("/api/v1/notifications/**").permitAll()
                                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/api/v1/chatbot/**").permitAll()
-//                        .requestMatchers("/api/v1/comments/**").permitAll()
                                 .requestMatchers("/api/v1/workout-logs/**").permitAll()
                                 .requestMatchers("/api/v1/postLikes/**").authenticated()
                                 .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
                 .addFilterBefore(jwtAuthenticationFilter(),
                         UsernamePasswordAuthenticationFilter.class);
