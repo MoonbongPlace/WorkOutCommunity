@@ -1,0 +1,781 @@
+================================================================================
+                    Community API Migration - 백엔드 포트폴리오 보고서
+================================================================================
+작성일: 2026-03-14
+프로젝트명: community-api-migration
+작성자: 포트폴리오용 기술 보고서
+================================================================================
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. 프로젝트 개요
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+기존 Express.js + EJS 기반의 서버 사이드 렌더링 커뮤니티 웹 서비스를 Spring Boot
+기반의 RESTful API 서버로 전면 마이그레이션한 프로젝트입니다. 단순한 기술 스택
+변경을 넘어, 헥사고날 아키텍처 기반의 클린 아키텍처를 적용하고, 운영 환경 배포
+및 성능 테스트까지 포함한 프로덕션 수준의 백엔드 시스템을 구축했습니다.
+
+주요 목표:
+  - 레거시 MVC 패턴에서 RESTful API 서버로 전환
+  - 헥사고날 아키텍처 적용으로 도메인 로직 독립성 확보
+  - JWT 기반 무상태(Stateless) 인증 시스템 구축
+  - GCP(Google Cloud Platform) 기반 클라우드 배포 환경 구성
+  - 부하 테스트를 통한 성능 검증 및 쿼리 최적화
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. 기술 스택
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ 언어 및 프레임워크 ]
+  - Language   : Java 21 (LTS)
+  - Framework  : Spring Boot 3.5.3
+  - Build Tool : Gradle
+
+[ 핵심 라이브러리 ]
+  - Spring Security       : 인증/인가
+  - Spring Data JPA       : ORM (Hibernate 6.4)
+  - Spring WebFlux        : 비동기 HTTP 클라이언트 (OpenAI API 연동)
+  - SpringDoc OpenAPI 2.8 : API 문서 자동화 (Swagger UI)
+  - JJWT 0.12.7           : JWT 토큰 생성 및 검증
+
+[ 데이터베이스 ]
+  - PostgreSQL (로컬 및 GCP Cloud SQL)
+  - HikariCP              : 커넥션 풀
+
+[ 인프라 / 클라우드 ]
+  - Google Cloud Platform  : Cloud SQL (PostgreSQL), Cloud Storage (GCS)
+  - Docker                 : 컨테이너화 (Eclipse Temurin JRE 21 기반)
+  - Prometheus + Grafana   : 모니터링 스택
+
+[ 성능 테스트 ]
+  - k6                    : 부하 테스트
+
+[ 기타 ]
+  - Lombok                : 보일러플레이트 코드 제거
+  - TestContainers        : 통합 테스트 (PostgreSQL)
+  - OpenAI API (GPT-4o-mini) : AI 챗봇
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. 시스템 아키텍처
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+본 프로젝트는 헥사고날 아키텍처(Ports & Adapters Pattern)를 적용하여 비즈니스
+로직이 외부 인프라(DB, 파일 스토리지, 외부 API)에 의존하지 않도록 설계되었습니다.
+
+  ┌───────────────────────────────────────────────────────────┐
+  │                     API Layer (Adapter In)                │
+  │         REST Controllers (11개 컨트롤러)                  │
+  │    Auth / Member / Post / Comment / Notification /        │
+  │    Category / Workout / Admin / Chatbot 등                │
+  └──────────────────────────┬────────────────────────────────┘
+                             │
+       ┌─────────────────────┴──────────────────────┐
+       │             Global Security Layer           │
+       │  JWT 필터 / CORS / 전역 예외 핸들러          │
+       └─────────────────────┬──────────────────────┘
+                             │
+  ┌──────────────────────────┴────────────────────────────────┐
+  │                 Application Layer                         │
+  │         Service Classes (비즈니스 로직)                   │
+  │  PostService / AuthService / WorkOutLogService 등         │
+  └──────────────────────────┬────────────────────────────────┘
+                             │
+  ┌──────────────────────────┴────────────────────────────────┐
+  │                  Domain Layer (Core)                      │
+  │  Domain Models: Post, Member, Comment, Notification 등    │
+  │  Repository Interfaces (Port): PostRepository 등          │
+  └──────────────────────────┬────────────────────────────────┘
+                             │
+  ┌──────────────────────────┴────────────────────────────────┐
+  │            Infrastructure Layer (Adapter Out)             │
+  │  JPA Repository Adapters / GCS / Local / OpenAI Client   │
+  └───────────────────────┬───────────────────────────────────┘
+                          │
+        ┌─────────────────┴─────────────────┐
+        │  PostgreSQL DB  │  Google Cloud    │
+        │  (HikariCP)     │  Storage (GCS)   │
+        └─────────────────┴─────────────────┘
+
+[ 패키지 구조 (모듈 단위) ]
+
+각 기능 모듈은 다음 구조를 따릅니다:
+
+  {module}/
+  ├── api/                  # 입력 어댑터 (Controller + DTO)
+  │   ├── {Controller}.java
+  │   └── dto/
+  │       ├── request/
+  │       └── response/
+  ├── application/          # 비즈니스 로직 (Service + Result DTO)
+  ├── domain/               # 도메인 모델 + 레포지토리 인터페이스
+  │   ├── model/
+  │   └── repository/
+  └── infra/                # 출력 어댑터 (JPA Adapter + 외부 연동)
+      └── persistence/
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. 주요 도메인 모델
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌──────────────────┬───────────────────────┬──────────────────────────────────┐
+│ Entity           │ Table                 │ 주요 필드                        │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ Member           │ member                │ id, email, password, name,       │
+│                  │                       │ profileImage, age, sex,          │
+│                  │                       │ role, status, deletedAt          │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ Post             │ posts                 │ id, title, content, categoryId,  │
+│                  │                       │ memberId, images(JSON), views,   │
+│                  │                       │ likeCount, visibility, createdAt │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ PostLike         │ post_likes            │ id, memberId, postId             │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ Comment          │ comments              │ id, memberId, postId, content,   │
+│                  │                       │ createdAt, deletedAt             │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ Category         │ categories            │ id, name                         │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ Notification     │ notifications         │ id, memberId, senderId, postId,  │
+│                  │                       │ type, message, linkUrl, isRead   │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ AiChat           │ ai_chats              │ id, memberId (unique)            │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ AiChatMessage    │ ai_chat_messages      │ id, chatId, role, content        │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ WorkOutLog       │ work_out_log          │ id, memberId, logDate, status    │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ WorkOutLogItem   │ work_out_log_items    │ id, logId, exerciseId, sets,     │
+│                  │                       │ reps, weight, duration           │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ Exercise         │ exercises             │ id, name                         │
+├──────────────────┼───────────────────────┼──────────────────────────────────┤
+│ RefreshToken     │ refresh_tokens        │ id, memberId, tokenHash          │
+└──────────────────┴───────────────────────┴──────────────────────────────────┘
+
+특이사항:
+  - Post.images 필드는 StringListConverter를 활용해 JSON 배열 형태로 DB 저장
+  - 소프트 딜리트(Soft Delete) 패턴 적용 (deletedAt 컬럼)
+  - AiChat은 memberId에 Unique 제약 (회원 1인 1채팅방)
+  - 모든 타임스탬프는 OffsetDateTime (UTC) 사용
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. API 설계
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RESTful 설계 원칙을 준수하며, 전체 11개 컨트롤러로 구성됩니다.
+Base URL: /api/v1
+
+[ 인증 (Auth) ]
+  POST   /api/v1/auth/signup      - 회원가입
+  POST   /api/v1/auth/signin      - 로그인 (Access/Refresh 토큰 발급)
+  POST   /api/v1/auth/reissue     - 토큰 재발급
+  POST   /api/v1/auth/logout      - 로그아웃
+
+[ 회원 (Member) ]
+  GET    /api/v1/members/me       - 내 프로필 조회
+  PATCH  /api/v1/members/me       - 프로필 수정 (multipart/form-data, 이미지 포함)
+  DELETE /api/v1/members/me       - 회원 탈퇴
+
+[ 게시글 (Post) ]
+  GET    /api/v1/posts            - 게시글 목록 (페이징)
+  GET    /api/v1/posts/me         - 내 게시글 목록
+  GET    /api/v1/posts/search     - 게시글 검색 (?searchType=TITLE&keyword=...)
+  GET    /api/v1/posts/{postId}   - 게시글 상세
+  POST   /api/v1/posts            - 게시글 작성 (multipart/form-data, 이미지 최대 6장)
+  PUT    /api/v1/posts/{postId}   - 게시글 수정
+  DELETE /api/v1/posts/{postId}   - 게시글 삭제
+
+[ 게시글 좋아요 (PostLike) ]
+  GET    /api/v1/postLikes/{postId}   - 좋아요 여부 확인
+  POST   /api/v1/postLikes/{postId}   - 좋아요 추가
+  DELETE /api/v1/postLikes/{postId}   - 좋아요 취소
+
+[ 댓글 (Comment) ]
+  GET    /api/v1/posts/{postId}/comments              - 댓글 목록
+  POST   /api/v1/posts/{postId}/comments              - 댓글 작성
+  GET    /api/v1/posts/{postId}/comments/commentCount - 댓글 수 조회
+  DELETE /api/v1/posts/{postId}/comments/{commentId}  - 댓글 삭제
+
+[ 카테고리 (Category) ]
+  GET    /api/v1/categories       - 카테고리 목록 (공개)
+
+[ 알림 (Notification) ]
+  GET    /api/v1/notifications               - 알림 목록
+  GET    /api/v1/notifications/unread-count  - 미읽음 알림 수
+  PATCH  /api/v1/notifications/{id}/read     - 알림 읽음 처리
+  PATCH  /api/v1/notifications/read-all      - 전체 읽음 처리
+
+[ AI 챗봇 (Chatbot) ]
+  POST   /api/v1/chat/messages               - 메시지 전송
+  GET    /api/v1/chat/history                - 대화 히스토리 (?limit=30&order=asc)
+
+[ 운동 (Workout) ]
+  GET    /api/v1/exercises                    - 운동 목록 조회
+  POST   /api/v1/workout-logs                 - 운동 일지 생성
+  GET    /api/v1/workout-logs/{workOutLogId}  - 운동 일지 상세
+  GET    /api/v1/workout-logs/list            - 운동 일지 목록
+
+[ 관리자 (Admin) - ROLE_ADMIN 전용 ]
+  GET    /api/v1/admin/members                      - 회원 목록 (상태 필터)
+  GET    /api/v1/admin/members/{memberId}            - 회원 상세
+  PATCH  /api/v1/admin/{memberId}/status             - 회원 상태 변경
+  GET    /api/v1/admin/posts                         - 게시글 목록
+  GET    /api/v1/admin/posts/{postId}                - 게시글 상세
+  PATCH  /api/v1/admin/posts/{postId}/visibility     - 게시글 공개 여부 변경
+  POST   /api/v1/admin/broadcast                     - 전체 알림 발송
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. 보안 설계 (Spring Security + JWT)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ 이중 SecurityFilterChain 구조 ]
+
+  Chain 1 (공개 엔드포인트, Order=1):
+    - 적용 경로: /api/v1/auth/**, /swagger-ui/**, /v3/api-docs/**
+    - JWT 필터 미적용 (permitAll)
+    - CSRF 비활성화
+
+  Chain 2 (보호 엔드포인트, Order=2):
+    - 적용 경로: /api/** 전체
+    - JwtAuthenticationFilter 적용
+    - 인증 실패 시 401 응답
+
+[ JWT 토큰 구조 ]
+
+  Access Token:
+    - 알고리즘  : HMAC-SHA256 (HS256)
+    - 클레임    : role, memberId
+    - 만료 시간 : 환경 변수로 설정 (${JWT_ACCESS_EXPIRATION})
+
+  Refresh Token:
+    - UUID 기반 생성 (충돌 방지)
+    - DB에 해시 값으로 저장 (TokenHashUtil)
+    - HttpOnly 쿠키로 전달
+    - 환경별 쿠키 설정:
+        - 로컬: Secure=false, SameSite=Lax
+        - 운영: Secure=true, SameSite=None
+
+[ CORS 설정 ]
+  - 허용 메서드 : GET, POST, PUT, PATCH, DELETE, OPTIONS
+  - 노출 헤더   : Authorization, Set-Cookie
+  - 허용 출처   : cors.allowed-origins 프로퍼티로 환경별 분리
+
+[ 관리자 권한 ]
+  - @PreAuthorize("hasRole('ADMIN')") 어노테이션으로 관리자 전용 API 보호
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. 주요 기술적 구현 사항
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ 1. 게시글 목록 조회 배치 쿼리 최적화 ]
+
+  문제: 게시글 목록 조회 시 각 게시글마다 작성자 정보와 댓글 수를 N+1 쿼리로
+       개별 조회하여 심각한 성능 저하 발생.
+
+  해결:
+    - 게시글 + 회원 정보 JOIN 조회로 단일 쿼리화
+    - 댓글 수는 commentCount를 별도 집계 쿼리로 배치 조회 후 애플리케이션에서
+      Map 형태로 매핑하여 N+1 문제 완전 제거
+
+  결과: k6 부하 테스트(최대 400 VU) 기준 p(95) < 500ms 달성
+
+[ 2. 이미지 스토리지 추상화 ]
+
+  ImageStorage 인터페이스를 통해 저장소 구현체를 추상화:
+    - LocalImageStorage  : 로컬 개발 환경 (로컬 파일 시스템)
+    - GcsImageStorage    : 운영 환경 (Google Cloud Storage)
+
+  Spring Profile(@Profile)을 활용해 환경별 Bean을 자동 주입함으로써
+  비즈니스 코드 변경 없이 환경 전환이 가능하도록 구현.
+
+[ 3. AI 챗봇 (OpenAI GPT-4o-mini 연동) ]
+
+  Spring WebFlux의 WebClient를 활용한 비동기 HTTP 통신으로 OpenAI API 연동.
+  회원당 단일 채팅방(AiChat)을 유지하며, 메시지 히스토리(AiChatMessage)를
+  DB에 저장하여 대화 컨텍스트 유지.
+    - 모델: gpt-4o-mini
+    - 타임아웃: 20,000ms
+    - 역할 구분: USER / ASSISTANT (ChatRole Enum)
+
+[ 4. 알림 시스템 ]
+
+  댓글 작성, 좋아요 등 이벤트 발생 시 알림(Notification)을 생성.
+  관리자는 broadcast API로 전체 회원 대상 알림 발송 가능.
+  알림 타입은 NotificationType Enum으로 관리 (COMMENT, LIKE, POST 등).
+
+[ 5. 전역 예외 처리 ]
+
+  @RestControllerAdvice를 활용한 GlobalExceptionHandler로 모든 예외를
+  중앙에서 처리. CommonException + ResponseCode Enum으로 표준화된
+  에러 응답(ErrorResponse)을 반환.
+
+[ 6. 환경 분리 (application.yml 프로파일) ]
+
+  - application.yml       : 공통 설정 (기본 프로파일 = local)
+  - application-local.yml : 로컬 개발 환경 (로컬 DB, 파일 스토리지)
+  - application-prod.yml  : 운영 환경 (GCP Cloud SQL, GCS, 환경 변수 주입)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. 배포 및 인프라
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ Docker 컨테이너화 ]
+
+  Base Image: eclipse-temurin:21-jre (경량 JRE 이미지)
+  빌드 결과물(JAR)을 컨테이너에 복사 후 8080 포트로 서비스.
+
+  Dockerfile:
+    FROM eclipse-temurin:21-jre
+    WORKDIR /app
+    COPY build/libs/*.jar app.jar
+    EXPOSE 8080
+    ENTRYPOINT ["java", "-jar", "app.jar"]
+
+[ GCP 클라우드 배포 ]
+
+  - Cloud SQL (PostgreSQL) : Cloud SQL Socket Factory를 이용한 보안 연결
+  - Cloud Storage (GCS)    : 이미지 업로드 (프로필, 게시글)
+  - 서비스 계정 인증       : Google Default Credentials 활용
+
+[ 모니터링 스택 ]
+
+  Spring Boot Actuator + Micrometer → Prometheus → Grafana 연동
+
+  노출 엔드포인트:
+    - /actuator/health      : 애플리케이션 헬스 체크
+    - /actuator/prometheus  : Prometheus 메트릭 수집용 엔드포인트
+
+  Docker Compose로 모니터링 환경 로컬 구동 가능:
+    - Prometheus : 9090 포트
+    - Grafana    : 3000 포트
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. 성능 테스트
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+k6를 사용하여 게시글 목록 조회 API에 대한 부하 테스트를 수행했습니다.
+
+[ 시나리오 ]
+
+  테스트 방식 : Ramping VUs (점진적 부하 증가)
+
+  단계별 구성:
+    -  0s ~ 30s : 1 VU → 100 VU (점진적 증가)
+    - 30s ~ 60s : 100 VU → 200 VU
+    - 60s ~ 90s : 200 VU → 300 VU
+    - 90s ~120s : 300 VU → 400 VU
+    -120s ~360s : 400 VU 유지 (4분)
+    -360s ~420s : 400 VU → 0 (종료)
+
+[ 성능 기준 (Thresholds) ]
+
+  - http_req_failed  : 실패율 < 1%
+  - http_req_duration: p(95) < 500ms, p(99) < 1,000ms
+
+[ 테스트 대상 API ]
+
+  - 로컬 환경  : GET http://localhost:8080/api/v1/posts
+  - 운영 환경  : GET {PROD_URL}/api/v1/posts (별도 스크립트)
+
+[ 최적화 과정 ]
+
+  1차 테스트 → N+1 쿼리 문제 식별
+  → 배치 조회 쿼리로 리팩토링 (postListRefactor.txt 참고)
+  → 2차 테스트에서 성능 기준 충족 확인
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. 프로젝트 규모 요약
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Java 소스 파일 수 : 210개
+  소스 코드 크기    : 약 990KB
+  컨트롤러 수       : 11개
+  도메인 엔티티 수  : 12개
+  API 엔드포인트 수 : 35+개
+
+  모듈별 파일 수:
+    - workout      : 37개
+    - board(posts) : 33개
+    - chatbot      : 23개
+    - global       : 22개
+    - admin        : 21개
+    - notification : 18개
+    - comment      : 17개
+    - auth         : 16개
+    - member       : 14개
+    - category     :  8개
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. 트러블슈팅 & 핵심 의사결정
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ 게시글 목록 N+1 쿼리 문제 ]
+  상황: 게시글 목록에서 각 게시글의 작성자(Member)와 댓글 수(commentCount)를
+       게시글마다 별도 쿼리로 조회하여 데이터 증가에 따라 성능이 선형 저하.
+  해결: 작성자 정보는 게시글-회원 JOIN 쿼리로, 댓글 수는 IN 절을 활용한 배치
+       집계 쿼리 후 Map 매핑으로 애플리케이션 레벨에서 병합.
+       → N+1 문제 제거, 쿼리 수를 O(N)에서 O(1)로 개선.
+
+[ 환경별 이미지 스토리지 분리 ]
+  상황: 로컬 개발은 로컬 파일시스템, 운영 환경은 GCS를 사용해야 하는데
+       비즈니스 코드가 인프라에 직접 의존하는 구조.
+  해결: ImageStorage 인터페이스 정의 후 로컬/운영 구현체를 @Profile로 분리.
+       서비스 코드는 인터페이스만 참조하므로 환경 전환 시 코드 변경 불필요.
+
+[ JWT Refresh Token 보안 ]
+  상황: Refresh Token을 그대로 DB에 저장하면 DB 유출 시 모든 토큰 탈취 가능.
+  해결: TokenHashUtil을 통해 Refresh Token을 해시 처리 후 DB 저장.
+       실제 토큰은 HttpOnly 쿠키로만 클라이언트에 전달.
+
+[ 코멘트 수 조회 분리 ]
+  상황: 댓글 수를 게시글 엔티티에 직접 포함하면 정합성 관리가 복잡.
+  해결: 댓글 수 조회를 별도 엔드포인트(/comments/commentCount)로 분리하고,
+       목록 조회 시에는 배치 집계 쿼리로 처리.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. API 문서
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SpringDoc OpenAPI (Swagger UI)를 통해 API 문서를 자동 생성합니다.
+
+  - Swagger UI   : http://localhost:8080/swagger-ui/index.html
+  - OpenAPI Spec : http://localhost:8080/v3/api-docs
+
+  Bearer JWT 인증 스킴이 설정되어 있어 Swagger UI에서 직접 토큰을 입력하여
+  인증이 필요한 API를 테스트할 수 있습니다.
+
+
+================================================================================
+                       프론트엔드 시스템 아키텍처
+================================================================================
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. 프론트엔드 개요
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+React 18 + TypeScript 기반의 SPA(Single Page Application)로 구성되어 있으며,
+Vite를 빌드 도구로 사용합니다. 상태 관리 라이브러리 없이 React Context API와
+컴포넌트 로컬 상태만으로 운영하는 경량 구조입니다. Vercel을 통해 배포됩니다.
+
+  - Framework  : React 18.3.1
+  - Language   : TypeScript 5.7.2 (strict mode)
+  - Build Tool : Vite 6.0.7
+  - Routing    : React Router DOM 6.28.1
+  - Styling    : Tailwind CSS 3.4.17
+  - HTTP Client: Axios 1.7.9
+  - Deploy     : Vercel
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. 프론트엔드 시스템 아키텍처 다이어그램
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                          Browser (SPA)                                   │
+  │                                                                          │
+  │  ┌─────────────────────────────────────────────────────────────────┐    │
+  │  │                        main.tsx (Entry Point)                   │    │
+  │  │         StrictMode → AuthProvider → RouterProvider              │    │
+  │  └──────────────────────────────┬──────────────────────────────────┘    │
+  │                                 │                                        │
+  │  ┌──────────────────────────────▼──────────────────────────────────┐    │
+  │  │                     React Router (router.tsx)                    │    │
+  │  │                                                                  │    │
+  │  │  Public              Protected             Admin                 │    │
+  │  │  ──────              ─────────             ─────                 │    │
+  │  │  /                   /posts                /admin               │    │
+  │  │  /login              /posts/new                                  │    │
+  │  │  /signup             /posts/:id                                  │    │
+  │  │                      /posts/:id/edit                             │    │
+  │  │                      /me                                         │    │
+  │  │                      /workout-logs                               │    │
+  │  │                      /workout-logs/new                           │    │
+  │  │                      /workout-logs/:logId                        │    │
+  │  │                      /notifications                              │    │
+  │  └──────────────────────────────┬──────────────────────────────────┘    │
+  │                                 │                                        │
+  │  ┌──────────────────────────────▼──────────────────────────────────┐    │
+  │  │                     RootLayout.tsx                               │    │
+  │  │   ┌──────────────────────────────────────────────────────────┐  │    │
+  │  │   │  Navbar.tsx (sticky, 반응형 데스크탑/모바일)              │  │    │
+  │  │   │  NotificationWidget.tsx (알림 벨 + 드롭다운)             │  │    │
+  │  │   └──────────────────────────────────────────────────────────┘  │    │
+  │  │   ┌──────────────────────────────────────────────────────────┐  │    │
+  │  │   │  <Outlet /> → Page Components (14개)                     │  │    │
+  │  │   └──────────────────────────────────────────────────────────┘  │    │
+  │  │   ┌──────────────────────────────────────────────────────────┐  │    │
+  │  │   │  AiChatWidget.tsx (GPT-4o-mini 채팅 플로팅 위젯)         │  │    │
+  │  │   └──────────────────────────────────────────────────────────┘  │    │
+  │  └──────────────────────────────────────────────────────────────────┘    │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                        레이어별 구조                                      │
+  │                                                                          │
+  │  ┌───────────────┐  ┌──────────────────┐  ┌──────────────────────────┐  │
+  │  │  Pages (14)   │  │  Components      │  │  Context (전역 상태)      │  │
+  │  │               │  │                  │  │                          │  │
+  │  │  LandingPage  │  │  ui/             │  │  AuthContext             │  │
+  │  │  LoginPage    │  │  ├ Avatar        │  │  ├ user: AuthUser|null   │  │
+  │  │  SignupPage   │  │  ├ Badge         │  │  ├ isAuthenticated       │  │
+  │  │  PostsPage    │  │  ├ Button        │  │  ├ initializing          │  │
+  │  │  PostDetail   │  │  ├ Card          │  │  ├ login()               │  │
+  │  │  PostNew      │  │  └ StateBlock    │  │  └ logout()              │  │
+  │  │  PostEdit     │  │                  │  │                          │  │
+  │  │  MePage       │  │  post/           │  │  (React Context API)     │  │
+  │  │  WorkoutLogs  │  │  ├ BlockEditor   │  │  (라이브러리 미사용)      │  │
+  │  │  WorkoutNew   │  │  └ PostDetail    │  └──────────────────────────┘  │
+  │  │  WorkoutDetail│  │    Modal         │                                 │
+  │  │  Notifications│  │                  │  ┌──────────────────────────┐  │
+  │  │  AdminPage    │  │  workout/        │  │  Route Guards            │  │
+  │  │  ChatPage     │  │  nav/            │  │                          │  │
+  │  └───────────────┘  │  mypage/         │  │  ProtectedRoute.tsx      │  │
+  │                     │  landing/        │  │  └ isAuthenticated 확인  │  │
+  │                     └──────────────────┘  │                          │  │
+  │                                           │  AdminRoute.tsx          │  │
+  │                                           │  └ role==='admin' 확인   │  │
+  │                                           └──────────────────────────┘  │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                        API 통신 레이어                                    │
+  │                                                                          │
+  │  ┌────────────────────────────────────────────────────────────────────┐  │
+  │  │                    axiosInstance.ts                                │  │
+  │  │                                                                    │  │
+  │  │  baseURL: VITE_API_BASE_URL | /api                                 │  │
+  │  │  withCredentials: true  (HttpOnly 쿠키 자동 전송)                  │  │
+  │  │                                                                    │  │
+  │  │  ┌──────────────────────────────────────────────┐                 │  │
+  │  │  │  Request: Authorization: Bearer <accessToken>│                 │  │
+  │  │  └──────────────────────────────────────────────┘                 │  │
+  │  │  ┌──────────────────────────────────────────────┐                 │  │
+  │  │  │  Response Interceptor (401 처리)              │                 │  │
+  │  │  │  1. 401 감지 → /auth/reissue 호출            │                 │  │
+  │  │  │  2. 큐(Queue)로 동시 갱신 요청 방지           │                 │  │
+  │  │  │  3. 새 토큰 주입 후 원본 요청 재시도          │                 │  │
+  │  │  └──────────────────────────────────────────────┘                 │  │
+  │  └────────────────────────────────────────────────────────────────────┘  │
+  │                                                                          │
+  │  Endpoints 모듈 (11개):                                                  │
+  │  auth / post / comment / postLike / member / workoutLog /                │
+  │  exercise / category / notification / admin / chat                       │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. 인증 플로우 (Frontend)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [ 초기 진입 (앱 로드) ]
+
+    Browser 진입
+        │
+        ▼
+    AuthProvider mount
+        │
+        ▼
+    POST /auth/reissue  ←── HttpOnly Cookie (refreshToken) 자동 전송
+        │
+    성공 ┤ 실패 → isAuthenticated = false, initializing = false
+        │
+        ▼
+    setAccessToken(newAccessToken)  ←── 메모리(헤더)에 저장
+        │
+        ▼
+    GET /members/me  →  user 상태 설정
+        │
+        ▼
+    initializing = false → 라우터 렌더링 시작
+
+  [ 로그인 ]
+
+    LoginPage → POST /auth/signin (email + password)
+        │
+        ▼
+    응답: accessToken (body)
+        │
+        ▼
+    login(accessToken) → setAccessToken() → GET /members/me → /posts 이동
+
+  [ 토큰 자동 갱신 (Axios Interceptor) ]
+
+    API 요청 → 401 응답
+        │
+        ▼
+    isRefreshing ? → 큐에 대기
+        │
+    No → POST /auth/reissue (HttpOnly Cookie 사용)
+        │
+        ▼
+    새 accessToken 주입 → 대기 큐 해소 → 원본 요청 재시도
+
+  [ 로그아웃 ]
+
+    POST /auth/logout → setAccessToken(null) → user = null → /login 이동
+
+  [ 토큰 저장 위치 ]
+
+    ┌──────────────────┬─────────────────────────────────────────┐
+    │ 토큰 종류        │ 저장 위치                               │
+    ├──────────────────┼─────────────────────────────────────────┤
+    │ Access Token     │ 메모리 (Authorization 헤더 주입)        │
+    │                  │ 페이지 새로고침 시 소멸 → 자동 재발급   │
+    ├──────────────────┼─────────────────────────────────────────┤
+    │ Refresh Token    │ HttpOnly Cookie (백엔드 관리)           │
+    │                  │ JS 접근 불가 → XSS 방어                 │
+    ├──────────────────┼─────────────────────────────────────────┤
+    │ 유저 정보        │ React State (AuthContext)               │
+    └──────────────────┴─────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. 프론트-백엔드 통합 아키텍처
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                          사용자 (Browser)                                │
+  │                React SPA (Vercel 배포)                                   │
+  └───────────────────────────┬─────────────────────────────────────────────┘
+                              │  HTTPS + HttpOnly Cookie
+                              │  Authorization: Bearer <JWT>
+                              ▼
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                      Spring Boot 3.5 (Docker / GCP)                     │
+  │                                                                          │
+  │   JwtAuthenticationFilter → SecurityFilterChain → Controller            │
+  │                                   │                                     │
+  │              ┌────────────────────┼────────────────────┐                │
+  │              │                    │                    │                │
+  │              ▼                    ▼                    ▼                │
+  │        PostService         AuthService          WorkOutLogService       │
+  │              │                    │                    │                │
+  │              ▼                    ▼                    ▼                │
+  │         JPA Adapter         RefreshToken          JPA Adapter           │
+  └───────────────────────────────────┬─────────────────────────────────────┘
+                                      │
+              ┌───────────────────────┼──────────────────────┐
+              ▼                       ▼                      ▼
+  ┌───────────────────┐  ┌─────────────────────┐  ┌──────────────────────┐
+  │  PostgreSQL DB    │  │  Google Cloud        │  │  OpenAI API          │
+  │  (GCP Cloud SQL)  │  │  Storage (GCS)       │  │  GPT-4o-mini         │
+  │  HikariCP Pool    │  │  이미지 저장          │  │  AI 챗봇             │
+  └───────────────────┘  └─────────────────────┘  └──────────────────────┘
+
+  [ 개발 환경 프록시 ]
+
+    Vite Dev Server (localhost:5173)
+        │
+        │  /api/** → proxy → localhost:8080  (vite.config.ts 설정)
+        │  /assets, /uploads → proxy → localhost:8080
+        ▼
+    Spring Boot (localhost:8080)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. 프론트엔드 디렉토리 구조
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  frontend/
+  ├── src/
+  │   ├── api/
+  │   │   ├── axiosInstance.ts          # Axios 클라이언트 + 인터셉터
+  │   │   └── endpoints/                # 기능별 API 모듈 (11개)
+  │   │       ├── auth.ts
+  │   │       ├── post.ts
+  │   │       ├── comment.ts
+  │   │       ├── postLike.ts
+  │   │       ├── member.ts
+  │   │       ├── workoutLog.ts
+  │   │       ├── exercise.ts
+  │   │       ├── category.ts
+  │   │       ├── notification.ts
+  │   │       ├── admin.ts
+  │   │       └── chat.ts
+  │   ├── components/
+  │   │   ├── ui/                       # 공통 UI 컴포넌트
+  │   │   │   ├── Avatar.tsx
+  │   │   │   ├── Badge.tsx
+  │   │   │   ├── Button.tsx
+  │   │   │   ├── Card.tsx
+  │   │   │   ├── AiChatWidget.tsx      # AI 채팅 플로팅 위젯
+  │   │   │   └── NotificationWidget.tsx
+  │   │   ├── post/
+  │   │   │   ├── BlockEditor.tsx       # 게시글 에디터
+  │   │   │   └── PostDetailModal.tsx
+  │   │   ├── mypage/                   # 마이페이지 컴포넌트
+  │   │   ├── workout/                  # 운동 관련 컴포넌트
+  │   │   ├── nav/                      # 네비게이션
+  │   │   ├── landing/                  # 랜딩 페이지 섹션
+  │   │   ├── ProtectedRoute.tsx        # 인증 라우트 가드
+  │   │   └── AdminRoute.tsx            # 관리자 라우트 가드
+  │   ├── context/
+  │   │   └── AuthContext.tsx           # 전역 인증 상태 관리
+  │   ├── hooks/                        # 커스텀 훅
+  │   ├── layouts/
+  │   │   └── RootLayout.tsx            # 공통 레이아웃 (Navbar + Outlet + AiWidget)
+  │   ├── pages/                        # 페이지 컴포넌트 (14개)
+  │   ├── styles/
+  │   │   └── index.css                 # Tailwind + 글로벌 CSS 변수
+  │   ├── types/                        # TypeScript 타입 정의 (9개 파일)
+  │   ├── main.tsx                      # 앱 진입점
+  │   └── router.tsx                    # 라우트 설정
+  ├── index.html                        # HTML 진입점
+  ├── vite.config.ts                    # Vite 설정 (dev proxy 포함)
+  ├── tailwind.config.ts
+  ├── tsconfig.json
+  └── vercel.json                       # Vercel SPA 리라이트 설정
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. 프론트엔드 주요 기술 구현 사항
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ 1. Access Token 메모리 저장 전략 ]
+  Access Token을 localStorage가 아닌 메모리(Authorization 헤더)에만 보관하여
+  XSS 공격을 통한 토큰 탈취를 방지합니다. 페이지 새로고침 시 소멸되지만,
+  HttpOnly Cookie의 Refresh Token으로 자동 재발급하여 사용자 경험을 유지합니다.
+
+[ 2. 401 Interceptor + 큐 시스템 ]
+  여러 API가 동시에 401을 반환할 때, 첫 번째 요청만 토큰을 갱신하고 나머지는
+  큐에 대기시켜 중복 갱신 요청을 방지합니다. 갱신 완료 후 큐의 요청들을
+  일괄 재시도합니다.
+
+[ 3. 낙관적 업데이트 (Optimistic UI) ]
+  좋아요 버튼은 서버 응답 전에 UI를 즉시 업데이트하고, 실패 시 롤백합니다.
+  사용자에게 빠른 반응성을 제공합니다.
+
+[ 4. 이중 환경 이미지 경로 처리 ]
+  Avatar 컴포넌트에서 로컬 경로(/uploads/...)와 GCS URL을 자동 구분하여
+  환경별 이미지 경로를 정규화합니다.
+
+[ 5. Tailwind 커스텀 디자인 시스템 ]
+  카키(Khaki) 계열 색상 팔레트를 CSS 변수로 정의하고, Tailwind 레이어 컴포넌트
+  (.btn-primary, .input-base 등)로 일관된 UI를 유지합니다.
+  Pretendard 폰트(한국어 최적화)를 CDN으로 적용했습니다.
+
+[ 6. 운동 일지 캘린더 뷰 ]
+  react-calendar 라이브러리를 커스텀 스타일로 오버라이드하여
+  날짜별 운동 기록을 시각적으로 확인할 수 있는 UI를 제공합니다.
+
+[ 7. StrictMode 대응 ]
+  React 18 StrictMode의 이중 실행(double invocation) 문제를 AuthProvider에서
+  useRef로 초기화 플래그를 관리하여 인증 초기화가 중복 실행되지 않도록 처리합니다.
+
+
+================================================================================
+                                    END OF REPORT
+================================================================================

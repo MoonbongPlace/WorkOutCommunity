@@ -63,8 +63,13 @@ dependencies {
     implementation(platform("com.google.cloud:libraries-bom:26.76.0"))
     implementation("com.google.cloud:google-cloud-storage")
 
+    // 휴대폰 인증번호 메세지 발송
+    implementation 'com.solapi:sdk:1.0.3'
 
-    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1'
+    implementation(platform("software.amazon.awssdk:bom:2.35.7"))
+    implementation("software.amazon.awssdk:sesv2")
+    implementation("software.amazon.awssdk:s3")
+
 }
 
 tasks.named('test') {

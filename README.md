@@ -2,9 +2,7 @@
 
 ## 1. 개요 (Overview)
 
-운동매니아들을 위한 커뮤니티.
-운동 일지 기록 및 ChatBot을 통해 운동에 관한 정보 수집.
-
+운동매니아들을 위한 커뮤니티. 운동 일지 기록 및 ChatBot을 통해 운동에 관한 정보 수집.
 ---
 
 ## 2. 목적 (Goals)
@@ -27,7 +25,7 @@
 - 챗봇(Chatbot) API - OpenAI API
 - 홈(Home) 화면을 위한 집계 API
 - API 명세(OpenAPI) 및 설계 문서
-- Claude Code CLI를 이용한 프론트 UI/UX 구축.
+- Claude Code CLI를 이용한 프론트 UI 구축.
 
 ---
 
@@ -57,7 +55,7 @@
 ## 6. 디렉토리 구조
 - Feature(도메인) 중심 구조로 디렉토리 구조 생성
 ```text
-WorkOutCommunity/
+workout-community/
 ├── README.md
 ├── frontend/
 │   └── src/

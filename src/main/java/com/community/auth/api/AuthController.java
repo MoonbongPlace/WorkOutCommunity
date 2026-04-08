@@ -1,33 +1,27 @@
 package com.community.auth.api;
 
-import com.community.auth.api.dto.response.LogoutResponse;
-import com.community.auth.api.dto.response.ReissueResponse;
-import com.community.auth.api.dto.response.SigninResponse;
+import com.community.auth.api.dto.request.EmailRequest;
+import com.community.auth.api.dto.request.VerifyRequest;
+import com.community.auth.api.dto.response.*;
 import com.community.auth.api.dto.request.SigninRequest;
 import com.community.auth.api.dto.request.SignupRequest;
-import com.community.auth.api.dto.response.SignupResponse;
 import com.community.auth.application.AuthService;
+import com.community.auth.application.EmailVerifyResult;
+import com.community.auth.application.dto.VerifyResult;
 import com.community.auth.application.dto.MemberSigninResult;
 import com.community.auth.application.dto.MemberSignupResult;
 import com.community.global.exception.CommonException;
 import com.community.global.exception.ResponseCode;
 import com.community.global.jwt.RefreshTokenCookieManager;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import jakarta.validation.ConstraintViolation;
-import java.util.Set;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Auth", description = "회원가입 / 로그인 / 토큰 재발행 / 로그아웃")
 @RestController
@@ -37,8 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class AuthController {
 
     private final AuthService authService;
-    private final ObjectMapper objectMapper;
-    private final Validator validator;
     private final RefreshTokenCookieManager refreshTokenCookieManager;
 
     // 회원가입
@@ -46,12 +38,35 @@ public class AuthController {
     public ResponseEntity<SignupResponse> signup(
             @RequestBody @Valid SignupRequest request
     ) {
-
         MemberSignupResult memberSignupResult = authService.signup(request);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(SignupResponse.from(memberSignupResult, "회원가입 성공"));
+    }
+
+    // 번호 인증 : 인증번호 발급
+    @PostMapping("/phone-verifications")
+    public ResponseEntity<VerifyResponse> verifyPhoneNumber(
+            @RequestBody @Valid final VerifyRequest request
+    ){
+        VerifyResult verifyResult = authService.verify(request);
+        
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(VerifyResponse.from(verifyResult, "인증번호 발급"));
+    }
+
+    // 이메일 인증 : 인증번호 발급
+    @PostMapping("/email-verifications")
+    public ResponseEntity<EmailVerifyResponse> personalCode(
+            @RequestBody @Valid final EmailRequest request
+    ){
+        EmailVerifyResult emailVerifyResult = authService.emailPersonalCode(request);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(EmailVerifyResponse.from(emailVerifyResult, "인증번호 발급"));
     }
 
     // 로그인
