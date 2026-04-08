@@ -1,4 +1,4 @@
-package com.community.global.component;
+package com.community.global.component.property;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

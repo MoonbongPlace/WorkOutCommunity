@@ -2,6 +2,7 @@ package com.community.member.domain.model;
 
 import com.community.member.api.dto.request.UpdateMemberRequest;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +25,9 @@ public class Member {
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false, unique = true)
+    private String phoneNumber;
 
     @Column(nullable = false)
     private String memberName;
@@ -62,6 +66,8 @@ public class Member {
     public static Member signup(
             @NotNull
             String email,
+//            @NotBlank
+//            String phoneNumber,
             @NotNull
             String memberName,
             String encodedPassword,
@@ -76,6 +82,7 @@ public class Member {
     ) {
         Member member = new Member();
         member.email = email;
+        member.phoneNumber = "01000000000";
         member.memberName = memberName;
         member.password = encodedPassword;
         member.name = name;

@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 
 @Getter
 @AllArgsConstructor
-public class SignupResponse {
+public class    SignupResponse {
     private String code;
     private String message;
     private OffsetDateTime timestamp;

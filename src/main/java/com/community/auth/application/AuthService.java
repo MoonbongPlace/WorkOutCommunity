@@ -1,11 +1,14 @@
 package com.community.auth.application;
 
+import com.community.auth.api.dto.request.EmailRequest;
 import com.community.auth.api.dto.request.SigninRequest;
 import com.community.auth.api.dto.request.SignupRequest;
+import com.community.auth.api.dto.request.VerifyRequest;
 import com.community.auth.api.dto.response.ReissueResponse;
 import com.community.auth.application.dto.MemberSigninResult;
 import com.community.auth.application.dto.MemberSignupResult;
-import com.community.global.component.ProfileProperties;
+import com.community.auth.application.dto.VerifyResult;
+import com.community.global.component.property.ProfileProperties;
 import com.community.global.exception.CommonException;
 import com.community.global.jwt.JWTProvider;
 import com.community.global.exception.ResponseCode;
@@ -44,6 +47,7 @@ public class AuthService {
 
         Member member = Member.signup(
                 request.getEmail(),
+//                request.getPhoneNumber(),
                 request.getMemberName(),
                 encodedPassword,
                 request.getName(),
@@ -102,5 +106,13 @@ public class AuthService {
     public void logout(String refreshTokenRaw) {
         Long memberId = jwtProvider.extractMemberId(refreshTokenRaw);
         refreshTokenService.revokeAll(memberId);
+    }
+
+    public VerifyResult verify(@Valid VerifyRequest request) {
+            return null;
+    }
+
+    public EmailVerifyResult emailPersonalCode(@Valid EmailRequest request) {
+        return null;
     }
 }
