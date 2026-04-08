@@ -5,6 +5,7 @@ import com.community.global.exception.ResponseCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class LocalImageStorage implements ImageStorage {
             throw new CommonException(ResponseCode.FILE_UPLOAD_FAILED);
         }
 
-        return baseUrl + urlPath + filename;
+        return buildLocalUrl(dir, filename);
     }
 
     private void validateContentType(String contentType) {
@@ -80,5 +81,10 @@ public class LocalImageStorage implements ImageStorage {
             case "image/webp" -> "webp";
             default -> throw new CommonException(ResponseCode.UNSUPPORTED_FILE_TYPE);
         };
+    }
+
+    private String buildLocalUrl(String dir, String filename) {
+        String normalized = StringUtils.replace(dir, "\\", "/");
+        return baseUrl + "/" + normalized + "/" + filename;
     }
 }
