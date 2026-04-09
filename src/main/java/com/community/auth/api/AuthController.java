@@ -40,29 +40,43 @@ public class AuthController {
                 .body(SignupResponse.from(memberSignupResult, "회원가입 성공"));
     }
 
+    // 아이디 찾기
+    @PostMapping("/user-id")
+    public ResponseEntity<FindUserIdResponse> findUserId(
+            @RequestBody @Valid final FindUserIdRequest request
+    ){
+        FindUserIdResult findUserIdResult = authService.findUserId(request);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(FindUserIdResponse.from(findUserIdResult, "아이디 찾기 성공"));
+    }
+
+
     // 번호 인증 : 인증번호 발급
     @PostMapping("/phone-verifications")
-    public ResponseEntity<VerifyResponse> verifyPhoneNumber(
+    public ResponseEntity<VerifyResponse> sendVerificationCode(
             @RequestBody @Valid final VerifyRequest request
     ){
-        PhoneVerifyResult verifyResult = authService.verify(request);
+        PhoneVerifyResult verifyResult = authService.sendVerificationCode(request);
         
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(VerifyResponse.from(verifyResult, "인증번호 발급"));
     }
 
-//    // 번호 인증 : 인증번호 대조
-//    @PostMapping("/phone-verifications-result")
-//    public ResponseEntity<VerifyResultResponse> verifyPhoneNumberResult(
-//            @RequestBody @Valid final VerifyResultRequest request
-//    ){
-//        VerifyResultResponse verifyResultResponse = authService.verifyResult(request);
-//
-//        return ResponseEntity.ok(phoneVerifyResultResult.from("");
-//    }
+    // 번호 인증 : 인증번호 검증
+    @PostMapping("/phone-verifications-result")
+    public ResponseEntity<VerifyResultResponse> verifyVerificationCode(
+            @RequestBody @Valid final VerifyResultRequest request
+    ){
+        VerifyResultResponse verifyResultResponse = authService.verifyVerificationCode(request);
+
+        return ResponseEntity.ok(verifyResultResponse);
+    }
 
     // 이메일 인증 : 인증번호 발급
+    // 인증 번호 ID, PHONE NUMBER 응답 (임시)
     @PostMapping("/email-verifications")
     public ResponseEntity<EmailVerifyResponse> personalCode(
             @RequestBody @Valid final EmailRequest request
@@ -89,16 +103,6 @@ public class AuthController {
                 .body(SigninResponse.from(memberSigninResult, "로그인 성공"));
     }
 
-    @PostMapping("/user-id")
-    public ResponseEntity<FindUserIdResponse> findUserId(
-            @RequestBody @Valid final FindUserIdRequest request
-    ){
-        FindUserIdResult findUserIdResult = authService.findUserId(request);
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(FindUserIdResponse.from(findUserIdResult, "아이디 찾기 성공"));
-    }
 
     // 토큰 재발행
     @PostMapping("/reissue")

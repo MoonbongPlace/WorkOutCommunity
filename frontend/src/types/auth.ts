@@ -31,6 +31,24 @@ export interface FindUserIdResponse {
   }
 }
 
+// POST /api/v1/auth/phone-verifications
+export interface VerifyPhoneResponse {
+  code: string
+  message: string
+  timestamp: string
+  verifyResult: {
+    id: number
+    phoneNumber: string
+  }
+}
+
+// POST /api/v1/auth/phone-verifications-result
+export interface VerifyPhoneResultResponse {
+  code: string
+  message: string
+  timestamp: string
+}
+
 // POST /api/v1/auth/logout
 export interface LogoutResponse {
   code: string

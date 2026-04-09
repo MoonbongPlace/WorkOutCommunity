@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 public class SolapiMessageService {
     private final DefaultMessageService messageService;
 
+    @Value("${solapi.api-phone-number}")
+    private String phoneNumber;
+
     public SolapiMessageService(@Value("${solapi.api-key}") String apiKey,
                           @Value("${solapi.api-secret}") String apiSecret) {
         // SDK 초기화
@@ -19,7 +22,7 @@ public class SolapiMessageService {
 
     public void sendVerificationSms(String to, String code) {
         Message message = new Message();
-        message.setFrom("사용자_등록_발신번호"); // 하이픈 제외 숫자만
+        message.setFrom(phoneNumber); // 하이픈 제외 숫자만
         message.setTo(to);
         message.setText("인증번호는 " + code + " 입니다. 3분 내로 입력해 주세요.");
 

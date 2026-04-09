@@ -7,10 +7,12 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class PhoneVerifyResult {
+    private Long id;
     private String phoneNumber;
 
     public static PhoneVerifyResult from(PhoneVerification phoneVerification) {
         return new PhoneVerifyResult(
+                phoneVerification.getId(),
                 phoneVerification.getPhoneNumber()
         );
     }

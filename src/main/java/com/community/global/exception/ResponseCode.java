@@ -10,6 +10,9 @@ public enum ResponseCode {
 
     INVALID_REQUEST("4001",HttpStatus.BAD_REQUEST ,"잘못된 요청입니다." ),
     NO_FIELDS_TO_UPDATE("4002",HttpStatus.BAD_REQUEST ,"수정할 필드가 존재하지 않습니다." ),
+    EXPIRED_PHONE_VERIFICATION("4003", HttpStatus.BAD_REQUEST , "번호 인증 만료되었습니다."),
+    INVALID_PHONE_VERIFICATION_CODE("4011", HttpStatus.BAD_REQUEST, "인증 번호 일치하지 않습니다."),
+    INVALID_PHONE_NUMBER("4012", HttpStatus.BAD_REQUEST, "잘못된 전화 번호 형식입니다."),
 
     TOKEN_MISSING("4019", HttpStatus.UNAUTHORIZED, "토큰이 없습니다."),
     TOKEN_EXPIRED("4018", HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
@@ -25,6 +28,7 @@ public enum ResponseCode {
     EXERCISE_NOT_FOUND("4045",HttpStatus.NOT_FOUND ,"운동이 존재하지 않습니다." ),
     WORKOUT_LOG_NOT_FOUND("4046", HttpStatus.NOT_FOUND, "운동 기록을 찾을 수 없습니다."),
     WORKOUT_LOG_ITEM_NOT_FOUND("4047",HttpStatus.NOT_FOUND , "기록된 운동을 찾을 수 없습니다."),
+    PHONE_VERIFICATION_NOT_FOUND("4048",HttpStatus.NOT_FOUND ,"인증 요청이 존재하지 않습니다." ),
 
     NOTIFICATION_FORBIDDEN("4031", HttpStatus.FORBIDDEN, "해당 알림에 접근할 수 없습니다."),
     MEMBER_ALREADY_DELETED("4032",HttpStatus.FORBIDDEN ,"DELETED 회원 입니다." ),
