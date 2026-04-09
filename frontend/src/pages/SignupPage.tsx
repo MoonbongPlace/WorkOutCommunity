@@ -5,12 +5,13 @@ import { authApi } from '../api/endpoints/auth'
 export default function SignupPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
-    email:      '',
-    memberName: '',
-    password:   '',
-    name:       '',
-    age:        '',
-    sex:        '',
+    email:       '',
+    phoneNumber: '',
+    memberName:  '',
+    password:    '',
+    name:        '',
+    age:         '',
+    sex:         '',
   })
   const [error,   setError]   = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -25,12 +26,13 @@ export default function SignupPage() {
     setLoading(true)
     try {
       await authApi.signup({
-        email:      form.email,
-        memberName: form.memberName,
-        password:   form.password,
-        name:       form.name,
-        age:        form.age ? Number(form.age) : 0,
-        sex:        form.sex,
+        email:       form.email,
+        phoneNumber: form.phoneNumber,
+        memberName:  form.memberName,
+        password:    form.password,
+        name:        form.name,
+        age:         form.age ? Number(form.age) : 0,
+        sex:         form.sex,
       })
       navigate('/login', { state: { signupSuccess: true } })
     } catch {
@@ -63,6 +65,18 @@ export default function SignupPage() {
               name="memberName"
               className="input-base"
               value={form.memberName}
+              onChange={handleChange}
+              required
+            />
+          </Field>
+
+          <Field label="휴대전화" required>
+            <input
+              type="tel"
+              name="phoneNumber"
+              className="input-base"
+              placeholder="010-0000-0000"
+              value={form.phoneNumber}
               onChange={handleChange}
               required
             />

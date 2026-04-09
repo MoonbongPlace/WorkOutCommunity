@@ -1,17 +1,16 @@
 package com.community.auth.application;
 
-import com.community.auth.api.dto.request.EmailRequest;
-import com.community.auth.api.dto.request.SigninRequest;
-import com.community.auth.api.dto.request.SignupRequest;
-import com.community.auth.api.dto.request.VerifyRequest;
+import com.community.auth.api.dto.request.*;
 import com.community.auth.api.dto.response.ReissueResponse;
-import com.community.auth.application.dto.MemberSigninResult;
-import com.community.auth.application.dto.MemberSignupResult;
-import com.community.auth.application.dto.VerifyResult;
+//import com.community.auth.api.dto.response.VerifyResultResponse;
+import com.community.auth.application.dto.*;
+import com.community.auth.domain.PhoneVerification;
+import com.community.auth.infra.PhoneVerificationRepositoryAdapter;
 import com.community.global.component.property.ProfileProperties;
 import com.community.global.exception.CommonException;
 import com.community.global.jwt.JWTProvider;
 import com.community.global.exception.ResponseCode;
+import com.community.global.solapi.SolapiMessageService;
 import com.community.member.domain.model.Member;
 import com.community.member.domain.model.MemberStatus;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
@@ -23,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -34,9 +34,12 @@ public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
     private final MemberRepositoryAdapter memberRepositoryAdapter;
+    private final PhoneVerificationRepositoryAdapter phoneVerificationRepositoryAdapter;
     private final JWTProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final ProfileProperties profileProperties;
+    private final SolapiMessageService solapiMessageService;
+    private final SecureRandom secureRandom = new SecureRandom();
 
 
     @Transactional
@@ -45,9 +48,13 @@ public class AuthService {
 
         String profileImageUrl = profileProperties.defaultImageUrl();
 
+        String userNumber = request.getPhoneNumber().replaceAll("[0-9]", "");
+
+        // 휴대전화 11자인지 확인 처리 추가.(예정)
+
         Member member = Member.signup(
                 request.getEmail(),
-//                request.getPhoneNumber(),
+                userNumber,
                 request.getMemberName(),
                 encodedPassword,
                 request.getName(),
@@ -108,11 +115,38 @@ public class AuthService {
         refreshTokenService.revokeAll(memberId);
     }
 
-    public VerifyResult verify(@Valid VerifyRequest request) {
-            return null;
+    @Transactional
+    public PhoneVerifyResult verify(@Valid VerifyRequest request) {
+
+        String verificationNumber = generateCode();
+        PhoneVerification phoneVerification = PhoneVerification.create(request.getPhoneNumber(), verificationNumber );
+
+        PhoneVerification saved = phoneVerificationRepositoryAdapter.save(phoneVerification);
+
+        solapiMessageService.sendVerificationSms(request.getPhoneNumber(), verificationNumber);
+
+        return PhoneVerifyResult.from(saved);
     }
 
     public EmailVerifyResult emailPersonalCode(@Valid EmailRequest request) {
         return null;
     }
+
+    public FindUserIdResult findUserId(@Valid FindUserIdRequest request) {
+        Member member = memberRepositoryAdapter.findActiveByPhoneNumberAndName(request.getPhoneNumber(), request.getName())
+                .orElseThrow(()->new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+
+
+        return FindUserIdResult.of(member.getName(), member.getEmail());
+    }
+
+    public String generateCode(){
+        int number = secureRandom.nextInt(100000);
+
+        return String.format("%07d", number);
+    }
+
+//    public VerifyResultResponse verifyResult(@Valid VerifyResultRequest request) {
+//        return null;
+//    }
 }

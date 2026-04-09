@@ -1,15 +1,10 @@
 package com.community.auth.api;
 
-import com.community.auth.api.dto.request.EmailRequest;
-import com.community.auth.api.dto.request.VerifyRequest;
+import com.community.auth.api.dto.request.*;
 import com.community.auth.api.dto.response.*;
-import com.community.auth.api.dto.request.SigninRequest;
-import com.community.auth.api.dto.request.SignupRequest;
 import com.community.auth.application.AuthService;
 import com.community.auth.application.EmailVerifyResult;
-import com.community.auth.application.dto.VerifyResult;
-import com.community.auth.application.dto.MemberSigninResult;
-import com.community.auth.application.dto.MemberSignupResult;
+import com.community.auth.application.dto.*;
 import com.community.global.exception.CommonException;
 import com.community.global.exception.ResponseCode;
 import com.community.global.jwt.RefreshTokenCookieManager;
@@ -50,12 +45,22 @@ public class AuthController {
     public ResponseEntity<VerifyResponse> verifyPhoneNumber(
             @RequestBody @Valid final VerifyRequest request
     ){
-        VerifyResult verifyResult = authService.verify(request);
+        PhoneVerifyResult verifyResult = authService.verify(request);
         
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(VerifyResponse.from(verifyResult, "인증번호 발급"));
     }
+
+//    // 번호 인증 : 인증번호 대조
+//    @PostMapping("/phone-verifications-result")
+//    public ResponseEntity<VerifyResultResponse> verifyPhoneNumberResult(
+//            @RequestBody @Valid final VerifyResultRequest request
+//    ){
+//        VerifyResultResponse verifyResultResponse = authService.verifyResult(request);
+//
+//        return ResponseEntity.ok(phoneVerifyResultResult.from("");
+//    }
 
     // 이메일 인증 : 인증번호 발급
     @PostMapping("/email-verifications")
@@ -82,6 +87,17 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(SigninResponse.from(memberSigninResult, "로그인 성공"));
+    }
+
+    @PostMapping("/user-id")
+    public ResponseEntity<FindUserIdResponse> findUserId(
+            @RequestBody @Valid final FindUserIdRequest request
+    ){
+        FindUserIdResult findUserIdResult = authService.findUserId(request);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(FindUserIdResponse.from(findUserIdResult, "아이디 찾기 성공"));
     }
 
     // 토큰 재발행

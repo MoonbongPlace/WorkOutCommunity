@@ -20,6 +20,17 @@ export interface SignupResponse {
   memberSignupResult: unknown  // TODO: MemberSignupResult 구조 확인 후 정의
 }
 
+// POST /api/v1/auth/user-id
+export interface FindUserIdResponse {
+  code: string
+  message: string
+  timestamp: string
+  findUserIdResult: {
+    name:  string
+    email: string
+  }
+}
+
 // POST /api/v1/auth/logout
 export interface LogoutResponse {
   code: string

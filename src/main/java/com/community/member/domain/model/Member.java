@@ -66,8 +66,8 @@ public class Member {
     public static Member signup(
             @NotNull
             String email,
-//            @NotBlank
-//            String phoneNumber,
+            @NotBlank
+            String phoneNumber,
             @NotNull
             String memberName,
             String encodedPassword,
@@ -82,7 +82,7 @@ public class Member {
     ) {
         Member member = new Member();
         member.email = email;
-        member.phoneNumber = "01000000000";
+        member.phoneNumber = phoneNumber;
         member.memberName = memberName;
         member.password = encodedPassword;
         member.name = name;
