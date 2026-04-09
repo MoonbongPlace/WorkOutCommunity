@@ -1,5 +1,5 @@
 import axiosInstance from '../axiosInstance'
-import type { SigninResponse, SignupResponse, LogoutResponse, FindUserIdResponse } from '../../types/auth'
+import type { SigninResponse, SignupResponse, LogoutResponse, FindUserIdResponse, VerifyPhoneResponse, VerifyPhoneResultResponse } from '../../types/auth'
 
 export const authApi = {
   signin: (email: string, password: string) =>
@@ -17,6 +17,12 @@ export const authApi = {
 
   findUserId: (body: { name: string; phoneNumber: string }) =>
     axiosInstance.post<FindUserIdResponse>('/v1/auth/user-id', body),
+
+  verifyPhone: (body: { phoneNumber: string }) =>
+    axiosInstance.post<VerifyPhoneResponse>('/v1/auth/phone-verifications', body),
+
+  verifyPhoneResult: (body: { id: number; codeHash: string }) =>
+    axiosInstance.post<VerifyPhoneResultResponse>('/v1/auth/phone-verifications-result', body),
 
   logout: () =>
     axiosInstance.post<LogoutResponse>('/v1/auth/logout'),

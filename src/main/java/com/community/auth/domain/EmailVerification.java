@@ -16,8 +16,8 @@ public class EmailVerification {
     @Column
     private String email;
 
-    @Column(name = "code_hash")
-    private String codeHash;
+    @Column(name = "verification_code")
+    private String verificationCode;
 
     @Column(name = "verified_at")
     private OffsetDateTime verifiedAt;

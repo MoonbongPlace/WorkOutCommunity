@@ -2,7 +2,7 @@ package com.community.auth.application;
 
 import com.community.auth.api.dto.request.*;
 import com.community.auth.api.dto.response.ReissueResponse;
-//import com.community.auth.api.dto.response.VerifyResultResponse;
+import com.community.auth.api.dto.response.VerifyResultResponse;
 import com.community.auth.application.dto.*;
 import com.community.auth.domain.PhoneVerification;
 import com.community.auth.infra.PhoneVerificationRepositoryAdapter;
@@ -48,9 +48,11 @@ public class AuthService {
 
         String profileImageUrl = profileProperties.defaultImageUrl();
 
-        String userNumber = request.getPhoneNumber().replaceAll("[0-9]", "");
+        String userNumber = request.getPhoneNumber().replaceAll("[^0-9]", "");
 
-        // 휴대전화 11자인지 확인 처리 추가.(예정)
+        if (userNumber.length()!=11){
+            throw new CommonException(ResponseCode.INVALID_PHONE_NUMBER);
+        }
 
         Member member = Member.signup(
                 request.getEmail(),
@@ -72,16 +74,16 @@ public class AuthService {
     }
 
     @Transactional
-    public MemberSigninResult signin(@Valid SigninRequest request)  {
+    public MemberSigninResult signin(@Valid SigninRequest request) {
         Member member = memberRepositoryAdapter.findActiveByEmail(request.getEmail())
-                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
         boolean isSuspend = memberRepositoryAdapter.existsByEmailAndStatus(request.getEmail());
 
-        if (isSuspend){
+        if (isSuspend) {
             throw new CommonException(ResponseCode.MEMBER_SUSPENDED);
         }
 
-        if(!passwordEncoder.matches(request.getPassword(), member.getPassword())){
+        if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
             throw new CommonException(ResponseCode.INVALID_PASSWORD);
         }
         Long memberId = member.getId();
@@ -101,7 +103,7 @@ public class AuthService {
         String newRefreshToken = refreshTokenService.rotate(refreshTokenRaw);
 
         Member member = memberRepositoryAdapter.findActiveById(memberId)
-                .orElseThrow(()-> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
         String role = member.getRole();
 
@@ -116,16 +118,43 @@ public class AuthService {
     }
 
     @Transactional
-    public PhoneVerifyResult verify(@Valid VerifyRequest request) {
-
+    public PhoneVerifyResult sendVerificationCode(@Valid VerifyRequest request) {
         String verificationNumber = generateCode();
-        PhoneVerification phoneVerification = PhoneVerification.create(request.getPhoneNumber(), verificationNumber );
+        String phoneNumber = request.getPhoneNumber().replaceAll("^[0-9]", "");
+
+        PhoneVerification phoneVerification = phoneVerificationRepositoryAdapter
+                .findByPhoneNumber(phoneNumber)
+                .orElse(null);
+
+        if (phoneVerification == null) {
+            phoneVerification = PhoneVerification.create(phoneNumber, verificationNumber);
+        } else {
+            phoneVerification.update(verificationNumber);
+        }
 
         PhoneVerification saved = phoneVerificationRepositoryAdapter.save(phoneVerification);
-
-        solapiMessageService.sendVerificationSms(request.getPhoneNumber(), verificationNumber);
+        solapiMessageService.sendVerificationSms(phoneNumber, verificationNumber);
 
         return PhoneVerifyResult.from(saved);
+    }
+
+    @Transactional
+    public VerifyResultResponse verifyVerificationCode(@Valid VerifyResultRequest request) {
+        PhoneVerification phoneVerification = phoneVerificationRepositoryAdapter.findById(request.getId())
+                .orElseThrow(() -> new CommonException(ResponseCode.PHONE_VERIFICATION_NOT_FOUND));
+
+        OffsetDateTime now = OffsetDateTime.now();
+        if (now.isAfter(phoneVerification.getExpiredAt())) {
+            throw new CommonException(ResponseCode.EXPIRED_PHONE_VERIFICATION);
+        }
+        boolean isMatch = phoneVerification.getVerificationCode().equals(request.getVerificationCode());
+
+        if (!isMatch) {
+            throw new CommonException(ResponseCode.INVALID_PHONE_VERIFICATION_CODE);
+        }
+        phoneVerificationRepositoryAdapter.deleteById(phoneVerification.getId());
+
+        return VerifyResultResponse.from("번호 인증 성공");
     }
 
     public EmailVerifyResult emailPersonalCode(@Valid EmailRequest request) {
@@ -134,19 +163,14 @@ public class AuthService {
 
     public FindUserIdResult findUserId(@Valid FindUserIdRequest request) {
         Member member = memberRepositoryAdapter.findActiveByPhoneNumberAndName(request.getPhoneNumber(), request.getName())
-                .orElseThrow(()->new CommonException(ResponseCode.MEMBER_NOT_FOUND));
-
+                .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
 
         return FindUserIdResult.of(member.getName(), member.getEmail());
     }
 
-    public String generateCode(){
+    public String generateCode() {
         int number = secureRandom.nextInt(100000);
 
         return String.format("%07d", number);
     }
-
-//    public VerifyResultResponse verifyResult(@Valid VerifyResultRequest request) {
-//        return null;
-//    }
 }

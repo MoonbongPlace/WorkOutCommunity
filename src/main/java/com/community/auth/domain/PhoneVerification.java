@@ -1,9 +1,7 @@
 package com.community.auth.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jnr.a64asm.Offset;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,8 +23,8 @@ public class PhoneVerification {
     @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
 
-    @Column(name = "code_hash", nullable = false, unique = true)
-    private String codeHash;
+    @Column(name = "verification_code", nullable = false)
+    private String verificationCode;
 
     @Column(name = "verified_at")
     private OffsetDateTime verifiedAt;
@@ -46,10 +44,17 @@ public class PhoneVerification {
     public static PhoneVerification create(@NotNull String phoneNumber, String verificationNumber) {
         PhoneVerification phoneVerification = new PhoneVerification();
         phoneVerification.setPhoneNumber(phoneNumber);
-        phoneVerification.setCodeHash(verificationNumber);
+        phoneVerification.setVerificationCode(verificationNumber);
         phoneVerification.setCreatedAt(OffsetDateTime.now());
         phoneVerification.setExpiredAt(OffsetDateTime.now().plusMinutes(3));
 
         return phoneVerification;
+    }
+
+    public void update(String verificationNumber) {
+        this.verificationCode = verificationNumber;
+        this.updatedAt = OffsetDateTime.now();
+        this.expiredAt = OffsetDateTime.now().plusMinutes(3);
+        this.failCount = 0;
     }
 }
