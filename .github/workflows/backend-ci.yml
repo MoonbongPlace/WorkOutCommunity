@@ -5,17 +5,18 @@ on:
     branches:
       - main
       - 'feature/**'
+      - 'refactor/**'
   pull_request:
     branches:
-      - develop
       - main
 
 jobs:
-  build-and-test:
+  push-ci:
+    ## 브랜치 push 이벤트 ex) refs/heads/feature/login
+    if: startsWith(github.ref, 'refs/heads/feature/')
     runs-on: ubuntu-latest
-
-    permissions :
-      contents : read
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout source
@@ -26,12 +27,36 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+          cache: gradle
 
       - name: Grant execute permission for Gradle
         run: chmod +x ./gradlew
 
-      - name: Build project
-        run: ./gradlew clean build
+      - name: Run fast verification
+        run: ./gradlew test
+
+  main-pr-ci:
+    if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Grant execute permission for Gradle
+        run: chmod +x ./gradlew
+
+      - name: Full build
+        run: ./gradlew build
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
