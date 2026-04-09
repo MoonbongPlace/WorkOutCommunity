@@ -80,4 +80,9 @@ public class MemberRepositoryAdapter implements MemberRepository {
     public List<Member> findAllActiveByMemberNameContaining(String memberName) {
         return memberJpaRepository.findAllActiveByMemberNameContaining(memberName);
     }
+
+    @Override
+    public Optional<Member> findActiveByPhoneNumberAndName(String phoneNumber, String name) {
+        return memberJpaRepository.findActiveByPhoneNumberAndName(phoneNumber, name);
+    }
 }

@@ -15,8 +15,8 @@ import lombok.Setter;
 public class SignupRequest {
     @NotNull @Email
     private String email;
-//    @NotBlank(message = "휴대전화 기입해주세요.")
-//    private String phoneNumber;
+    @NotBlank(message = "전화번호 기입해주세요.")
+    private String phoneNumber;
     @NotNull
     private String memberName;
     @NotNull

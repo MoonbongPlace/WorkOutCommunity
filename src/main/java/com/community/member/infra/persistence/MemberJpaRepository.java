@@ -70,4 +70,7 @@ public interface MemberJpaRepository extends JpaRepository<Member, Long> {
               AND m.deletedAt IS NULL
             """)
     List<Member> findAllActiveByMemberNameContaining(@Param("memberName") String memberName);
+
+
+    Optional<Member> findActiveByPhoneNumberAndName(String phoneNumber, String name);
 }

@@ -76,6 +76,11 @@ export default function LoginPage() {
             회원가입
           </Link>
         </p>
+        <p className="text-center text-xs text-gray-500 mt-2">
+          <Link to="/find-user-id" className="text-[#7A7F3A] font-medium hover:underline">
+            아이디 찾기
+          </Link>
+        </p>
       </div>
     </div>
   )

@@ -5,6 +5,7 @@ import AdminRoute from './components/AdminRoute'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import FindUserIdPage from './pages/FindUserIdPage'
 import PostsPage from './pages/PostsPage'
 import PostDetailPage from './pages/PostDetailPage'
 import PostNewPage from './pages/PostNewPage'
@@ -19,8 +20,9 @@ import AdminPage from './pages/AdminPage'
 const router = createBrowserRouter([
   // 공개 라우트
   { path: '/',       element: <LandingPage /> },
-  { path: '/login',  element: <LoginPage /> },
-  { path: '/signup', element: <SignupPage /> },
+  { path: '/login',        element: <LoginPage /> },
+  { path: '/signup',       element: <SignupPage /> },
+  { path: '/find-user-id', element: <FindUserIdPage /> },
 
   // 인증 필요 라우트
   {
