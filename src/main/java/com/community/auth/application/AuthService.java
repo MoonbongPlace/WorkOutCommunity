@@ -2,7 +2,7 @@ package com.community.auth.application;
 
 import com.community.auth.api.dto.request.*;
 import com.community.auth.api.dto.response.ReissueResponse;
-import com.community.auth.api.dto.response.VerifyResultResponse;
+//import com.community.auth.api.dto.response.VerifyResultResponse;
 import com.community.auth.application.dto.*;
 import com.community.auth.domain.PhoneVerification;
 import com.community.auth.infra.PhoneVerificationRepositoryAdapter;
@@ -146,7 +146,7 @@ public class AuthService {
         return String.format("%07d", number);
     }
 
-    public VerifyResultResponse verifyResult(@Valid VerifyResultRequest request) {
-        return null;
-    }
+//    public VerifyResultResponse verifyResult(@Valid VerifyResultRequest request) {
+//        return null;
+//    }
 }
