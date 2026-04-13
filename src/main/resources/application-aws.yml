@@ -1,0 +1,30 @@
+spring:
+  config:
+    activate:
+      on-profile: aws
+
+  cloud:
+    aws:
+      s3:
+        enabled: false
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+app:
+  s3:
+    bucket: ${AWS_UPLOAD_BUCKET}
+    region: ap-northeast-2
+
+  upload:
+    profile-prefix: profiles
+    post-prefix: posts
+
+#  public:
+#    base-url: ${APP_BASE_URL}
+
+  profile:
+    default-image-url: ${APP_DEFAULT_PROFILE_IMAGE_URL}
