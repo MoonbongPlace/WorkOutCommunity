@@ -58,7 +58,7 @@ jobs:
             docker run -d \
               --name community-backend \
               --restart unless-stopped \
-              --env-file /home/ec2-user/.env \
+              --env-file /home/ec2-user/WorkOutCommunity/.env \
               -p 8080:8080 \
               ${{ secrets.DOCKERHUB_USERNAME }}/community-backend:latest
 
