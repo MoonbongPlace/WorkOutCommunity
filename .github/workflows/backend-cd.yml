@@ -55,7 +55,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/community-backend:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/community-backend:${{ github.sha }}
 
             docker stop community-backend || true
             docker rm community-backend || true
@@ -65,7 +65,15 @@ jobs:
               --restart unless-stopped \
               --env-file /home/ec2-user/WorkOutCommunity/.env \
               -p 8080:8080 \
-              ${{ secrets.DOCKERHUB_USERNAME }}/community-backend:latest
+              ${{ secrets.DOCKERHUB_USERNAME }}/community-backend:${{ github.sha }}
 
-            sleep 10
+            echo "=== docker ps -a ==="
+            docker ps -a
+
+            echo "=== wait for app ==="
+            sleep 20
+
+            echo "=== container logs ==="
+            docker logs community-backend --tail 200 || true
+            
             curl -f http://127.0.0.1:8080/actuator/health
