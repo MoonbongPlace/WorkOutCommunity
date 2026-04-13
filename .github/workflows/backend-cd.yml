@@ -67,7 +67,6 @@ jobs:
             docker stop community-backend || true
             docker rm community-backend || true
 
-
             echo "=== run new container ==="
             docker run -d \
               --name community-backend \
