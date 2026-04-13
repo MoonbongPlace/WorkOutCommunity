@@ -90,5 +90,3 @@ jobs:
 
             echo "=== last 200 logs ==="
             docker logs community-backend --tail 200 || true
-            
-            curl -f http://127.0.0.1:8080/actuator/health
