@@ -2,15 +2,11 @@ package com.community.auth.application;
 
 import com.community.auth.api.dto.request.*;
 import com.community.auth.api.dto.response.ReissueResponse;
-import com.community.auth.api.dto.response.VerifyResultResponse;
 import com.community.auth.application.dto.*;
-import com.community.auth.domain.PhoneVerification;
-import com.community.auth.infra.PhoneVerificationRepositoryAdapter;
 import com.community.global.component.property.ProfileProperties;
 import com.community.global.exception.CommonException;
 import com.community.global.jwt.JWTProvider;
 import com.community.global.exception.ResponseCode;
-import com.community.global.solapi.SolapiMessageService;
 import com.community.member.domain.model.Member;
 import com.community.member.domain.model.MemberStatus;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
@@ -22,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -34,12 +29,9 @@ public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
     private final MemberRepositoryAdapter memberRepositoryAdapter;
-    private final PhoneVerificationRepositoryAdapter phoneVerificationRepositoryAdapter;
     private final JWTProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final ProfileProperties profileProperties;
-    private final SolapiMessageService solapiMessageService;
-    private final SecureRandom secureRandom = new SecureRandom();
 
 
     @Transactional
@@ -117,60 +109,7 @@ public class AuthService {
         refreshTokenService.revokeAll(memberId);
     }
 
-    @Transactional
-    public PhoneVerifyResult sendVerificationCode(@Valid VerifyRequest request) {
-        String verificationNumber = generateCode();
-        String phoneNumber = request.getPhoneNumber().replaceAll("^[0-9]", "");
-
-        PhoneVerification phoneVerification = phoneVerificationRepositoryAdapter
-                .findByPhoneNumber(phoneNumber)
-                .orElse(null);
-
-        if (phoneVerification == null) {
-            phoneVerification = PhoneVerification.create(phoneNumber, verificationNumber);
-        } else {
-            phoneVerification.update(verificationNumber);
-        }
-
-        PhoneVerification saved = phoneVerificationRepositoryAdapter.save(phoneVerification);
-        solapiMessageService.sendVerificationSms(phoneNumber, verificationNumber);
-
-        return PhoneVerifyResult.from(saved);
-    }
-
-    @Transactional
-    public VerifyResultResponse verifyVerificationCode(@Valid VerifyResultRequest request) {
-        PhoneVerification phoneVerification = phoneVerificationRepositoryAdapter.findById(request.getId())
-                .orElseThrow(() -> new CommonException(ResponseCode.PHONE_VERIFICATION_NOT_FOUND));
-
-        OffsetDateTime now = OffsetDateTime.now();
-        if (now.isAfter(phoneVerification.getExpiredAt())) {
-            throw new CommonException(ResponseCode.EXPIRED_PHONE_VERIFICATION);
-        }
-        boolean isMatch = phoneVerification.getVerificationCode().equals(request.getVerificationCode());
-
-        if (!isMatch) {
-            throw new CommonException(ResponseCode.INVALID_PHONE_VERIFICATION_CODE);
-        }
-        phoneVerificationRepositoryAdapter.deleteById(phoneVerification.getId());
-
-        return VerifyResultResponse.from("번호 인증 성공");
-    }
-
     public EmailVerifyResult emailPersonalCode(@Valid EmailRequest request) {
         return null;
-    }
-
-    public FindUserIdResult findUserId(@Valid FindUserIdRequest request) {
-        Member member = memberRepositoryAdapter.findActiveByPhoneNumberAndName(request.getPhoneNumber(), request.getName())
-                .orElseThrow(() -> new CommonException(ResponseCode.MEMBER_NOT_FOUND));
-
-        return FindUserIdResult.of(member.getName(), member.getEmail());
-    }
-
-    public String generateCode() {
-        int number = secureRandom.nextInt(100000);
-
-        return String.format("%07d", number);
     }
 }

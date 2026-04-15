@@ -85,4 +85,9 @@ public class MemberRepositoryAdapter implements MemberRepository {
     public Optional<Member> findActiveByPhoneNumberAndName(String phoneNumber, String name) {
         return memberJpaRepository.findActiveByPhoneNumberAndName(phoneNumber, name);
     }
+
+    @Override
+    public Optional<Member> findActiveByEmailAndName(String email, String name) {
+        return memberJpaRepository.findActiveMemberForPasswordReset(email, name);
+    }
 }

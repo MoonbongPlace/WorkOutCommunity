@@ -38,6 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private static final List<String> SKIP_PATHS = List.of(
             "/api/v1/auth/**",
+            "/api/v1/account-recovery/**",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-resources/**"
