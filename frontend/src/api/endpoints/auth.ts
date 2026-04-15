@@ -16,13 +16,13 @@ export const authApi = {
   }) => axiosInstance.post<SignupResponse>('/v1/auth/signup', body),
 
   findUserId: (body: { name: string; phoneNumber: string }) =>
-    axiosInstance.post<FindUserIdResponse>('/v1/auth/user-id', body),
+    axiosInstance.post<FindUserIdResponse>('/v1/account-recovery/user-id', body),
 
   verifyPhone: (body: { phoneNumber: string }) =>
-    axiosInstance.post<VerifyPhoneResponse>('/v1/auth/phone-verifications', body),
+    axiosInstance.post<VerifyPhoneResponse>('/v1/account-recovery/phone-verifications', body),
 
   verifyPhoneResult: (body: { phoneNumber: string; verificationCode: string }) =>
-    axiosInstance.post<VerifyPhoneResultResponse>('/v1/auth/phone-verifications-result', body),
+    axiosInstance.post<VerifyPhoneResultResponse>('/v1/account-recovery/phone-verifications-result', body),
 
   logout: () =>
     axiosInstance.post<LogoutResponse>('/v1/auth/logout'),
