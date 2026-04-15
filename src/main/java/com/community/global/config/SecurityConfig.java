@@ -75,6 +75,7 @@ public class SecurityConfig {
         http
                 .securityMatcher(
                         "/api/v1/auth/**",
+                        "/api/v1/account-recovery/**",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
                         "/swagger-resources/**",

@@ -13,7 +13,7 @@ public class VerifyResultResponse {
     private String message;
     private OffsetDateTime timestamp;
 
-    public static VerifyResultResponse from(String message) {
+    public static VerifyResultResponse of(String message) {
             return new VerifyResultResponse(
                     String.valueOf(HttpStatus.OK.value()),
                     message,

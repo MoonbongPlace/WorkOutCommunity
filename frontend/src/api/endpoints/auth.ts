@@ -21,7 +21,7 @@ export const authApi = {
   verifyPhone: (body: { phoneNumber: string }) =>
     axiosInstance.post<VerifyPhoneResponse>('/v1/auth/phone-verifications', body),
 
-  verifyPhoneResult: (body: { id: number; codeHash: string }) =>
+  verifyPhoneResult: (body: { phoneNumber: string; verificationCode: string }) =>
     axiosInstance.post<VerifyPhoneResultResponse>('/v1/auth/phone-verifications-result', body),
 
   logout: () =>

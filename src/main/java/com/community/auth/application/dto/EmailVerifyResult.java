@@ -1,4 +1,4 @@
-package com.community.auth.application;
+package com.community.auth.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;

@@ -2,7 +2,7 @@ spring:
   application:
     name: workout-community
 
-  jackson:
+  Jackson:
     time-zone: Asia/Seoul
 
   servlet:
@@ -56,3 +56,6 @@ solapi:
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+app:
+  frontend-base-url: ${FRONTEND_BASE_URL}

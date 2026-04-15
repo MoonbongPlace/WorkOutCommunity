@@ -37,7 +37,6 @@ export interface VerifyPhoneResponse {
   message: string
   timestamp: string
   verifyResult: {
-    id: number
     phoneNumber: string
   }
 }

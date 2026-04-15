@@ -5,7 +5,6 @@ import com.community.member.domain.model.MemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,7 +54,7 @@ public interface MemberJpaRepository extends JpaRepository<Member, Long> {
                 from Member m
                 where m.status = :status
             """)
-    List<Member> findAllByStatus(@Param("status")MemberStatus status);
+    List<Member> findAllByStatus(@Param("status") MemberStatus status);
 
     Page<Member> findByStatus(MemberStatus status, Pageable pageable);
 
@@ -73,4 +72,17 @@ public interface MemberJpaRepository extends JpaRepository<Member, Long> {
 
 
     Optional<Member> findActiveByPhoneNumberAndName(String phoneNumber, String name);
+
+    @Query("""
+                    SELECT m
+                    FROM Member m
+                    WHERE m.email = :email
+                      AND m.name = :name
+                      AND m.status NOT IN (
+                          com.community.member.domain.model.MemberStatus.DELETED,
+                          com.community.member.domain.model.MemberStatus.SUSPENDED
+                      )
+                      AND m.deletedAt IS NULL
+            """)
+    Optional<Member> findActiveMemberForPasswordReset(@Param("email") String email, @Param("name") String name);
 }

@@ -3,7 +3,7 @@ package com.community.auth.api;
 import com.community.auth.api.dto.request.*;
 import com.community.auth.api.dto.response.*;
 import com.community.auth.application.AuthService;
-import com.community.auth.application.EmailVerifyResult;
+import com.community.auth.application.dto.EmailVerifyResult;
 import com.community.auth.application.dto.*;
 import com.community.global.exception.CommonException;
 import com.community.global.exception.ResponseCode;
@@ -40,41 +40,6 @@ public class AuthController {
                 .body(SignupResponse.from(memberSignupResult, "회원가입 성공"));
     }
 
-    // 아이디 찾기
-    @PostMapping("/user-id")
-    public ResponseEntity<FindUserIdResponse> findUserId(
-            @RequestBody @Valid final FindUserIdRequest request
-    ){
-        FindUserIdResult findUserIdResult = authService.findUserId(request);
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(FindUserIdResponse.from(findUserIdResult, "아이디 찾기 성공"));
-    }
-
-
-    // 번호 인증 : 인증번호 발급
-    @PostMapping("/phone-verifications")
-    public ResponseEntity<VerifyResponse> sendVerificationCode(
-            @RequestBody @Valid final VerifyRequest request
-    ){
-        PhoneVerifyResult verifyResult = authService.sendVerificationCode(request);
-        
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(VerifyResponse.from(verifyResult, "인증번호 발급"));
-    }
-
-    // 번호 인증 : 인증번호 검증
-    @PostMapping("/phone-verifications-result")
-    public ResponseEntity<VerifyResultResponse> verifyVerificationCode(
-            @RequestBody @Valid final VerifyResultRequest request
-    ){
-        VerifyResultResponse verifyResultResponse = authService.verifyVerificationCode(request);
-
-        return ResponseEntity.ok(verifyResultResponse);
-    }
-
     // 이메일 인증 : 인증번호 발급
     // 인증 번호 ID, PHONE NUMBER 응답 (임시)
     @PostMapping("/email-verifications")
@@ -102,7 +67,6 @@ public class AuthController {
                 .status(HttpStatus.OK)
                 .body(SigninResponse.from(memberSigninResult, "로그인 성공"));
     }
-
 
     // 토큰 재발행
     @PostMapping("/reissue")

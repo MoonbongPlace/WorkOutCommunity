@@ -9,7 +9,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class VerifyResultRequest {
     @NotNull
-    private Long id;
+    private String phoneNumber;
     @NotBlank
     private String verificationCode;
 }

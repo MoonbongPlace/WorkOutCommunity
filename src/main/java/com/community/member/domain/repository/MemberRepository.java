@@ -36,4 +36,6 @@ public interface MemberRepository {
     List<Member> findAllActiveByMemberNameContaining(String memberName);
 
     Optional<Member> findActiveByPhoneNumberAndName(@NotBlank String phoneNumber, @NotBlank String name);
+
+    Optional<Member> findActiveByEmailAndName(String name, String email);
 }

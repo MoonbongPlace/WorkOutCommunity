@@ -1,6 +1,6 @@
 package com.community.auth.api.dto.response;
 
-import com.community.auth.application.EmailVerifyResult;
+import com.community.auth.application.dto.EmailVerifyResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

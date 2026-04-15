@@ -10,7 +10,6 @@ export default function FindUserIdPage() {
   const [form, setForm] = useState({ name: '', phoneNumber: '' })
   const [code, setCode] = useState('')
   const [step, setStep] = useState<Step>('idle')
-  const [verificationId, setVerificationId] = useState<number | null>(null)
   const [timer, setTimer] = useState(TIMER_SECONDS)
   const [result, setResult] = useState<{ name: string; email: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -32,7 +31,7 @@ export default function FindUserIdPage() {
       })
     }, 1000)
     return () => clearInterval(timerRef.current!)
-  }, [step, verificationId])
+  }, [step])
 
   function formatTimer(sec: number) {
     const m = String(Math.floor(sec / 60)).padStart(2, '0')
@@ -50,8 +49,7 @@ export default function FindUserIdPage() {
     setCodeError(null)
     setLoading(true)
     try {
-      const { data } = await authApi.verifyPhone({ phoneNumber: form.phoneNumber })
-      setVerificationId(data.verifyResult.id)
+      await authApi.verifyPhone({ phoneNumber: form.phoneNumber })
       setCode('')
       setStep('codeSent')
     } catch {
@@ -63,7 +61,6 @@ export default function FindUserIdPage() {
 
   async function handleVerifyCode(e: FormEvent) {
     e.preventDefault()
-    if (!verificationId) return
     if (timer === 0) {
       setCodeError('인증 시간이 만료되었습니다. 인증번호를 다시 발급해주세요.')
       return
@@ -71,7 +68,7 @@ export default function FindUserIdPage() {
     setCodeError(null)
     setVerifying(true)
     try {
-      const { data } = await authApi.verifyPhoneResult({ id: verificationId, codeHash: code })
+      const { data } = await authApi.verifyPhoneResult({ phoneNumber: form.phoneNumber, verificationCode: code })
       if (data.message === '번호 인증 성공') {
         clearInterval(timerRef.current!)
         await handleFindUserId()
