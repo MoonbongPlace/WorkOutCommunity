@@ -24,27 +24,53 @@ export const options = {
         http_req_duration: ['p(95)<500', 'p(99)<1000'],
     },
 };
+// 'http://localhost:8080'
+const BASE_URL = __ENV.BASE_URL || 'https://api.moonbong.kr';
 
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
-const ACCESS_TOKEN = __ENV.ACCESS_TOKEN || '';
+function login() {
+    const res = http.post(`${BASE_URL}/api/v1/auth/signin`, JSON.stringify({
+        email: 'cocjfals0@naver.com',
+        password: 'dkssudgktpdy@0',
+    }), {
+        headers: { 'Content-Type': 'application/json' },
+    });
 
-function buildHeaders() {
+    check(res, {
+        'login status is 200': (r) => r.status === 200,
+    });
+
+    const accessToken = res.json('memberSigninResult.accessToken');
+
+    if (!accessToken) {
+        throw new Error(`accessToken 추출 실패: ${res.body}`);
+    }
+
+    return accessToken;
+}
+
+export function setup() {
+    return {
+        accessToken: login(),
+    };
+}
+
+function buildHeaders(accessToken) {
     const headers = {
         'Content-Type': 'application/json',
     };
 
-    if (ACCESS_TOKEN) {
-        headers.Authorization = `Bearer ${ACCESS_TOKEN}`;
+    if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
     }
 
     return headers;
 }
 
-export default function () {
+export default function (data) {
     const url = `${BASE_URL}/api/v1/posts?page=0&size=20`;
 
     const res = http.get(url, {
-        headers: buildHeaders(),
+        headers: buildHeaders(data.accessToken),
     });
 
     check(res, {
