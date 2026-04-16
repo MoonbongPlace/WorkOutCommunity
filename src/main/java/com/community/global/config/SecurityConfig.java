@@ -1,5 +1,6 @@
 package com.community.global.config;
 
+import com.community.global.component.CustomAuthenticationEntryPoint;
 import com.community.global.jwt.JWTProvider;
 import com.community.global.jwt.JwtAuthenticationFilter;
 import com.community.member.infra.persistence.MemberRepositoryAdapter;
@@ -74,7 +75,8 @@ public class SecurityConfig {
     public SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher(
-                        "/api/v1/auth/**",
+                        "/api/v1/auth/signin",
+                        "/api/v1/auth/signup",
                         "/api/v1/account-recovery/**",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
@@ -94,7 +96,7 @@ public class SecurityConfig {
      */
     @Bean
     @Order(2)
-    public SecurityFilterChain protectedFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain protectedFilterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
@@ -110,11 +112,13 @@ public class SecurityConfig {
                                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/api/v1/chatbot/**").permitAll()
                                 .requestMatchers("/api/v1/workout-logs/**").permitAll()
+                                .requestMatchers("/api/v1/auth/reissue").permitAll()
+                                .requestMatchers("/api/v1/auth/logout").permitAll()
                                 .requestMatchers("/api/v1/postLikes/**").authenticated()
                                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
                 .addFilterBefore(jwtAuthenticationFilter(),
                         UsernamePasswordAuthenticationFilter.class);

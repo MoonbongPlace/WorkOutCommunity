@@ -37,7 +37,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * - swagger  : 개발 편의용 공개 문서 경로
      */
     private static final List<String> SKIP_PATHS = List.of(
-            "/api/v1/auth/**",
+            "/api/v1/auth/signin",
+            "/api/v1/auth/signup",
+            "/api/v1/auth/reissue",
             "/api/v1/account-recovery/**",
             "/swagger-ui/**",
             "/v3/api-docs/**",
@@ -46,11 +48,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        // (4) CORS preflight 는 무조건 스킵
+        // CORS preflight 는 무조건 스킵
         if (HttpMethod.OPTIONS.matches(request.getMethod())) {
             return true;
         }
-        // (2) permitAll 공개 경로 스킵 — 토큰 유무·만료 여부와 무관하게 통과
+        // permitAll 공개 경로 스킵 — 토큰 유무·만료 여부와 무관하게 통과
         String uri = request.getRequestURI();
         return SKIP_PATHS.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, uri));
     }
@@ -68,15 +70,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
-            // (1)(3) AT 검증 + Claims 파싱을 1회만 수행.
-            //        parseAccessToken 이 서명·만료·role 클레임 존재를 한 번에 검증한다.
+            // AT 검증 + Claims 파싱을 1회만 수행.
+            // parseAccessToken 이 서명·만료·role 클레임 존재를 한 번에 검증한다.
             Claims claims = jwtProvider.parseAccessToken(token);
 
             Long memberId = parseMemberId(claims);
             String role   = jwtProvider.extractRole(claims);
 
-            // (5) 활성 회원 검증 — 즉시 반영이 필요한 정책이므로 유지.
-            //     트래픽 증가 시 Redis 캐시(TTL ≤ AT TTL) 로 교체 가능.
+            // 활성 회원 검증 — 즉시 반영이 필요한 정책이므로 유지.
             memberRepositoryAdapter.findActiveById(memberId)
                     .orElseThrow(() -> new CommonException(ResponseCode.UNAUTHORIZED));
 
@@ -89,7 +90,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (CommonException e) {
             SecurityContextHolder.clearContext();
-            writeUnauthorized(response, e.code());
+            request.setAttribute("exception", e.code());
+            filterChain.doFilter(request, response);
             return;
         }
 

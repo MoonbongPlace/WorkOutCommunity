@@ -40,13 +40,13 @@ public class Post {
     @Column(name="image", length = 2048)
     private List<String> images = Collections.emptyList();
 
-    @Column(name="created_at", updatable = false)
+    @Column(name="created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
     @Column(name="updated_at")
     private OffsetDateTime updatedAt;
 
-    @Column(name="deleted_at", updatable = false)
+    @Column(name="deleted_at")
     private OffsetDateTime deletedAt;
 
     @Enumerated(EnumType.STRING)

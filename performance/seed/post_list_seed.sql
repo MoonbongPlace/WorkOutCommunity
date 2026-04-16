@@ -13,7 +13,7 @@
 --   2. categories 시드가 먼저 적용되어 있어야 함 (exercise_seed.sql)
 --   3. 트랜잭션 단위로 실행 권장
 -- =============================================================
-
+-- rollback;
 BEGIN;
 
 -- -------------------------------------------------------------
@@ -30,6 +30,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- -------------------------------------------------------------
 INSERT INTO member (
     email,
+    phone_number,
     member_name,
     password,
     name,
@@ -41,16 +42,17 @@ INSERT INTO member (
 )
 SELECT
     'seed_user_' || i || '@test.com',
+    '010' || (10000000 + i)::text,
     'seed_user_' || i,
-    crypt('Test1234!', gen_salt('bf', 10)),   -- BCrypt(cost=10)
+    crypt('Test1234!', gen_salt('bf', 10)),
     '테스트유저' || i,
-    (20 + (i % 30))::int,                    -- 20~49세 분산
+    (20 + (i % 30))::int,
     CASE WHEN i % 2 = 0 THEN 'M' ELSE 'F' END,
     'user',
     NOW() - (random() * INTERVAL '365 days'),
     'ACTIVE'
 FROM generate_series(1, 500) AS s(i)
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 -- -------------------------------------------------------------
 -- 2. 게시글 10,000건 생성
