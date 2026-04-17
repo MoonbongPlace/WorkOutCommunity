@@ -1,6 +1,6 @@
 import http from 'k6/http';
-import { check } from 'k6';
-// import { check, sleep } from 'k6';
+// import { check } from 'k6';
+import { check, sleep } from 'k6';
 export const options = {
 
     scenarios: {
@@ -8,20 +8,20 @@ export const options = {
             executor: 'ramping-vus',
             startVUs: 1,
             stages: [
-                { duration: '30s', target: 100 },
-                { duration: '30s', target: 200 },
-                { duration: '30s', target: 300 },
-                { duration: '30s', target: 400 },
-                { duration: '4m', target: 400 },
-                { duration: '1m', target: 0 },
+                { duration: '1m', target: 50 },
+                { duration: '1m', target: 70 },
+                { duration: '1m', target: 100 },
+                { duration: '1m', target: 100 }, // 100 VU 유지
+                { duration: '30s', target: 70 },
+                { duration: '30s', target: 0 },  // 안전하게 종료
             ],
             gracefulRampDown: '10s',
         },
     },
     summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
     thresholds: {
+        http_req_duration: ['p(95)<1000'],
         http_req_failed: ['rate<0.01'],
-        http_req_duration: ['p(95)<500', 'p(99)<1000'],
     },
 };
 // 'http://localhost:8080'
@@ -66,6 +66,12 @@ function buildHeaders(accessToken) {
     return headers;
 }
 
+//C2에서 확인 (top)
+// CPU (us, sy)
+// load average
+// 메모리 / swap
+// java 프로세스 점유율
+
 export default function (data) {
     const url = `${BASE_URL}/api/v1/posts?page=0&size=20`;
 
@@ -78,5 +84,5 @@ export default function (data) {
         'response time < 1000ms': (r) => r.timings.duration < 1000,
     });
 
-    // sleep(1);
+    sleep(1);
 }
